@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cài Đặt Hệ Thống - Smart Credit Scoring</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+
+        .top-navbar {
+            background-color: #ffffff; height: 60px; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .system-title { font-size: 16.5px; font-weight: 800; color: #034694; text-transform: uppercase; }
+        .wrapper { display: flex; margin-top: 60px; }
+
+        .sidebar {
+            width: 250px; min-height: calc(100vh - 60px); background-color: #081729;
+            padding: 18px 12px 60px 12px; position: fixed; top: 60px; bottom: 0; left: 0;
+            overflow-y: auto; z-index: 999;
+        }
+        .admin-menu-label { font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 1.2px; margin: 0 0 14px 10px; text-transform: uppercase; }
+        .tree-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+        .tree-parent-item a, .tree-parent-label {
+            display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px;
+            font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 8px; color: #ffffff;
+        }
+        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.05); }
+
+        .color-dashboard { color: #f59e0b; }
+        .color-dataset   { color: #00a8ff; }
+        .color-history   { color: #10b981; }
+        .color-ml        { color: #ff4757; }
+        .color-users     { color: #c084fc; }
+        .color-settings  { color: #38bdf8; }
+
+        .tree-branch {
+            list-style: none; padding-left: 14px; margin: 4px 0 6px 18px;
+            border-left: 1.5px solid rgba(255, 255, 255, 0.12); display: flex; flex-direction: column; gap: 3px;
+        }
+        .tree-sub-link {
+            display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px;
+            color: #94a3b8; font-size: 13px; font-weight: 500; text-decoration: none; border-radius: 8px;
+            transition: all 0.2s ease; white-space: nowrap;
+        }
+        .tree-sub-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.06); }
+        .menu-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 15px; }
+
+        .tree-parent-item.active-menu a {
+            background-color: #0284c7 !important; color: #ffffff !important;
+            font-weight: 700; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+
+        .main-content { margin-left: 250px; padding: 24px 32px 60px 32px; flex: 1; width: calc(100% - 250px); }
+        .page-heading { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-transform: uppercase; }
+        .page-subheading { font-size: 13px; color: #64748b; margin-bottom: 22px; }
+
+        /* Card Menu Cài đặt Tab */
+        .setting-nav-btn {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            font-size: 13.5px; font-weight: 600; color: #475569; text-decoration: none;
+            border-radius: 8px; border: 1px solid transparent; transition: all 0.2s;
+        }
+        .setting-nav-btn:hover { background-color: #f1f5f9; color: #0f172a; }
+        .setting-nav-btn.active {
+            background-color: #e0f2fe; color: #0284c7; font-weight: 700; border-color: #bae6fd;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-navbar">
+        <span class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</span>
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
+            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="admin-menu-label">ADMIN MENU</div>
+            <ul class="tree-list">
+                <li class="tree-parent-item">
+                    <a href="/admin"><i class="fa-solid fa-house color-dashboard"></i><span>Dashboard</span></a>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-table-cells color-dataset"></i>
+                        <span style="color: #00a8ff;">Dataset</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/dataset" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-file-lines"></i></span><span>Xem Dataset</span></a></li>
+                        <li><a href="/admin/dataset/check" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span><span>Kiểm tra Dataset</span></a></li>
+                        <li><a href="/admin/dataset/pending" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-inbox"></i></span><span>Hồ sơ chờ duyệt</span></a></li>
+                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-paintbrush"></i></span><span>Tiền xử lý dữ liệu</span></a></li>
+                    </ul>
+                </li>
+
+                <li class="tree-parent-item">
+                    <a href="/admin/history"><i class="fa-solid fa-clock-rotate-left color-history"></i><span>Lịch sử dự đoán</span></a>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-robot color-ml"></i>
+                        <span style="color: #ff4757;">Mô hình ML</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
+                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
+                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
+                        <li><a href="/admin/ml/evaluate" class="tree-sub-link"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
+                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
+                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-users color-users"></i>
+                        <span style="color: #c084fc;">Người dùng</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-clipboard"></i></span><span>Danh sách</span></a></li>
+                        <li><a href="/admin/users/add" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-plus"></i></span><span>Thêm</span></a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-pen"></i></span><span>Sửa</span></a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-lock"></i></span><span>Khóa/Mở khóa</span></a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-key"></i></span><span>Phân quyền</span></a></li>
+                    </ul>
+                </li>
+
+                <!-- Cài đặt hệ thống (Active) -->
+                <li class="tree-parent-item active-menu">
+                    <a href="/admin/settings">
+                        <i class="fa-solid fa-gear color-settings"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <h1 class="page-heading">⚙️ CÀI ĐẶT & QUẢN TRỊ HỆ THỐNG</h1>
+            <p class="page-subheading">Quản lý cấu hình vận hành, bảo mật, thông báo và sao lưu cơ sở dữ liệu tín dụng</p>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row g-4">
+                <!-- CỘT TRÁI: DANH SÁCH 6 NHÓM CÀI ĐẶT -->
+                <div class="col-lg-3 col-md-4">
+                    <div class="card p-2 border-0 shadow-sm rounded-3">
+                        <div class="p-2 fw-bold text-secondary text-uppercase" style="font-size: 11px;">Nhóm cài đặt</div>
+                        <a href="/admin/settings?tab=general" class="setting-nav-btn {% if active_tab == 'general' %}active{% endif %}">
+                            <i class="fa-solid fa-sliders"></i> Cài đặt chung
+                        </a>
+                        <a href="/admin/settings?tab=security" class="setting-nav-btn {% if active_tab == 'security' %}active{% endif %}">
+                            <i class="fa-solid fa-shield-halved"></i> Bảo mật & Tài khoản
+                        </a>
+                        <a href="/admin/settings?tab=notifications" class="setting-nav-btn {% if active_tab == 'notifications' %}active{% endif %}">
+                            <i class="fa-solid fa-bell"></i> Thông báo
+                        </a>
+                        <a href="/admin/settings?tab=prediction" class="setting-nav-btn {% if active_tab == 'prediction' %}active{% endif %}">
+                            <i class="fa-solid fa-microchip"></i> Cấu hình dự đoán
+                        </a>
+                        <a href="/admin/settings?tab=backup" class="setting-nav-btn {% if active_tab == 'backup' %}active{% endif %}">
+                            <i class="fa-solid fa-database"></i> Sao lưu & Dữ liệu
+                        </a>
+                        <a href="/admin/settings?tab=audit" class="setting-nav-btn {% if active_tab == 'audit' %}active{% endif %}">
+                            <i class="fa-solid fa-clipboard-list"></i> Nhật ký hoạt động
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CỘT PHẢI: CHI TIẾT THEO TAB ĐƯỢC CHỌN -->
+                <div class="col-lg-9 col-md-8">
+
+                    <!-- TAB 1: CÀI ĐẶT CHUNG -->
+                    {% if active_tab == 'general' %}
+                    <div class="card p-4 border-0 shadow-sm rounded-3">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-sliders text-primary me-2"></i>Cài đặt thông tin chung</h5>
+                        <form method="POST">
+                            <input type="hidden" name="action_type" value="save_general">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" style="font-size: 13px;">Tên hệ thống:</label>
+                                <input type="text" name="system_name" class="form-control" value="{{ settings.system_name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" style="font-size: 13px;">Đơn vị phát triển / Nhóm đề tài:</label>
+                                <input type="text" name="org_name" class="form-control" value="{{ settings.org_name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold" style="font-size: 13px;">Mô tả hệ thống:</label>
+                                <textarea name="system_desc" class="form-control" rows="2">{{ settings.system_desc }}</textarea>
+                            </div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Ngôn ngữ mặc định:</label>
+                                    <select name="language" class="form-select">
+                                        <option value="vi" {% if settings.language == 'vi' %}selected{% endif %}>Tiếng Việt (Mặc định)</option>
+                                        <option value="en" {% if settings.language == 'en' %}selected{% endif %}>English</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Múi giờ:</label>
+                                    <select name="timezone" class="form-select">
+                                        <option value="Asia/Ho_Chi_Minh">GMT+7 (Hanoi, Bangkok)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary fw-bold px-4">
+                                <i class="fa-solid fa-check me-1"></i> Lưu thay đổi
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    <!-- TAB 2: BẢO MẬT & TÀI KHOẢN -->
+                    {% if active_tab == 'security' %}
+                    <div class="card p-4 border-0 shadow-sm rounded-3 mb-4">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-key text-warning me-2"></i>Đổi mật khẩu tài khoản Admin</h5>
+                        <form method="POST">
+                            <input type="hidden" name="action_type" value="change_admin_pwd">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Mật khẩu hiện tại:</label>
+                                    <input type="password" name="old_password" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Mật khẩu mới:</label>
+                                    <input type="password" name="new_password" class="form-control" required>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Xác nhận mật khẩu:</label>
+                                    <input type="password" name="confirm_password" class="form-control" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-warning fw-bold px-4">
+                                <i class="fa-solid fa-lock me-1"></i> Cập nhật mật khẩu
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="card p-4 border-0 shadow-sm rounded-3">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-shield-halved text-primary me-2"></i>Quy định bảo mật hệ thống</h5>
+                        <form method="POST">
+                            <input type="hidden" name="action_type" value="save_security">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Độ dài mật khẩu tối thiểu:</label>
+                                    <input type="number" name="min_password_len" class="form-control" value="{{ settings.min_password_len }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Thời gian phiên đăng nhập (phút):</label>
+                                    <input type="number" name="session_timeout_min" class="form-control" value="{{ settings.session_timeout_min }}">
+                                </div>
+                            </div>
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" name="require_complex_pwd" id="chkComplex" {% if settings.require_complex_pwd %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold" for="chkComplex" style="font-size: 13px;">
+                                    Bắt buộc mật khẩu có cả chữ hoa, chữ thường và chữ số
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary fw-bold px-4">Lưu thiết lập bảo mật</button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    <!-- TAB 3: THÔNG BÁO -->
+                    {% if active_tab == 'notifications' %}
+                    <div class="card p-4 border-0 shadow-sm rounded-3">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-bell text-info me-2"></i>Cài đặt thông báo & cảnh báo</h5>
+                        <form method="POST">
+                            <input type="hidden" name="action_type" value="save_notifications">
+                            <div class="d-flex flex-column gap-3 mb-4">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="notify_new_application" id="n1" {% if settings.notify_new_application %}checked{% endif %}>
+                                    <label class="form-check-label fw-semibold" for="n1" style="font-size: 13px;">
+                                        Thông báo khi có hồ sơ thẩm định tín dụng trực tuyến mới
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="notify_dataset_pending" id="n2" {% if settings.notify_dataset_pending %}checked{% endif %}>
+                                    <label class="form-check-label fw-semibold" for="n2" style="font-size: 13px;">
+                                        Thông báo khi có dữ liệu mới chờ duyệt vào tập Dataset
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="notify_train_completed" id="n3" {% if settings.notify_train_completed %}checked{% endif %}>
+                                    <label class="form-check-label fw-semibold" for="n3" style="font-size: 13px;">
+                                        Thông báo sau khi hoàn thành phiên huấn luyện mô hình ML
+                                    </label>
+                                </div>
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="notify_system_error" id="n4" {% if settings.notify_system_error %}checked{% endif %}>
+                                    <label class="form-check-label fw-semibold" for="n4" style="font-size: 13px;">
+                                        Cảnh báo lỗi tải mô hình hoặc thất bại khi dự đoán
+                                    </label>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary fw-bold px-4">Lưu cấu hình thông báo</button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    <!-- TAB 4: CẤU HÌNH DỰ ĐOÁN -->
+                    {% if active_tab == 'prediction' %}
+                    <div class="card p-4 border-0 shadow-sm rounded-3">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-microchip text-danger me-2"></i>Cấu hình vận hành mô hình ML</h5>
+                        <form method="POST">
+                            <input type="hidden" name="action_type" value="save_prediction">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Ngưỡng Accuracy tối thiểu cho phép kích hoạt (%):</label>
+                                    <input type="number" step="0.1" name="quality_threshold_acc" class="form-control" value="{{ settings.quality_threshold_acc }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Ngưỡng ranh giới cần duyệt thủ công (% xác suất):</label>
+                                    <input type="number" step="0.1" name="manual_review_threshold" class="form-control" value="{{ settings.manual_review_threshold }}">
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Số dòng hiển thị mỗi trang (Phân trang):</label>
+                                    <input type="number" name="records_per_page" class="form-control" value="{{ settings.records_per_page }}">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold" style="font-size: 13px;">Phương án khi không tải được model .pkl:</label>
+                                    <select name="fallback_action" class="form-select">
+                                        <option value="manual" {% if settings.fallback_action == 'manual' %}selected{% endif %}>Chuyển toàn bộ hồ sơ sang chờ duyệt thủ công</option>
+                                        <option value="reject" {% if settings.fallback_action == 'reject' %}selected{% endif %}>Tạm dừng thẩm định và báo lỗi hệ thống</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-check form-switch mb-4">
+                                <input class="form-check-input" type="checkbox" name="maintenance_mode" id="chkMaint" {% if settings.maintenance_mode %}checked{% endif %}>
+                                <label class="form-check-label fw-bold text-danger" for="chkMaint" style="font-size: 13px;">
+                                    Bật chế độ bảo trì hệ thống (Tạm khóa chức năng dự đoán phía khách hàng)
+                                </label>
+                            </div>
+                            <button type="submit" class="btn btn-primary fw-bold px-4">Lưu cấu hình dự đoán</button>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    <!-- TAB 5: SAO LƯU DỮ LIỆU -->
+                    {% if active_tab == 'backup' %}
+                    <div class="card p-4 border-0 shadow-sm rounded-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold m-0"><i class="fa-solid fa-database text-success me-2"></i>Sao lưu cơ sở dữ liệu SQLite</h5>
+                            <form method="POST">
+                                <input type="hidden" name="action_type" value="backup_db">
+                                <button type="submit" class="btn btn-sm btn-success fw-bold">
+                                    <i class="fa-solid fa-cloud-arrow-up me-1"></i> Tạo bản sao lưu ngay
+                                </button>
+                            </form>
+                        </div>
+                        <p class="text-muted" style="font-size: 12.5px;">Bảo vệ an toàn dữ liệu hồ sơ, kết quả thẩm định và nhật ký của toàn bộ hệ thống.</p>
+
+                        <div class="table-responsive mt-2">
+                            <table class="table table-sm align-middle text-center mb-0" style="font-size: 13px;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="text-start">Tên tệp sao lưu</th>
+                                        <th>Kích thước</th>
+                                        <th>Thời điểm tạo</th>
+                                        <th>Thao tác</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if backups %}
+                                        {% for b in backups %}
+                                        <tr>
+                                            <td class="text-start fw-bold text-primary">{{ b.name }}</td>
+                                            <td>{{ b.size }}</td>
+                                            <td class="text-muted">{{ b.time }}</td>
+                                            <td>
+                                                <a href="/admin/settings/backup/download/{{ b.name }}" class="btn btn-sm btn-outline-primary" title="Tải về máy">
+                                                    <i class="fa-solid fa-download"></i> Tải về
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-4 text-muted">Chưa có bản sao lưu nào được tạo.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- TAB 6: NHẬT KÝ HOẠT ĐỘNG (AUDIT LOGS) -->
+                    {% if active_tab == 'audit' %}
+                    <div class="card p-4 border-0 shadow-sm rounded-3">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-clipboard-list text-primary me-2"></i>Nhật ký hoạt động của Quản trị viên</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle text-center mb-0" style="font-size: 12.5px;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Thời gian</th>
+                                        <th>Tài khoản</th>
+                                        <th>Thao tác</th>
+                                        <th>Đối tượng</th>
+                                        <th>Trạng thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% if audit_logs %}
+                                        {% for l in audit_logs %}
+                                        <tr>
+                                            <td class="text-muted">{{ l.timestamp }}</td>
+                                            <td><strong>{{ l.admin }}</strong></td>
+                                            <td class="fw-bold text-dark">{{ l.action }}</td>
+                                            <td class="text-secondary">{{ l.target }}</td>
+                                            <td><span class="badge bg-success">Thành công</span></td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-muted">Chưa có nhật ký hoạt động nào.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

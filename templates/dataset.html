@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khám Phá & Xem Dataset - Loan Prediction</title>
+
+    <!-- Bootstrap 5 CSS & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+
+        .top-navbar {
+            background-color: #ffffff; height: 60px; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .system-title { font-size: 16px; font-weight: 800; color: #034694; text-transform: uppercase; }
+
+        .wrapper { display: flex; margin-top: 60px; }
+
+        /* Sidebar chuẩn kích thước & màu sắc */
+        .sidebar {
+            width: 260px; min-height: calc(100vh - 60px); background-color: #081729;
+            padding: 20px 12px 60px 12px; position: fixed; top: 60px; bottom: 0; left: 0; overflow-y: auto;
+        }
+        .admin-menu-label { 
+            font-size: 11px; font-weight: 800; color: #64748b; letter-spacing: 1px;
+            margin: 0 0 12px 8px; text-transform: uppercase; 
+        }
+        .tree-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+        
+        .tree-parent-item a, .tree-parent-label { 
+            display: flex; align-items: center; gap: 10px; padding: 8px 10px; 
+            font-size: 13.5px; font-weight: 700; text-decoration: none; border-radius: 8px; 
+            user-select: none;
+        }
+        .tree-parent-item a { color: #ffffff; }
+        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.06); }
+        .tree-parent-item.active a { background-color: #0284c7; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35); }
+
+        /* Bảng màu sắc sáng rõ trên nền tối */
+        .color-dashboard { color: #f59e0b; }
+        .color-dataset   { color: #38bdf8 !important; }
+        .color-history   { color: #10b981; }
+        .color-ml        { color: #f87171 !important; }
+        .color-stats     { color: #fbbf24 !important; }
+        .color-users     { color: #a78bfa !important; }
+        .color-settings  { color: #94a3b8; }
+
+        .tree-branch { 
+            list-style: none; padding-left: 16px; margin: 2px 0 8px 16px; 
+            border-left: 1.5px solid rgba(255, 255, 255, 0.15); 
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        .tree-sub-link { 
+            display: flex; align-items: center; gap: 8px; padding: 6px 10px; 
+            color: #94a3b8; font-size: 12.5px; font-weight: 500; text-decoration: none; 
+            border-radius: 6px; white-space: nowrap; transition: all 0.2s;
+        }
+        .tree-sub-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.06); }
+        .tree-sub-link.active-sub { color: #ffffff !important; background-color: #0284c7 !important; font-weight: 700; }
+
+        /* Content Area */
+        .main-content { margin-left: 260px; padding: 24px 30px 60px 30px; flex: 1; }
+        .page-heading { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 20px; text-transform: uppercase; }
+
+        /* Card Thông Tin Tổng Quan Dataset */
+        .overview-panel {
+            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
+            padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 24px;
+        }
+        .overview-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;
+        }
+        .overview-item {
+            padding: 12px 14px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9;
+        }
+        .overview-item .lbl { font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+        .overview-item .val { font-size: 18px; font-weight: 800; color: #0f172a; }
+
+        /* Bảng Data Type Nhỏ Gọn */
+        .schema-panel {
+            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
+            padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 24px;
+        }
+
+        /* Bảng Dữ Liệu Lớn */
+        .table-panel {
+            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
+            padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .custom-data-table {
+            width: 100%; border-collapse: collapse; font-size: 12px;
+        }
+        .custom-data-table thead th {
+            background-color: #f1f5f9; color: #334155; font-weight: 700;
+            padding: 9px 10px; border-bottom: 2px solid #cbd5e1; white-space: nowrap;
+        }
+        .custom-data-table tbody td {
+            padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; white-space: nowrap;
+        }
+        .custom-data-table tbody tr:hover { background-color: #f8fafc; }
+
+        /* Highlight Giá trị khuyết thiếu NaN */
+        .val-nan {
+            background-color: #fee2e2; color: #dc2626; font-weight: 800;
+            padding: 2px 6px; border-radius: 4px; font-size: 11px;
+        }
+        .val-target-y {
+            background-color: #dcfce7; color: #15803d; font-weight: 700;
+            padding: 2px 8px; border-radius: 12px; font-size: 11px;
+        }
+        .val-target-n {
+            background-color: #fee2e2; color: #b91c1c; font-weight: 700;
+            padding: 2px 8px; border-radius: 12px; font-size: 11px;
+        }
+
+        .filter-control {
+            border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; padding: 6px 10px; outline: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAVBAR -->
+    <div class="top-navbar">
+        <div class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
+            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <!-- SIDEBAR CHO TRANG XEM DATASET -->
+        <div class="sidebar">
+            <div class="admin-menu-label">ADMIN MENU</div>
+
+            <ul class="tree-list">
+                <!-- 1. Dashboard -->
+                <li class="tree-parent-item">
+                    <a href="/admin">
+                        <i class="fa-solid fa-house color-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- 2. Dataset (Kích hoạt xem Dataset) -->
+                <li>
+                    <div class="tree-parent-label color-dataset">
+                        <i class="fa-solid fa-table-cells"></i>
+                        <span>Dataset</span>
+                    </div>
+                   <ul class="tree-branch">
+                        <li><a href="/admin/dataset" class="tree-sub-link active-sub">Xem Dataset</a></li>
+                        <li><a href="/admin/dataset/check" class="tree-sub-link">Kiểm tra Dataset</a></li>
+                        <li><a href="/admin/dataset/pending" class="tree-sub-link">Hồ sơ chờ duyệt</a></li>
+                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link">Tiền xử lý dữ liệu</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. Lịch sử dự đoán -->
+                <li class="tree-parent-item">
+                    <a href="/admin/history">
+                        <i class="fa-solid fa-clock-rotate-left color-history"></i>
+                        <span>Lịch sử dự đoán</span>
+                    </a>
+                </li>
+
+                <!-- 4. 🤖 MÔ HÌNH ML -->
+                <li>
+                    <div class="tree-parent-label color-ml">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>Mô hình ML</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
+                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
+                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
+                        <li><a href="/admin/ml/evaluate" class="tree-sub-link active-sub"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
+                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
+                        <li>
+                            <a href="/admin/ml/active" class="tree-sub-link">
+                                <span class="menu-icon">⭐</span>
+                                <span>Mô hình đang sử dụng</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                
+                <!-- 6. 👥 NGƯỜI DÙNG -->
+                <li>
+                    <div class="tree-parent-label color-users">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Người dùng</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin#usersSection" class="tree-sub-link">📋 Danh sách</a></li>
+                        <li><a href="#" class="tree-sub-link">➕ Thêm</a></li>
+                        <li><a href="#" class="tree-sub-link">✏️ Sửa</a></li>
+                        <li><a href="#" class="tree-sub-link">🔒 Khóa/Mở khóa</a></li>
+                        <li><a href="#" class="tree-sub-link">🔑 Phân quyền</a></li>
+                    </ul>
+                </li>
+
+                <!-- 6. Cài đặt hệ thống -->
+                <li class="tree-parent-item">
+                    <a href="/admin/settings">
+                        <i class="fa-solid fa-gear color-settings"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <h1 class="page-heading">📄 XEM & HIỂU TẬP DỮ LIỆU HUẤN LUYỆN (DATASET)</h1>
+
+            <!-- 1. THÔNG TIN TỔNG QUAN DATASET -->
+            <div class="overview-panel">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="fw-bold fs-6 text-primary">
+                        <i class="fa-solid fa-database me-2"></i>{{ stats.dataset_name }} ({{ stats.filename }})
+                    </div>
+                    <span class="badge bg-success py-2 px-3"><i class="fa-solid fa-check me-1"></i>Đang sử dụng</span>
+                </div>
+                
+                <div class="overview-grid">
+                    <div class="overview-item">
+                        <div class="lbl">Tổng số bản ghi (Dòng)</div>
+                        <div class="val text-primary" id="metaTotalRows">{{ stats.rows }}</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="lbl">Số thuộc tính (Cột)</div>
+                        <div class="val text-dark">{{ stats.cols }}</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="lbl">Biến mục tiêu (Target)</div>
+                        <div class="val text-danger">{{ stats.target_col }}</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="lbl">Tổng giá trị khuyết (NaN)</div>
+                        <div class="val text-warning">{{ stats.missing_total }}</div>
+                    </div>
+                    <div class="overview-item">
+                        <div class="lbl">Số dòng có dữ liệu thiếu</div>
+                        <div class="val text-danger">{{ stats.missing_rows }} dòng</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. THUỘC TÍNH VÀ KIỂU DỮ LIỆU (DATA TYPES SCHEMA) -->
+            <div class="schema-panel">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="fw-bold" style="font-size: 13.5px;"><i class="fa-solid fa-list-check me-2 text-info"></i>Bảng cấu trúc thuộc tính & Kiểu dữ liệu</div>
+                    <button class="btn btn-sm btn-light border py-0 px-2" style="font-size: 11px;" type="button" data-bs-toggle="collapse" data-bs-target="#schemaDetails">
+                        Thu gọn / Mở rộng
+                    </button>
+                </div>
+                <div class="collapse show" id="schemaDetails">
+                    <div class="d-flex flex-wrap gap-2 mt-2">
+                        {% for col in stats.dtypes_info %}
+                        <div class="border rounded p-2 bg-light" style="font-size: 11.5px; min-width: 130px;">
+                            <div class="fw-bold text-dark">{{ col.column }} {% if col.is_target %}<span class="badge bg-danger" style="font-size: 9px;">Target</span>{% endif %}</div>
+                            <div class="text-muted">Kiểu: <span class="fw-semibold text-primary">{{ col.dtype }}</span></div>
+                            <div class="{% if col.missing > 0 %}text-danger fw-bold{% else %}text-muted{% endif %}">
+                                Thiếu: {{ col.missing }} ({{ col.missing_pct }}%)
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3. BẢNG DỮ LIỆU CHI TIẾT (FULL DATASET TABLE) -->
+            <div class="table-panel">
+                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <input type="text" id="tableSearchInput" class="filter-control" style="width: 240px;" placeholder="Tìm kiếm nhanh giá trị..." onkeyup="filterTable()">
+                        
+                        <!-- Lọc theo biến mục tiêu Loan_Status -->
+                        <select id="filterTarget" class="filter-control" onchange="filterTable()">
+                            <option value="all">Loan_Status: Tất cả</option>
+                            <option value="Y">Chỉ xem: Đậu (Y)</option>
+                            <option value="N">Chỉ xem: Trượt (N)</option>
+                        </select>
+
+                        <!-- Lọc dữ liệu có khuyết thiếu hay không -->
+                        <select id="filterMissing" class="filter-control" onchange="filterTable()">
+                            <option value="all">Toàn bộ dữ liệu</option>
+                            <option value="has_nan">Chỉ dòng có ô NaN (Thiếu dữ liệu)</option>
+                        </select>
+                    </div>
+
+                    <div class="text-muted" style="font-size: 12px;" id="dataCounter">
+                        Đang xem trang <span id="currentPageNum">1</span> / <span id="totalPagesNum">1</span> (<span id="visibleRowCount">{{ stats.rows }}</span> bản ghi)
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="custom-data-table" id="datasetTable">
+                        <thead>
+                            <tr>
+                                {% for col in stats.columns %}
+                                <th>{{ col }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- THANH PHÂN TRANG -->
+                <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
+                    <div class="d-flex align-items-center gap-2" style="font-size: 12px;">
+                        <span>Số dòng mỗi trang:</span>
+                        <select id="pageSizeSelect" class="filter-control py-0" onchange="changePageSize()">
+                            <option value="15" selected>15</option>
+                            <option value="30">30</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
+
+                    <div class="d-flex gap-1" id="paginationControls">
+                        <button class="btn btn-sm btn-light border py-0 px-2" onclick="prevPage()">&lt; Trước</button>
+                        <button class="btn btn-sm btn-light border py-0 px-2" onclick="nextPage()">Sau &gt;</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- XỬ LÝ DỮ LIỆU, TÌM KIẾM, LỌC VÀ PHÂN TRANG PHÍA CLIENT -->
+    <script>
+        const rawData = {{ stats.data_list | tojson | safe }};
+        const columns = {{ stats.columns | tojson | safe }};
+        
+        let filteredData = [...rawData];
+        let currentPage = 1;
+        let pageSize = 15;
+
+        function renderTable() {
+            const tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+
+            const total = filteredData.length;
+            const totalPages = Math.ceil(total / pageSize) || 1;
+            if (currentPage > totalPages) currentPage = totalPages;
+
+            const startIndex = (currentPage - 1) * pageSize;
+            const endIndex = Math.min(startIndex + pageSize, total);
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="${columns.length}" class="text-center text-muted py-4">Không tìm thấy bản ghi nào phù hợp với bộ lọc.</td></tr>`;
+            } else {
+                pageData.forEach(row => {
+                    const tr = document.createElement("tr");
+                    columns.forEach(col => {
+                        const td = document.createElement("td");
+                        const val = row[col];
+                        
+                        if (val === "NaN" || val === null || val === undefined) {
+                            td.innerHTML = `<span class="val-nan">NaN</span>`;
+                        } else if (col === "Loan_Status") {
+                            if (val === "Y") td.innerHTML = `<span class="val-target-y">Y (Approved)</span>`;
+                            else if (val === "N") td.innerHTML = `<span class="val-target-n">N (Rejected)</span>`;
+                            else td.innerText = val;
+                        } else {
+                            td.innerText = val;
+                        }
+                        tr.appendChild(td);
+                    });
+                    tbody.appendChild(tr);
+                });
+            }
+
+            document.getElementById("currentPageNum").innerText = currentPage;
+            document.getElementById("totalPagesNum").innerText = totalPages;
+            document.getElementById("visibleRowCount").innerText = total;
+        }
+
+        function filterTable() {
+            const query = document.getElementById("tableSearchInput").value.toLowerCase();
+            const targetFilter = document.getElementById("filterTarget").value;
+            const missingFilter = document.getElementById("filterMissing").value;
+
+            filteredData = rawData.filter(row => {
+                if (targetFilter !== "all" && row["Loan_Status"] !== targetFilter) {
+                    return false;
+                }
+
+                if (missingFilter === "has_nan") {
+                    const hasNan = Object.values(row).some(v => v === "NaN" || v === null || v === "");
+                    if (!hasNan) return false;
+                }
+
+                if (query) {
+                    const textContent = Object.values(row).join(" ").toLowerCase();
+                    if (!textContent.includes(query)) return false;
+                }
+
+                return true;
+            });
+
+            currentPage = 1;
+            renderTable();
+        }
+
+        function changePageSize() {
+            pageSize = parseInt(document.getElementById("pageSizeSelect").value);
+            currentPage = 1;
+            renderTable();
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            renderTable();
+        });
+    </script>
+</body>
+</html>

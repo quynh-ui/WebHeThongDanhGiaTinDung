@@ -3,150 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Nhập - Hệ Thống Dự Đoán Tín Dụng Thông Minh</title>
+    <title>Đăng nhập - Thẩm định AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
         body {
-            /* Đặt hình nền phủ kín toàn màn hình */
-            background-image: url("{{ url_for('static', filename='bg.jpg') }}");
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle at 80% 20%, #60a5fa 0%, transparent 40%),
+                        radial-gradient(circle at 10% 80%, #38bdf8 0%, transparent 40%),
+                        linear-gradient(135deg, #1d4ed8 0%, #2563eb 40%, #0ea5e9 100%);
+            position: relative;
+            overflow-x: hidden;
             padding: 20px;
         }
+        body::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: 
+                radial-gradient(rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+                linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+            background-size: 30px 30px, 60px 60px;
+            pointer-events: none;
+        }
         .auth-card {
-            background: rgba(255, 255, 255, 0.95); /* Màu nền trắng nhẹ hơi trong suốt */
-            padding: 40px;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 10;
+            background: #ffffff;
             width: 100%;
-            max-width: 400px;
-            backdrop-filter: blur(5px); /* Hiệu ứng làm mờ nhẹ phía sau khung */
+            max-width: 420px;
+            border-radius: 28px;
+            padding: 36px 32px 32px 32px;
+            box-shadow: 0 20px 45px rgba(2, 62, 138, 0.25);
         }
-        h2 {
+        .auth-header { text-align: center; margin-bottom: 24px; }
+        .auth-header h2 { font-size: 24px; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 6px; }
+        .auth-header p { font-size: 13px; color: #64748b; font-weight: 500; }
+        .alert-box {
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 16px;
             text-align: center;
-            color: #0f172a;
-            font-size: 26px;
-            font-weight: 800;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+            background: #e0f2fe;
+            color: #0369a1;
+            border: 1px solid #bae6fd;
         }
-        .sub-title {
-            text-align: center;
-            color: #475569;
-            font-size: 14px;
-            margin-bottom: 25px;
-        }
-        .form-group {
-            margin-bottom: 18px;
-        }
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 700;
-            font-size: 14px;
-            color: #334155;
-        }
-        input {
+        .alert-box.error { background: #fef2f2; color: #b91c1c; border-color: #fecaca; }
+        .form-group { margin-bottom: 15px; }
+        .form-label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper .input-icon { position: absolute; left: 14px; color: #64748b; font-size: 15px; }
+        .input-wrapper input {
             width: 100%;
-            padding: 12px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 15px;
+            padding: 11px 40px;
+            font-size: 14px;
+            color: #1e293b;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
             outline: none;
             transition: all 0.2s;
         }
-        input:focus {
-            border-color: #059669;
-            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
-        }
-        button {
+        .input-wrapper input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); }
+        .toggle-password { position: absolute; right: 14px; color: #64748b; cursor: pointer; font-size: 14px; }
+        .extra-actions { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 20px 0; font-size: 13px; }
+        .remember-me { display: flex; align-items: center; gap: 8px; color: #334155; font-weight: 500; cursor: pointer; }
+        .remember-me input { accent-color: #2563eb; width: 16px; height: 16px; }
+        .forgot-password { color: #2563eb; text-decoration: none; font-weight: 600; }
+        .btn-submit {
             width: 100%;
             padding: 13px;
-            background-color: #2563eb;
-            color: white;
+            border-radius: 12px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 700;
             cursor: pointer;
-            margin-top: 10px;
-            transition: background-color 0.2s;
+            box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
         }
-        button:hover {
-            background-color: #1d4ed8;
+        .btn-submit:hover { opacity: 0.95; transform: translateY(-1px); }
+        .switch-auth { text-align: center; margin-top: 20px; font-size: 13px; color: #475569; }
+        .switch-auth a { color: #2563eb; font-weight: 700; text-decoration: none; }
+        .social-divider { display: flex; align-items: center; text-align: center; margin: 20px 0 16px 0; color: #94a3b8; font-size: 12px; }
+        .social-divider::before, .social-divider::after { content: ''; flex: 1; border-bottom: 1px solid #e2e8f0; }
+        .social-divider span { padding: 0 12px; }
+        .social-buttons { display: flex; justify-content: center; gap: 16px; }
+        .social-btn {
+            width: 44px; height: 44px; border-radius: 50%;
+            border: 1px solid #e2e8f0; background: #ffffff;
+            display: flex; align-items: center; justify-content: center;
         }
-        .alert {
-            padding: 10px 14px;
-            margin-bottom: 18px;
-            border-radius: 8px;
-            font-size: 14px;
-            text-align: center;
-            font-weight: 600;
-        }
-        .alert-danger { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
-        .alert-success { background-color: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; }
-        .alert-info { background-color: #e0f2fe; color: #0369a1; border: 1px solid #bae6fd; }
-        
-        .link {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 14px;
-            color: #475569;
-        }
-        .link a {
-            color: #2563eb;
-            text-decoration: none;
-            font-weight: bold;
-        }
-        .link a:hover {
-            text-decoration: underline;
-        }
+        .social-btn img { width: 20px; height: 20px; }
     </style>
 </head>
 <body>
+    <div class="auth-card">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-box {{ 'error' if category == 'error' else '' }}">
+                        <i class="fa-solid fa-circle-info me-1"></i> {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-<div class="auth-card">
-    <h2>ĐĂNG NHẬP</h2>
-    
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-      {% else %}
-        <p class="sub-title">Vui lòng đăng nhập để sử dụng ứng dụng!</p>
-      {% endif %}
-    {% endwith %}
-
-    <form method="POST">
-        <div class="form-group">
-            <label>Tên đăng nhập:</label>
-            <input type="text" name="username" required placeholder="Nhập tên đăng nhập">
+        <div class="auth-header">
+            <h2>ĐĂNG NHẬP</h2>
+            <p>Vui lòng đăng nhập để sử dụng ứng dụng!</p>
         </div>
-        <div class="form-group">
-            <label>Mật khẩu:</label>
-            <input type="password" name="password" required placeholder="Nhập mật khẩu">
-        </div>
-        <button type="submit">Đăng Nhập</button>
-    </form>
 
-    <div class="link">
-        Chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
+        <form action="/login" method="POST">
+            <div class="form-group">
+                <label class="form-label">Tên đăng nhập:</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-user input-icon"></i>
+                    <input type="text" name="username" placeholder="Nhập tên đăng nhập" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Mật khẩu:</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock input-icon"></i>
+                    <input type="password" id="loginPassword" name="password" placeholder="Nhập mật khẩu" required>
+                    <i class="fa-regular fa-eye-slash toggle-password" onclick="togglePassword('loginPassword', this)"></i>
+                </div>
+            </div>
+
+            <div class="extra-actions">
+                <label class="remember-me">
+                    <input type="checkbox" name="remember" checked>
+                    <span>Ghi nhớ đăng nhập</span>
+                </label>
+                <a href="#" class="forgot-password">Quên mật khẩu?</a>
+            </div>
+
+            <button type="submit" class="btn-submit">Đăng Nhập</button>
+
+            <div class="switch-auth">
+                Chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
+            </div>
+
+            <div class="social-divider"><span>Hoặc đăng nhập bằng</span></div>
+
+            <div class="social-buttons">
+                <a href="#" class="social-btn"><img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google"></a>
+                <a href="#" class="social-btn"><img src="https://www.svgrepo.com/show/475647/facebook-color.svg" alt="Facebook"></a>
+            </div>
+        </form>
     </div>
-</div>
 
+    <script>
+        function togglePassword(inputId, icon) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            }
+        }
+    </script>
 </body>
 </html>

@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hồ Sơ Chờ Duyệt - Cổng Dữ Liệu Dataset</title>
+
+    <!-- Bootstrap 5 CSS & FontAwesome 6 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+
+        .top-navbar {
+            background-color: #ffffff; height: 60px; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .system-title { font-size: 16.5px; font-weight: 800; color: #034694; text-transform: uppercase; }
+        .wrapper { display: flex; margin-top: 60px; }
+
+        /* Sidebar Styling đồng bộ chuẩn */
+        .sidebar {
+            width: 260px; min-height: calc(100vh - 60px); background-color: #081729;
+            padding: 20px 12px 60px 12px; position: fixed; top: 60px; bottom: 0; left: 0; overflow-y: auto;
+        }
+        .admin-menu-label { font-size: 11px; font-weight: 800; color: #64748b; letter-spacing: 1px; margin: 0 0 12px 8px; text-transform: uppercase; }
+        .tree-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+        .tree-parent-item a, .tree-parent-label { display: flex; align-items: center; gap: 10px; padding: 8px 10px; font-size: 13.5px; font-weight: 700; text-decoration: none; border-radius: 8px; user-select: none; }
+        .tree-parent-item a { color: #ffffff; }
+        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.06); }
+        .tree-parent-item.active a { background-color: #0284c7; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35); }
+
+        .color-dashboard { color: #f59e0b; }
+        .color-dataset   { color: #38bdf8 !important; }
+        .color-history   { color: #10b981; }
+        .color-ml        { color: #f87171 !important; }
+        .color-stats     { color: #fbbf24 !important; }
+        .color-users     { color: #a78bfa !important; }
+        .color-settings  { color: #94a3b8; }
+
+        .tree-branch { list-style: none; padding-left: 16px; margin: 2px 0 8px 16px; border-left: 1.5px solid rgba(255, 255, 255, 0.15); display: flex; flex-direction: column; gap: 2px; }
+        .tree-sub-link { display: flex; align-items: center; gap: 8px; padding: 6px 10px; color: #94a3b8; font-size: 12.5px; font-weight: 500; text-decoration: none; border-radius: 6px; white-space: nowrap; transition: all 0.2s; }
+        .tree-sub-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.06); }
+        .tree-sub-link.active-sub { color: #ffffff !important; background-color: #0284c7 !important; font-weight: 700; }
+
+        /* Main Content */
+        .main-content { margin-left: 260px; padding: 24px 30px 60px 30px; flex: 1; }
+        .page-heading { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 20px; text-transform: uppercase; }
+
+        .panel-card {
+            background: #ffffff; border-radius: 14px; border: 1px solid #e2e8f0;
+            padding: 22px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03); margin-bottom: 20px;
+        }
+
+        .custom-table { width: 100%; margin-bottom: 0; font-size: 13px; }
+        .custom-table th { background-color: #f8fafc; color: #475569; font-weight: 700; padding: 12px 14px; border-bottom: 1.5px solid #e2e8f0; white-space: nowrap; }
+        .custom-table td { padding: 12px 14px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+
+        .badge-status { padding: 4px 10px; border-radius: 12px; font-size: 11.5px; font-weight: 700; display: inline-block; }
+        .badge-approved { background-color: #dcfce7; color: #15803d; }
+        .badge-rejected { background-color: #fee2e2; color: #b91c1c; }
+        .badge-pending  { background-color: #fef9c3; color: #854d0e; }
+
+        .pipeline-card {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #ffffff; border-radius: 14px; padding: 18px 24px; margin-bottom: 22px;
+        }
+        .pipeline-step {
+            display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAVBAR -->
+    <div class="top-navbar">
+        <div class="system-title"><i class="fa-solid fa-shield-halved me-2 text-primary"></i>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
+            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="admin-menu-label">ADMIN MENU</div>
+            <ul class="tree-list">
+                <li class="tree-parent-item"><a href="/admin"><i class="fa-solid fa-house color-dashboard"></i><span>Dashboard</span></a></li>
+                <li>
+                    <div class="tree-parent-label color-dataset"><i class="fa-solid fa-table-cells"></i><span>Dataset</span></div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/dataset" class="tree-sub-link">Xem Dataset</a></li>
+                        <li><a href="/admin/dataset/check" class="tree-sub-link">Kiểm tra Dataset</a></li>
+                        <li><a href="/admin/dataset/pending" class="tree-sub-link active-sub">Hồ sơ chờ duyệt</a></li>
+                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link">Tiền xử lý dữ liệu</a></li>
+                    </ul>
+                </li>
+                <li class="tree-parent-item"><a href="/admin/history"><i class="fa-solid fa-clock-rotate-left color-history"></i><span>Lịch sử dự đoán</span></a></li>
+                
+                <!-- 4. Mô hình ML (Đã thêm mục Lịch sử huấn luyện) -->
+                <li>
+                    <div class="tree-parent-label color-ml"><i class="fa-solid fa-robot"></i><span>Mô hình ML</span></div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
+                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
+                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
+                        <li><a href="/admin/ml/evaluate" class="tree-sub-link active-sub"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
+                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
+                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
+                    </ul>
+                </li>
+
+                
+                <li>
+                    <div class="tree-parent-label color-users"><i class="fa-solid fa-users"></i><span>Người dùng</span></div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin#usersSection" class="tree-sub-link">📋 Danh sách</a></li>
+                        <li><a href="#" class="tree-sub-link">➕ Thêm</a></li>
+                        <li><a href="#" class="tree-sub-link">✏️ Sửa</a></li>
+                        <li><a href="#" class="tree-sub-link">🔒 Khóa/Mở khóa</a></li>
+                        <li><a href="#" class="tree-sub-link">🔑 Phân quyền</a></li>
+                    </ul>
+                </li>
+                <li class="tree-parent-item"><a href="#"><i class="fa-solid fa-gear color-settings"></i><span>Cài đặt</span></a></li>
+                <!-- 6. Cài đặt hệ thống -->
+                <li class="tree-parent-item">
+                    <a href="/admin/settings">
+                        <i class="fa-solid fa-gear color-settings"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <h1 class="page-heading">📥 CỔNG KIỂM DUYỆT DỮ LIỆU ĐẦU VÀO (DATA ANNOTATION GATE)</h1>
+
+            <!-- Pipeline quy trình ML -->
+            <div class="pipeline-card">
+                <div class="fw-bold mb-2 text-warning" style="font-size: 13.5px;">
+                    <i class="fa-solid fa-diagram-project me-2"></i>Quy trình đưa dữ liệu thực tế vào huấn luyện lại:
+                </div>
+                <div class="d-flex flex-wrap align-items-center gap-2">
+                    <span class="pipeline-step"><i class="fa-solid fa-user me-1 text-info"></i>Hồ sơ khách</span>
+                    <i class="fa-solid fa-arrow-right text-muted"></i>
+                    <span class="pipeline-step"><i class="fa-solid fa-circle-check me-1 text-success"></i>Dữ liệu xác thực</span>
+                    <i class="fa-solid fa-arrow-right text-muted"></i>
+                    <span class="pipeline-step"><i class="fa-solid fa-database me-1 text-warning"></i>Dataset V2</span>
+                    <i class="fa-solid fa-arrow-right text-muted"></i>
+                    <span class="pipeline-step"><i class="fa-solid fa-broom me-1 text-info"></i>Tiền xử lý</span>
+                    <i class="fa-solid fa-arrow-right text-muted"></i>
+                    <span class="pipeline-step"><i class="fa-solid fa-rotate me-1 text-primary"></i>Huấn luyện lại (Retrain)</span>
+                </div>
+            </div>
+
+            <!-- Bảng danh sách -->
+            <div class="panel-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="fw-bold fs-6"><i class="fa-solid fa-clock-rotate-left text-warning me-2"></i>Hồ sơ chờ phê duyệt vào tập dữ liệu</div>
+                    <input type="text" id="searchInput" class="form-control form-control-sm" style="width: 240px;" placeholder="Tìm theo mã / người dùng..." onkeyup="filterTable()">
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table custom-table" id="pendingTable">
+                        <thead>
+                            <tr>
+                                <th>Mã hồ sơ</th>
+                                <th>Người dùng</th>
+                                <th>Thông tin đầu vào</th>
+                                <th>Dự đoán AI</th>
+                                <th>Kết quả thực tế</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if pending_list and pending_list|length > 0 %}
+                                {% for item in pending_list %}
+                                <tr>
+                                    <td class="fw-bold">{{ item.app_id }}</td>
+                                    <td>{{ item.username }}</td>
+                                    <td>
+                                        <div style="font-size: 12px;">
+                                            <div><strong>Vay:</strong> {{ item.amount | default(70) }} tr | <strong>Thu nhập:</strong> {{ item.income | default(15) }} tr</div>
+                                            <div class="text-muted"><strong>CIC:</strong> {{ 'Rất tốt' if item.credit_history == 1 else 'Đã từng trả muộn' }}</div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if item.status in ['Đã Phê Duyệt', 'Phê Duyệt'] %}
+                                            <span class="badge-status badge-approved">Approved</span>
+                                        {% else %}
+                                            <span class="badge-status badge-rejected">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <!-- Khối chọn nhãn thực tế trước khi duyệt -->
+                                        <select class="form-select form-select-sm" id="actualStatus_{{ item.id }}" style="font-size: 12px; width: 115px; font-weight: 700;">
+                                            <option value="Y" selected>Approved</option>
+                                            <option value="N">Rejected</option>
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <span class="badge-status badge-pending">Chờ duyệt</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1">
+                                            <!-- 💡 NÚT GỢI Ý AI THÔNG MINH -->
+                                            <button class="btn btn-sm btn-outline-info py-1 px-2 fw-semibold" style="font-size: 11.5px;" onclick="openAIAssistant('{{ item.id }}')">
+                                                <i class="fa-solid fa-wand-magic-sparkles"></i> Gợi ý AI
+                                            </button>
+
+                                            <!-- 👁 Xem chi tiết -->
+                                            <button class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 11.5px;" onclick="viewDetail('{{ item.app_id }}', '{{ item.username }}', '{{ item.amount }}', '{{ item.income }}', '{{ item.status }}')">
+                                                <i class="fa-solid fa-eye"></i> Xem
+                                            </button>
+
+                                            <!-- ✅ Nút Duyệt nạp vào Dataset V2 -->
+                                            <form action="/admin/dataset/approve/{{ item.id }}" method="POST" onsubmit="return confirmApproval(this, '{{ item.id }}')">
+                                                <input type="hidden" name="actual_status" id="formActual_{{ item.id }}" value="Y">
+                                                <button type="submit" class="btn btn-sm btn-success py-1 px-2 fw-bold" style="font-size: 11.5px;">
+                                                    <i class="fa-solid fa-check"></i> Duyệt
+                                                </button>
+                                            </form>
+
+                                            <!-- ❌ Từ chối kèm Ghi chú lý do -->
+                                            <button class="btn btn-sm btn-danger py-1 px-2 fw-bold" style="font-size: 11.5px;" onclick="openRejectModal('{{ item.id }}', '{{ item.app_id }}')">
+                                                <i class="fa-solid fa-xmark"></i> Từ chối
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-5">
+                                        <i class="fa-solid fa-folder-open fs-2 mb-2 d-block text-secondary"></i>
+                                        Hiện không có hồ sơ nào chờ kiểm duyệt.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: XEM CHI TIẾT HỒ SƠ -->
+    <div class="modal fade" id="detailModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title fw-bold"><i class="fa-solid fa-magnifying-glass me-2"></i>Kiểm Tra Dữ Liệu Hồ Sơ</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="detailContent" style="font-size: 13.5px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: TỪ CHỐI KÈM LÝ DO / GHI CHÚ -->
+    <div class="modal fade" id="rejectModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="rejectForm" method="POST">
+                    <div class="modal-header">
+                        <h6 class="modal-title fw-bold text-danger"><i class="fa-solid fa-triangle-exclamation me-2"></i>Lý Do Không Đưa Vào Dataset</h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="font-size: 13px;" id="rejectModalText"></p>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" style="font-size: 12.5px;">📝 Ghi chú lý do từ chối:</label>
+                            <textarea name="reject_reason" class="form-control" rows="3" placeholder="Ví dụ: Thiếu xác minh bảng lương, dữ liệu nhiễu ngoại lai không đạt chuẩn..." required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-sm btn-light border" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-sm btn-danger fw-bold">Xác nhận Từ Chối</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: GỢI Ý & ĐÁNH GIÁ TỰ ĐỘNG BẰNG AI (XAI) -->
+    <div class="modal fade" id="aiAdviceModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow border-0" style="border-radius: 16px; overflow: hidden;">
+                <div class="modal-header bg-primary text-white py-3">
+                    <h6 class="modal-title fw-bold mb-0">
+                        <i class="fa-solid fa-wand-magic-sparkles me-2"></i>TRỢ LÝ AI ĐÁNH GIÁ TÍN DỤNG
+                    </h6>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4" id="aiAdviceContent">
+                    <div class="text-center py-4 text-muted">
+                        <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                        <div>Đang kết nối mô hình AI phân tích hồ sơ...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Gán giá trị kết quả thực tế vào form ẩn trước khi submit duyệt
+        function confirmApproval(form, id) {
+            const actualVal = document.getElementById(`actualStatus_${id}`).value;
+            document.getElementById(`formActual_${id}`).value = actualVal;
+            return confirm(`Bạn có đồng ý nạp hồ sơ này vào tập dữ liệu Dataset V2 với kết quả thực tế là "${actualVal === 'Y' ? 'Approved' : 'Rejected'}"?`);
+        }
+
+        // Xem chi tiết hồ sơ
+        function viewDetail(appId, username, amount, income, status) {
+            document.getElementById('detailContent').innerHTML = `
+                <div class="mb-2"><strong>Mã hồ sơ:</strong> ${appId}</div>
+                <div class="mb-2"><strong>Khách hàng:</strong> ${username}</div>
+                <div class="mb-2"><strong>Khoản vay đề xuất:</strong> ${amount} triệu VNĐ</div>
+                <div class="mb-2"><strong>Thu nhập hàng tháng:</strong> ${income} triệu VNĐ</div>
+                <div class="mb-2"><strong>Dự đoán ban đầu của AI:</strong> <span class="badge ${status.includes('Phê Duyệt') ? 'bg-success' : 'bg-danger'}">${status}</span></div>
+                <div class="alert alert-info py-2 mt-3 mb-0" style="font-size: 12px;">
+                    ℹ Dữ liệu sau khi kiểm duyệt sẽ được bổ sung vào <strong>dataset_v2.csv</strong> để cải thiện mô hình ML.
+                </div>
+            `;
+            new bootstrap.Modal(document.getElementById('detailModal')).show();
+        }
+
+        // Mở popup nhập ghi chú khi từ chối
+        function openRejectModal(id, appId) {
+            document.getElementById('rejectForm').action = `/admin/dataset/reject/${id}`;
+            document.getElementById('rejectModalText').innerHTML = `Hồ sơ <strong>${appId}</strong> sẽ bị đánh dấu từ chối và không nạp vào Dataset V2.`;
+            new bootstrap.Modal(document.getElementById('rejectModal')).show();
+        }
+
+        // GỌI API LẤY PHÂN TÍCH & GỢI Ý TỪ AI
+        function openAIAssistant(appId) {
+            const modalEl = new bootstrap.Modal(document.getElementById('aiAdviceModal'));
+            document.getElementById('aiAdviceContent').innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <div class="spinner-border spinner-border-sm text-primary mb-2" role="status"></div>
+                    <div>Đang kết nối mô hình AI phân tích hồ sơ...</div>
+                </div>
+            `;
+            modalEl.show();
+
+            fetch(`/admin/api/ai-advice/${appId}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        const d = res.data;
+                        let badgeBg = 'bg-success';
+                        if (d.decision === 'Rủi ro cao') badgeBg = 'bg-danger';
+                        else if (d.decision === 'Cần điều chỉnh hạn mức') badgeBg = 'bg-warning text-dark';
+
+                        const html = `
+                            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                                <div>
+                                    <div class="fw-bold fs-6 text-dark">${res.customer}</div>
+                                    <div class="text-muted small">Mã: ${res.app_code}</div>
+                                </div>
+                                <span class="badge ${badgeBg} px-3 py-2 fs-6 rounded-pill">${d.decision}</span>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="fw-bold text-success mb-1 small text-uppercase">
+                                    <i class="fa-solid fa-circle-check me-1"></i> Điểm mạnh hồ sơ
+                                </div>
+                                <ul class="list-unstyled mb-0 ps-1" style="font-size: 13px;">
+                                    ${d.pros.length > 0 ? d.pros.map(p => `<li class="mb-1 text-secondary"><i class="fa-solid fa-check text-success me-2"></i>${p}</li>`).join('') : '<li class="text-muted small">Không ghi nhận điểm mạnh vượt trội.</li>'}
+                                </ul>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="fw-bold text-danger mb-1 small text-uppercase">
+                                    <i class="fa-solid fa-triangle-exclamation me-1"></i> Rủi ro & Lưu ý
+                                </div>
+                                <ul class="list-unstyled mb-0 ps-1" style="font-size: 13px;">
+                                    ${d.cons.length > 0 ? d.cons.map(c => `<li class="mb-1 text-secondary"><i class="fa-solid fa-xmark text-danger me-2"></i>${c}</li>`).join('') : '<li class="text-muted small">Không phát hiện rủi ro nghiêm trọng.</li>'}
+                                </ul>
+                            </div>
+
+                            <div class="p-3 bg-light rounded-3 border border-primary-subtle mt-3">
+                                <div class="fw-bold text-primary mb-1 small text-uppercase">
+                                    <i class="fa-solid fa-lightbulb me-1"></i> Đề xuất hành động cho Admin
+                                </div>
+                                <p class="mb-0 text-dark" style="font-size: 13.5px; line-height: 1.5;">${d.advice}</p>
+                            </div>
+                        `;
+                        document.getElementById('aiAdviceContent').innerHTML = html;
+                    } else {
+                        document.getElementById('aiAdviceContent').innerHTML = `
+                            <div class="alert alert-danger mb-0 small">Không thể lấy dữ liệu phân tích từ AI. Vui lòng thử lại.</div>
+                        `;
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('aiAdviceContent').innerHTML = `
+                        <div class="alert alert-danger mb-0 small">Lỗi kết nối máy chủ khi gọi trợ lý AI.</div>
+                    `;
+                });
+        }
+
+        // Tìm kiếm nhanh
+        function filterTable() {
+            const input = document.getElementById('searchInput').value.toLowerCase();
+            const tr = document.getElementById('pendingTable').getElementsByTagName('tr');
+            for (let i = 1; i < tr.length; i++) {
+                const text = tr[i].textContent || tr[i].innerText;
+                tr[i].style.display = text.toLowerCase().includes(input) ? "" : "none";
+            }
+        }
+    </script>
+</body>
+</html>

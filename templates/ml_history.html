@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Sử Huấn Luyện Mô Hình - Smart Credit Scoring</title>
+
+    <!-- Bootstrap 5 CSS & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; }
+
+        /* Topbar */
+        .top-navbar {
+            background-color: #ffffff; height: 60px; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .system-title { font-size: 16px; font-weight: 800; color: #034694; text-transform: uppercase; }
+
+        .wrapper { display: flex; margin-top: 60px; }
+
+        /* Sidebar Dark Theme chuẩn đồng bộ */
+        .sidebar {
+            width: 250px; min-height: calc(100vh - 60px); background-color: #081729;
+            padding: 18px 12px 60px 12px; position: fixed; top: 60px; bottom: 0; left: 0;
+            overflow-y: auto; z-index: 999;
+        }
+        .admin-menu-label {
+            font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 1.2px;
+            margin: 0 0 14px 10px; text-transform: uppercase;
+        }
+        .tree-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+        
+        .tree-parent-item a, .tree-parent-label {
+            display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+            font-size: 13.5px; font-weight: 700; text-decoration: none; border-radius: 8px;
+            color: #ffffff; user-select: none; transition: all 0.2s ease;
+        }
+        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.05); color: #ffffff; }
+
+        .color-dashboard { color: #f59e0b; }
+        .color-dataset   { color: #00a8ff; }
+        .color-history   { color: #10b981; }
+        .color-ml        { color: #ff4757; }
+        .color-users     { color: #c084fc; }
+
+        .tree-branch {
+            list-style: none; padding-left: 14px; margin: 4px 0 6px 20px;
+            border-left: 1.5px solid rgba(255, 255, 255, 0.12); display: flex;
+            flex-direction: column; gap: 3px;
+        }
+        
+        .tree-sub-link {
+            display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px;
+            color: #94a3b8; font-size: 13px; font-weight: 500; text-decoration: none;
+            border-radius: 8px; transition: all 0.2s ease; white-space: nowrap;
+        }
+        .tree-sub-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.06); }
+        .menu-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 15px; }
+
+        /* Nút Active chuẩn màu xanh */
+        .tree-sub-link.active-sub {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+            font-weight: 700;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px; padding: 24px 32px 60px 32px;
+            flex: 1; width: calc(100% - 250px);
+        }
+        .page-heading { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 20px; text-transform: uppercase; }
+
+        /* 4 Thẻ Card Thống kê */
+        .stat-card {
+            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
+            padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); height: 100%;
+        }
+        .stat-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+        .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.1; }
+        .stat-icon-box {
+            width: 44px; height: 44px; border-radius: 10px; display: flex; align-items: center;
+            justify-content: center; font-size: 20px;
+        }
+
+        /* Bảng lịch sử */
+        .custom-table-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden;
+        }
+        .table thead th {
+            background-color: #f8fafc; font-size: 12.5px; font-weight: 700;
+            color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding: 12px 16px;
+        }
+        .table tbody td {
+            font-size: 13px; padding: 14px 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOPBAR -->
+    <div class="top-navbar">
+        <span class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</span>
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
+            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="admin-menu-label">ADMIN MENU</div>
+            <ul class="tree-list">
+                <li class="tree-parent-item">
+                    <a href="/admin"><i class="fa-solid fa-house color-dashboard"></i><span>Dashboard</span></a>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-table-cells color-dataset"></i>
+                        <span style="color: #00a8ff;">Dataset</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/dataset" class="tree-sub-link"><i class="fa-regular fa-file-lines me-1"></i> Xem Dataset</a></li>
+                        <li><a href="/admin/dataset/check" class="tree-sub-link"><i class="fa-solid fa-magnifying-glass me-1"></i> Kiểm tra Dataset</a></li>
+                        <li><a href="/admin/dataset/pending" class="tree-sub-link"><i class="fa-solid fa-inbox me-1"></i> Hồ sơ chờ duyệt</a></li>
+                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link"><i class="fa-solid fa-paintbrush me-1"></i> Tiền xử lý dữ liệu</a></li>
+                    </ul>
+                </li>
+
+                <li class="tree-parent-item">
+                    <a href="/admin/history"><i class="fa-solid fa-clock-rotate-left color-history"></i><span>Lịch sử dự đoán</span></a>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-robot color-ml"></i>
+                        <span style="color: #ff4757;">Mô hình ML</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
+                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
+                        <li><a href="/admin/ml/history" class="tree-sub-link active-sub"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
+                        <li><a href="/admin/ml/evaluate" class="tree-sub-link"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
+                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
+                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-users color-users"></i>
+                        <span style="color: #c084fc;">Người dùng</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/users" class="tree-sub-link"><i class="fa-regular fa-clipboard"></i> Danh sách</a></li>
+                        <li><a href="/admin/users/add" class="tree-sub-link"><i class="fa-solid fa-plus"></i> Thêm</a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><i class="fa-solid fa-pen"></i> Sửa</a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><i class="fa-solid fa-lock"></i> Khóa/Mở khóa</a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><i class="fa-solid fa-key"></i> Phân quyền</a></li>
+                    </ul>
+                </li>
+               <!-- 6. Cài đặt hệ thống -->
+                <li class="tree-parent-item">
+                    <a href="/admin/settings">
+                        <i class="fa-solid fa-gear color-settings"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="page-heading m-0">📜 LỊCH SỬ HUẤN LUYỆN MÔ HÌNH</h1>
+                <a href="/admin/ml/train" class="btn btn-primary fw-bold shadow-sm">
+                    <i class="fa-solid fa-gear me-1"></i> Huấn luyện phiên bản mới
+                </a>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- 4 THẺ TỔNG QUAN -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">Số lần huấn luyện</div>
+                            <div class="stat-value text-primary">{{ models_history|length if models_history else 0 }}</div>
+                            <div class="text-muted" style="font-size: 11.5px;">Phiên hoàn tất</div>
+                        </div>
+                        <div class="stat-icon-box bg-primary-subtle text-primary"><i class="fa-solid fa-rotate"></i></div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">Dataset sử dụng</div>
+                            <div class="stat-value text-info" style="font-size: 16px;">Loan Dataset gốc</div>
+                            <div class="text-muted" style="font-size: 11.5px;">train.csv (614 mẫu)</div>
+                        </div>
+                        <div class="stat-icon-box bg-info-subtle text-info"><i class="fa-solid fa-database"></i></div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">Accuracy tốt nhất</div>
+                            <div class="stat-value text-success">
+                                {% if models_history %}
+                                    {{ (models_history | map(attribute='accuracy') | max) }}%
+                                {% else %}
+                                    --%
+                                {% endif %}
+                            </div>
+                            <div class="text-muted" style="font-size: 11.5px;">Độ chính xác cao nhất</div>
+                        </div>
+                        <div class="stat-icon-box bg-success-subtle text-success"><i class="fa-solid fa-bullseye"></i></div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">Model hiện tại</div>
+                            <div class="stat-value text-warning" style="font-size: 16px;">
+                                {% set active_item = models_history | selectattr('status', 'equalto', 'Đang sử dụng') | first %}
+                                {{ active_item.version if active_item else (models_history[-1].version if models_history else 'Chưa có') }}
+                            </div>
+                            <div class="text-muted" style="font-size: 11.5px;">Đang phục vụ thẩm định</div>
+                        </div>
+                        <div class="stat-icon-box bg-warning-subtle text-warning"><i class="fa-solid fa-star"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BẢNG NHẬT KÝ CHI TIẾT -->
+            <div class="custom-table-card">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold m-0 text-dark">
+                        <i class="fa-solid fa-list-check text-primary me-2"></i>Nhật ký chi tiết các phiên huấn luyện
+                    </h6>
+                    <span class="text-muted" style="font-size: 12px;">Cập nhật tự động sau mỗi phiên train thành công</span>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Phiên bản</th>
+                                <th>Dataset</th>
+                                <th>Mô hình</th>
+                                <th>Train/Test</th>
+                                <th>Accuracy</th>
+                                <th>F1-score</th>
+                                <th>Thời gian</th>
+                                <th>Trạng thái</th>
+                                <th class="text-center">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if models_history and models_history|length > 0 %}
+                                {% for m in models_history | reverse %}
+                                <tr>
+                                    <td class="fw-bold text-primary">{{ m.version }}</td>
+                                    <td>{{ m.dataset_name | default('Loan Dataset (train.csv)') }}</td>
+                                    <td><strong>{{ m.algorithm | default(m.name) }}</strong></td>
+                                    <td>{{ m.train_size | default('80/20') }}</td>
+                                    <td class="fw-bold text-success">{{ m.accuracy }}%</td>
+                                    <td class="fw-bold text-info">{{ m.f1_score | default('--') }}%</td>
+                                    <td class="text-muted" style="font-size: 12px;">{{ m.trained_at }}</td>
+                                    <td>
+                                        {% if m.status == 'Đang sử dụng' %}
+                                            <span class="badge bg-success"><i class="fa-solid fa-circle-check me-1"></i>Đang sử dụng</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Lưu trữ</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a href="/admin/ml/evaluate?version={{ m.version }}" class="btn btn-sm btn-outline-primary" title="Xem đánh giá">
+                                                <i class="fa-regular fa-eye"></i>
+                                            </a>
+                                            {% if m.status != 'Đang sử dụng' %}
+                                            <form action="/admin/ml/activate/{{ m.version }}" method="POST" class="d-inline" onsubmit="return confirm('Kích hoạt mô hình {{ m.version }} làm mô hình dự đoán chính?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Sử dụng mô hình này">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="9" class="text-center py-5 text-muted">
+                                        <i class="fa-solid fa-folder-open fs-1 mb-2"></i>
+                                        <div>Chưa có phiên huấn luyện nào được ghi nhận.</div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

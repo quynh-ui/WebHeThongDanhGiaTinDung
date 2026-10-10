@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lịch Sử Dự Đoán Tín Dụng - Machine Learning System</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+
+        .top-navbar {
+            background-color: #ffffff; height: 60px; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .system-title { font-size: 16.5px; font-weight: 800; color: #034694; text-transform: uppercase; }
+        .wrapper { display: flex; margin-top: 60px; }
+
+        .sidebar {
+            width: 250px; min-height: calc(100vh - 60px); background-color: #081729;
+            padding: 18px 12px 60px 12px; position: fixed; top: 60px; bottom: 0; left: 0;
+            overflow-y: auto; z-index: 999;
+        }
+        .admin-menu-label { font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 1.2px; margin: 0 0 14px 10px; text-transform: uppercase; }
+        .tree-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+        .tree-parent-item a, .tree-parent-label {
+            display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px;
+            font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 8px;
+            color: #ffffff; user-select: none; transition: all 0.2s ease;
+        }
+        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.05); }
+
+        .tree-parent-item.active-menu a {
+            background-color: #0284c7 !important; color: #ffffff !important;
+            font-weight: 700; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+        .tree-parent-item.active-menu a i { color: #ffffff !important; }
+
+        .color-dashboard { color: #f59e0b; }
+        .color-dataset   { color: #00a8ff; }
+        .color-history   { color: #10b981; }
+        .color-ml        { color: #ff4757; }
+        .color-users     { color: #c084fc; }
+
+        .tree-branch {
+            list-style: none; padding-left: 14px; margin: 4px 0 6px 18px;
+            border-left: 1.5px solid rgba(255, 255, 255, 0.12); display: flex; flex-direction: column; gap: 3px;
+        }
+        .tree-sub-link {
+            display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px;
+            color: #94a3b8; font-size: 13px; font-weight: 500; text-decoration: none;
+            border-radius: 8px; transition: all 0.2s ease; white-space: nowrap;
+        }
+        .tree-sub-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.06); }
+        .menu-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 15px; }
+
+        .main-content { margin-left: 250px; padding: 24px 32px 60px 32px; flex: 1; width: calc(100% - 250px); }
+        .page-heading { font-size: 20px; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 20px; }
+
+        .stat-card {
+            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
+            padding: 16px 20px; display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02); height: 100%;
+        }
+        .stat-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
+        .stat-value { font-size: 24px; font-weight: 800; color: #0f172a; line-height: 1.1; }
+
+        .custom-table-card {
+            background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02); overflow: hidden; margin-top: 20px;
+        }
+        .table thead th {
+            background-color: #f8fafc; font-size: 12.5px; font-weight: 700;
+            color: #475569; text-transform: uppercase; border-bottom: 1px solid #e2e8f0; padding: 12px 16px;
+        }
+        .table tbody td { font-size: 13px; padding: 13px 16px; vertical-align: middle; border-bottom: 1px solid #f1f5f9; }
+    </style>
+</head>
+<body>
+
+    <div class="top-navbar">
+        <span class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</span>
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
+            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <div class="sidebar">
+            <div class="admin-menu-label">ADMIN MENU</div>
+            <ul class="tree-list">
+                <li class="tree-parent-item">
+                    <a href="/admin"><i class="fa-solid fa-house color-dashboard"></i><span>Dashboard</span></a>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-table-cells color-dataset"></i>
+                        <span style="color: #00a8ff;">Dataset</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/dataset" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-file-lines"></i></span><span>Xem Dataset</span></a></li>
+                        <li><a href="/admin/dataset/check" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span><span>Kiểm tra Dataset</span></a></li>
+                        <li><a href="/admin/dataset/pending" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-inbox"></i></span><span>Hồ sơ chờ duyệt</span></a></li>
+                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-paintbrush"></i></span><span>Tiền xử lý dữ liệu</span></a></li>
+                    </ul>
+                </li>
+
+                <!-- Lịch sử dự đoán (Đang Active) -->
+                <li class="tree-parent-item active-menu">
+                    <a href="/admin/history">
+                        <i class="fa-solid fa-clock-rotate-left color-history"></i>
+                        <span>Lịch sử dự đoán</span>
+                    </a>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-robot color-ml"></i>
+                        <span style="color: #ff4757;">Mô hình ML</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
+                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
+                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
+                        <li><a href="/admin/ml/evaluate" class="tree-sub-link"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
+                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
+                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-users color-users"></i>
+                        <span style="color: #c084fc;">Người dùng</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-clipboard"></i></span><span>Danh sách</span></a></li>
+                        <li><a href="/admin/users/add" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-plus"></i></span><span>Thêm</span></a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-pen"></i></span><span>Sửa</span></a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-lock"></i></span><span>Khóa/Mở khóa</span></a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-key"></i></span><span>Phân quyền</span></a></li>
+                    </ul>
+                </li>
+                <!-- 6. Cài đặt hệ thống -->
+                <li class="tree-parent-item">
+                    <a href="/admin/settings">
+                        <i class="fa-solid fa-gear color-settings"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+                </ul>
+            </div>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <h1 class="page-heading">🕒 LỊCH SỬ DỰ ĐOÁN TÍN DỤNG CỦA KHÁCH HÀNG</h1>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">Tổng lượt dự đoán</div>
+                            <div class="stat-value text-primary">{{ total_predictions }}</div>
+                        </div>
+                        <div class="fs-2 text-primary"><i class="fa-solid fa-list-ol"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">Số ca phê duyệt</div>
+                            <div class="stat-value text-success">{{ approved_count }}</div>
+                        </div>
+                        <div class="fs-2 text-success"><i class="fa-solid fa-circle-check"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">Số ca từ chối</div>
+                            <div class="stat-value text-danger">{{ rejected_count }}</div>
+                        </div>
+                        <div class="fs-2 text-danger"><i class="fa-solid fa-circle-xmark"></i></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stat-card">
+                        <div>
+                            <div class="stat-title">Tỷ lệ phê duyệt</div>
+                            <div class="stat-value text-info">{{ approval_rate }}%</div>
+                        </div>
+                        <div class="fs-2 text-info"><i class="fa-solid fa-percent"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="custom-table-card">
+                <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
+                    <h6 class="fw-bold m-0 text-dark">
+                        <i class="fa-solid fa-clock-rotate-left text-success me-2"></i>Chi tiết các lần thẩm định trực tuyến
+                    </h6>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Mã hồ sơ</th>
+                                <th>Khách hàng</th>
+                                <th>Thu nhập</th>
+                                <th>Khoản vay</th>
+                                <th>Điểm tín dụng</th>
+                                <th>Kết quả AI</th>
+                                <th>Trạng thái Dataset</th>
+                                <th>Thời gian</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if applications and applications|length > 0 %}
+                                {% for app in applications %}
+                                <tr>
+                                    <td class="fw-bold text-primary">{{ app.app_id }}</td>
+                                    <td><strong>{{ app.username }}</strong></td>
+                                    <td>{{ app.income }} triệu</td>
+                                    <td>{{ app.amount }} triệu</td>
+                                    <td><span class="badge bg-light text-dark border">{{ app.score }} điểm</span></td>
+                                    <td>
+                                        {% if app.status in ['Phê Duyệt', 'Đã Phê Duyệt'] %}
+                                            <span class="badge bg-success">Phê Duyệt</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Từ Chối</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if app.in_dataset %}
+                                            <span class="badge bg-info-subtle text-info border">Đã nạp Dataset</span>
+                                        {% else %}
+                                            <span class="badge bg-warning-subtle text-warning border">Chờ duyệt</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted" style="font-size: 12px;">{{ app.created_at.strftime('%d/%m/%Y %H:%M') if app.created_at else '--' }}</td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center py-5 text-muted">
+                                        Chưa có lượt dự đoán nào được thực hiện.
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

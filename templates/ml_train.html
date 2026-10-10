@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Huấn Luyện Mô Hình ML - Machine Learning System</title>
+
+    <!-- Bootstrap 5 CSS & FontAwesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+
+        /* Top Header Navbar */
+        .top-navbar {
+            background-color: #ffffff; height: 60px; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .system-title { font-size: 16.5px; font-weight: 800; color: #034694; text-transform: uppercase; }
+        .wrapper { display: flex; margin-top: 60px; }
+
+        /* Sidebar Styling đồng bộ 250px */
+        .sidebar {
+            width: 250px; min-height: calc(100vh - 60px); background-color: #081729;
+            padding: 18px 12px 60px 12px; position: fixed; top: 60px; bottom: 0; left: 0;
+            overflow-y: auto; z-index: 999;
+        }
+        .admin-menu-label {
+            font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 1.2px;
+            margin: 0 0 14px 10px; text-transform: uppercase;
+        }
+        .tree-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+
+        /* Nhãn nhóm cấp 1 */
+        .tree-parent-item a, .tree-parent-label {
+            display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px;
+            font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 8px;
+            color: #ffffff; user-select: none; transition: all 0.2s ease;
+        }
+        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.05); }
+
+        .color-dashboard { color: #f59e0b; }
+        .color-dataset   { color: #00a8ff; }
+        .color-history   { color: #10b981; }
+        .color-ml        { color: #ff4757; }
+        .color-users     { color: #c084fc; }
+
+        /* Nhánh đường kẻ cho các mục con */
+        .tree-branch {
+            list-style: none; padding-left: 14px; margin: 4px 0 6px 18px;
+            border-left: 1.5px solid rgba(255, 255, 255, 0.12); display: flex; flex-direction: column; gap: 3px;
+        }
+
+        /* Mục con cấp 2 - Đồng bộ kích thước chuẩn 100% */
+        .tree-sub-link {
+            display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px;
+            color: #94a3b8; font-size: 13px; font-weight: 500; text-decoration: none;
+            border-radius: 8px; transition: all 0.2s ease; white-space: nowrap;
+        }
+        .tree-sub-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.06); }
+
+        /* Khung bọc icon/emoji để căn giữa và thẳng hàng */
+        .menu-icon {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; font-size: 15px; flex-shrink: 0; line-height: 1;
+        }
+
+        /* Nút Active chuẩn màu xanh */
+        .tree-sub-link.active-sub {
+            background-color: #0284c7 !important; color: #ffffff !important;
+            font-weight: 700; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px; padding: 24px 32px 60px 32px;
+            flex: 1; width: calc(100% - 250px); min-width: 0;
+        }
+        .page-heading { font-size: 20px; font-weight: 800; color: #0f172a; text-transform: uppercase; margin-bottom: 20px; }
+
+        /* Card bao quanh từng bước huấn luyện */
+        .step-card {
+            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
+            padding: 20px 22px; margin-bottom: 22px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+        .step-title {
+            font-size: 14.5px; font-weight: 800; color: #0f172a; margin-bottom: 14px;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase;
+        }
+        .step-badge {
+            background-color: #e0f2fe; color: #0284c7; font-size: 11.5px;
+            padding: 3px 9px; border-radius: 6px; font-weight: 700;
+        }
+
+        /* Panel kết quả bên phải */
+        .result-panel {
+            background: #0f172a; color: #ffffff; border-radius: 14px; padding: 22px;
+            box-shadow: 0 4px 18px rgba(15, 23, 42, 0.25); min-height: 480px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAVBAR -->
+    <div class="top-navbar">
+        <span class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</span>
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
+            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="admin-menu-label">ADMIN MENU</div>
+            <ul class="tree-list">
+                
+                <!-- 1. Dashboard -->
+                <li class="tree-parent-item">
+                    <a href="/admin">
+                        <i class="fa-solid fa-house color-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- 2. Dataset -->
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-table-cells color-dataset"></i>
+                        <span style="color: #00a8ff;">Dataset</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li>
+                            <a href="/admin/dataset" class="tree-sub-link">
+                                <span class="menu-icon"><i class="fa-regular fa-file-lines"></i></span>
+                                <span>Xem Dataset</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/dataset/check" class="tree-sub-link">
+                                <span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                                <span>Kiểm tra Dataset</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/dataset/pending" class="tree-sub-link">
+                                <span class="menu-icon"><i class="fa-solid fa-inbox"></i></span>
+                                <span>Hồ sơ chờ duyệt</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/dataset/preprocess" class="tree-sub-link">
+                                <span class="menu-icon"><i class="fa-solid fa-paintbrush"></i></span>
+                                <span>Tiền xử lý dữ liệu</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- 3. Lịch sử dự đoán -->
+                <li class="tree-parent-item">
+                    <a href="/admin/history">
+                        <i class="fa-solid fa-clock-rotate-left color-history"></i>
+                        <span>Lịch sử dự đoán</span>
+                    </a>
+                </li>
+
+                <!-- 4. Mô hình ML -->
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-robot color-ml"></i>
+                        <span style="color: #ff4757;">Mô hình ML</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li>
+                            <a href="/admin/ml/models" class="tree-sub-link">
+                                <span class="menu-icon">📋</span>
+                                <span>Danh sách mô hình</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/ml/train" class="tree-sub-link active-sub">
+                                <span class="menu-icon">⚙️</span>
+                                <span>Huấn luyện mô hình</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/ml/history" class="tree-sub-link">
+                                <span class="menu-icon">📜</span>
+                                <span>Lịch sử huấn luyện</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/ml/evaluate" class="tree-sub-link">
+                                <span class="menu-icon">📊</span>
+                                <span>Đánh giá mô hình</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/ml/compare" class="tree-sub-link">
+                                <span class="menu-icon">⚖️</span>
+                                <span>So sánh mô hình</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/ml/active" class="tree-sub-link">
+                                <span class="menu-icon">⭐</span>
+                                <span>Mô hình đang sử dụng</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <!-- 5. Người dùng -->
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-users color-users"></i>
+                        <span style="color: #c084fc;">Người dùng</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li>
+                            <a href="/admin/users" class="tree-sub-link">
+                                <span class="menu-icon"><i class="fa-regular fa-clipboard"></i></span>
+                                <span>Danh sách</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/users/add" class="tree-sub-link">
+                                <span class="menu-icon"><i class="fa-solid fa-plus"></i></span>
+                                <span>Thêm</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/users" class="tree-sub-link">
+                                <span class="menu-icon"><i class="fa-solid fa-pen"></i></span>
+                                <span>Sửa</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/users" class="tree-sub-link">
+                                <span class="menu-icon"><i class="fa-solid fa-lock"></i></span>
+                                <span>Khóa/Mở khóa</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/admin/users" class="tree-sub-link">
+                                <span class="menu-icon"><i class="fa-solid fa-key"></i></span>
+                                <span>Phân quyền</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <!-- 6. Cài đặt hệ thống -->
+                <li class="tree-parent-item">
+                    <a href="/admin/settings">
+                        <i class="fa-solid fa-gear color-settings"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <h1 class="page-heading">🧠 QUY TRÌNH HUẤN LUYỆN MÔ HÌNH HỌC MÁY</h1>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show py-2" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <div class="row g-3">
+                <!-- CỘT TRÁI -->
+                <div class="col-lg-8">
+                    <form method="POST">
+
+                        <!-- BƯỚC 1: CHỌN DATASET -->
+                        <div class="step-card">
+                            <div class="step-title">
+                                <span class="step-badge">Bước 1</span> 📚 Chọn Dataset huấn luyện
+                            </div>
+                            <div class="p-3 bg-light rounded border" style="font-size: 13px;">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="fw-bold text-primary">{{ dataset.name }} ({{ dataset.file }})</span>
+                                    <span class="badge bg-secondary">Cập nhật: {{ dataset.updated_at }}</span>
+                                </div>
+                                <div class="row text-center mt-2 g-2">
+                                    <div class="col-4"><div class="border bg-white p-2 rounded">Số bản ghi: <strong>{{ dataset.rows }}</strong></div></div>
+                                    <div class="col-4"><div class="border bg-white p-2 rounded">Số thuộc tính: <strong>{{ dataset.cols }}</strong></div></div>
+                                    <div class="col-4"><div class="border bg-white p-2 rounded text-danger">Target: <strong>Loan_Status</strong></div></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BƯỚC 2: KIỂM TRA TÍNH SẴN SÀNG -->
+                        <div class="step-card">
+                            <div class="step-title">
+                                <span class="step-badge">Bước 2</span> 🔍 Kiểm tra tính sẵn sàng của dữ liệu
+                            </div>
+                            {% if dataset.can_train %}
+                                <div class="alert alert-success py-2 mb-0" style="font-size: 13px;">
+                                    <i class="fa-solid fa-circle-check me-2"></i><strong>Dataset hợp lệ:</strong> Đã xác định biến mục tiêu <code>Loan_Status</code>, quy mô mẫu đạt chuẩn để tiến hành huấn luyện.
+                                </div>
+                            {% else %}
+                                <div class="alert alert-danger py-2 mb-0" style="font-size: 13px;">
+                                    <i class="fa-solid fa-circle-xmark me-2"></i><strong>Chưa đạt chuẩn:</strong> Dataset không đủ dữ liệu hoặc thiếu biến mục tiêu.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- BƯỚC 3 & 4: XÁC ĐỊNH BÀI TOÁN & TIỀN XỬ LÝ -->
+                        <div class="step-card">
+                            <div class="step-title">
+                                <span class="step-badge">Bước 3 & 4</span> 🎯 Xác định bài toán & Tiền xử lý tự động
+                            </div>
+                            <div class="row g-2" style="font-size: 12.5px;">
+                                <div class="col-md-6">
+                                    <div class="border p-2 rounded bg-light">
+                                        <div class="fw-bold text-dark">Loại bài toán:</div>
+                                        <div class="text-primary fw-semibold">Phân loại nhị phân (Binary Classification)</div>
+                                        <div class="text-muted">Target: Y (Approved) & N (Rejected)</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="border p-2 rounded bg-light">
+                                        <div class="fw-bold text-dark">Tiền xử lý thực hiện:</div>
+                                        <div class="text-success">✓ Imputation (Median/Mode)</div>
+                                        <div class="text-success">✓ Loại bỏ Loan_ID & Label Encoding</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BƯỚC 5, 6 & 7: CẤU HÌNH & CHỌN MÔ HÌNH -->
+                        <div class="step-card">
+                            <div class="step-title">
+                                <span class="step-badge">Bước 5, 6 & 7</span> 🤖 Chọn mô hình & Cấu hình huấn luyện
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold text-secondary" style="font-size: 13px;">Lựa chọn thuật toán:</label>
+                                <div class="d-flex flex-wrap gap-3" style="font-size: 13px;">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="algorithm_option" id="algoAll" value="all" checked>
+                                        <label class="form-check-label fw-semibold text-primary" for="algoAll">
+                                            Chạy tất cả (Tạo bảng so sánh tối ưu) ⭐
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="algorithm_option" id="algoLR" value="lr">
+                                        <label class="form-check-label" for="algoLR">Logistic Regression</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="algorithm_option" id="algoDT" value="dt">
+                                        <label class="form-check-label" for="algoDT">Decision Tree</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="algorithm_option" id="algoRF" value="rf">
+                                        <label class="form-check-label" for="algoRF">Random Forest</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row g-2" style="font-size: 13px;">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted">Tỷ lệ phân chia Train / Test:</label>
+                                    <select name="test_size" class="form-select form-select-sm">
+                                        <option value="0.2" selected>Training: 80% — Testing: 20%</option>
+                                        <option value="0.25">Training: 75% — Testing: 25%</option>
+                                        <option value="0.3">Training: 70% — Testing: 30%</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted">Random State (Cố định ngẫu nhiên):</label>
+                                    <input type="number" name="random_state" class="form-control form-control-sm" value="42">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NÚT BẮT ĐẦU HUẤN LUYỆN -->
+                        <div class="mt-3 mb-4">
+                            <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm" {% if not dataset.can_train %}disabled{% endif %}>
+                                <i class="fa-solid fa-rocket me-2"></i> 🚀 BẮT ĐẦU HUẤN LUYỆN MÔ HÌNH
+                            </button>
+                        </div>
+
+                    </form>
+                </div>
+
+                <!-- CỘT PHẢI: KẾT QUẢ HUẤN LUYỆN -->
+                <div class="col-lg-4">
+                    <div class="result-panel">
+                        <h5 class="fw-bold mb-3 text-uppercase" style="font-size: 14.5px;">
+                            <i class="fa-solid fa-chart-simple text-success me-2"></i>KẾT QUẢ HUẤN LUYỆN
+                        </h5>
+
+                        {% if results %}
+                            <div class="alert alert-success py-2 mb-3 fw-bold" style="font-size: 12.5px;">
+                                <i class="fa-solid fa-check-circle me-1"></i> Đã tạo phiên bản: {{ results.version }}
+                            </div>
+
+                            <div class="mb-3" style="font-size: 13px;">
+                                <div>Mẫu huấn luyện: <strong>{{ results.train_samples }} mẫu</strong></div>
+                                <div>Mẫu kiểm thử: <strong>{{ results.test_samples }} mẫu</strong></div>
+                                <div class="text-warning fw-bold mt-1">Thuật toán tốt nhất: {{ results.best_model }}</div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-dark table-sm table-bordered text-center mb-3" style="font-size: 11.5px;">
+                                    <thead>
+                                        <tr class="table-secondary text-dark">
+                                            <th>Mô hình</th>
+                                            <th>Accuracy</th>
+                                            <th>F1-score</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for r in results.comparison %}
+                                        <tr class="{% if r.model == results.best_model %}table-success text-dark fw-bold{% endif %}">
+                                            <td class="text-start">{{ r.model }}</td>
+                                            <td>{{ r.accuracy }}%</td>
+                                            <td>{{ r.f1_score }}%</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <a href="/admin/ml/history" class="btn btn-outline-light btn-sm fw-bold w-100">
+                                <i class="fa-solid fa-scroll me-1"></i> Xem trong Lịch sử huấn luyện →
+                            </a>
+                        {% else %}
+                            <div class="text-center text-secondary py-5">
+                                <i class="fa-solid fa-microchip fs-1 mb-3"></i>
+                                <div style="font-size: 13px;">Chọn cấu hình và nhấn nút <strong>"Bắt đầu huấn luyện"</strong> để khởi động tiến trình.</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

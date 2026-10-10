@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Tiền Xử Lý Dữ Liệu - Machine Learning</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+        
+        .top-navbar {
+            background-color: #ffffff; height: 60px; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .wrapper { display: flex; margin-top: 60px; }
+
+        /* Sidebar tối ưu kích thước để không gãy dòng */
+        .sidebar {
+            width: 260px; min-height: calc(100vh - 60px); background-color: #081729;
+            padding: 20px 12px 60px 12px; position: fixed; top: 60px; bottom: 0; left: 0; overflow-y: auto;
+        }
+        .admin-menu-label {
+            font-size: 11px; font-weight: 800; color: #64748b; letter-spacing: 1px;
+            margin: 0 0 12px 8px; text-transform: uppercase;
+        }
+        .tree-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+        
+        .tree-parent-item a, .tree-parent-label { 
+            display: flex; align-items: center; gap: 10px; padding: 8px 10px; 
+            font-size: 13.5px; font-weight: 700; text-decoration: none; border-radius: 8px; 
+            user-select: none;
+        }
+        .tree-parent-item a { color: #ffffff; }
+        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.06); }
+        .tree-parent-item.active a { background-color: #0284c7; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35); }
+
+        /* Bảng màu chuẩn sáng rõ trên nền đen */
+        .color-dashboard { color: #f59e0b; }
+        .color-dataset   { color: #38bdf8 !important; }
+        .color-history   { color: #10b981; }
+        .color-ml        { color: #f87171 !important; }
+        .color-stats     { color: #fbbf24 !important; }
+        .color-users     { color: #a78bfa !important; }
+        .color-settings  { color: #94a3b8; }
+
+        .tree-branch { 
+            list-style: none; padding-left: 16px; margin: 2px 0 8px 16px; 
+            border-left: 1.5px solid rgba(255, 255, 255, 0.15); 
+            display: flex; flex-direction: column; gap: 2px;
+        }
+        
+        /* Căn chỉnh mục con chống ngắt chữ */
+        .tree-sub-link { 
+            display: flex; align-items: center; gap: 8px; padding: 6px 10px; 
+            color: #94a3b8; font-size: 12.5px; font-weight: 500; text-decoration: none; 
+            border-radius: 6px; white-space: nowrap; transition: all 0.2s;
+        }
+        .tree-sub-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.06); }
+        .tree-sub-link.active-sub { color: #ffffff !important; background-color: #0284c7 !important; font-weight: 700; }
+
+        /* Content Area */
+        .main-content { margin-left: 260px; padding: 24px 30px 60px 30px; flex: 1; }
+        .page-heading { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 20px; text-transform: uppercase; }
+
+        /* Step Card Box */
+        .step-box {
+            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
+            padding: 18px 20px; margin-bottom: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .step-title {
+            font-size: 14.5px; font-weight: 800; color: #0f172a; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px; text-transform: uppercase;
+        }
+        .step-tag {
+            background-color: #e0f2fe; color: #0284c7; font-size: 11.5px;
+            padding: 3px 8px; border-radius: 6px; font-weight: 700;
+        }
+
+        /* Result Panel */
+        .result-panel {
+            background: #0f172a; color: #ffffff; border-radius: 14px;
+            padding: 24px; box-shadow: 0 4px 15px rgba(15, 23, 42, 0.25);
+        }
+        .result-item {
+            display: flex; justify-content: space-between; padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 13.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-navbar">
+        <span class="fw-bold text-primary fs-6">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</span>
+        <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+    </div>
+
+    <div class="wrapper">
+        <!-- SIDEBAR MENU CHO TRANG TIỀN XỬ LÝ DỮ LIỆU -->
+        <div class="sidebar">
+            <div class="admin-menu-label">ADMIN MENU</div>
+
+            <ul class="tree-list">
+                <!-- 1. Dashboard -->
+                <li class="tree-parent-item">
+                    <a href="/admin">
+                        <i class="fa-solid fa-house color-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- 2. Dataset -->
+                <li>
+                    <div class="tree-parent-label color-dataset">
+                        <i class="fa-solid fa-table-cells"></i>
+                        <span>Dataset</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/dataset" class="tree-sub-link">Xem Dataset</a></li>
+                        <li><a href="/admin/dataset/check" class="tree-sub-link">Kiểm tra Dataset</a></li>
+                        <li><a href="/admin/dataset/pending" class="tree-sub-link">Hồ sơ chờ duyệt</a></li>
+                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link active-sub">Tiền xử lý dữ liệu</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. Lịch sử dự đoán -->
+                <li class="tree-parent-item">
+                    <a href="/admin/history">
+                        <i class="fa-solid fa-clock-rotate-left color-history"></i>
+                        <span>Lịch sử dự đoán</span>
+                    </a>
+                </li>
+
+                <!-- 4. 🤖 MÔ HÌNH ML -->
+                <li>
+                    <div class="tree-parent-label color-ml">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>Mô hình ML</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
+                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
+                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
+                        <li><a href="/admin/ml/evaluate" class="tree-sub-link active-sub"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
+                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
+                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
+                    </ul>
+                </li>
+
+            
+                <!-- 6. 👥 NGƯỜI DÙNG -->
+                <li>
+                    <div class="tree-parent-label color-users">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Người dùng</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin#usersSection" class="tree-sub-link">📋 Danh sách</a></li>
+                        <li><a href="#" class="tree-sub-link">➕ Thêm</a></li>
+                        <li><a href="#" class="tree-sub-link">✏️ Sửa</a></li>
+                        <li><a href="#" class="tree-sub-link">🔒 Khóa/Mở khóa</a></li>
+                        <li><a href="#" class="tree-sub-link">🔑 Phân quyền</a></li>
+                    </ul>
+                </li>
+
+                <!-- 6. Cài đặt hệ thống -->
+                <li class="tree-parent-item">
+                    <a href="/admin/settings">
+                        <i class="fa-solid fa-gear color-settings"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <h1 class="page-heading">🧹 QUY TRÌNH TIỀN XỬ LÝ DỮ LIỆU HUẤN LUYỆN</h1>
+
+            <div class="row g-3">
+                <!-- CỘT TRÁI: 4 BƯỚC TIỀN XỬ LÝ -->
+                <div class="col-lg-8">
+                    
+                    <form method="POST">
+                        <!-- BƯỚC 1: KIỂM TRA DỮ LIỆU -->
+                        <div class="step-box">
+                            <div class="step-title">
+                                <span class="step-tag">Bước 1</span> Kiểm tra dữ liệu ban đầu
+                            </div>
+                            <div class="row g-2 text-center" style="font-size: 13px;">
+                                <div class="col-4">
+                                    <div class="border rounded p-2 bg-light">
+                                        <div class="text-muted">Tổng bản ghi</div>
+                                        <div class="fw-bold fs-6 text-primary">{{ initial.total_rows }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2 bg-light">
+                                        <div class="text-muted">Giá trị thiếu (NaN)</div>
+                                        <div class="fw-bold fs-6 text-danger">{{ initial.missing_total }}</div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="border rounded p-2 bg-light">
+                                        <div class="text-muted">Bản ghi trùng</div>
+                                        <div class="fw-bold fs-6 text-success">{{ initial.duplicates }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BƯỚC 2: XỬ LÝ MISSING VALUE -->
+                        <div class="step-box">
+                            <div class="step-title">
+                                <span class="step-tag">Bước 2</span> Xử lý missing value (Imputation)
+                            </div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-borderless mb-0" style="font-size: 12.5px;">
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-semibold">Gender, Married, Dependents, Self_Employed</td>
+                                            <td><i class="fa-solid fa-arrow-right text-muted mx-2"></i></td>
+                                            <td><span class="badge bg-primary">Mode (Tần suất xuất hiện nhiều nhất)</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">LoanAmount, Loan_Amount_Term</td>
+                                            <td><i class="fa-solid fa-arrow-right text-muted mx-2"></i></td>
+                                            <td><span class="badge bg-info text-dark">Median (Trung vị)</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-semibold">Credit_History</td>
+                                            <td><i class="fa-solid fa-arrow-right text-muted mx-2"></i></td>
+                                            <td><span class="badge bg-secondary">Mode (1.0 - Đa số nợ tốt)</span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- BƯỚC 3: MÃ HÓA DỮ LIỆU -->
+                        <div class="step-box">
+                            <div class="step-title">
+                                <span class="step-tag">Bước 3</span> Mã hóa dữ liệu (Label Encoding)
+                            </div>
+                            <div class="row g-2" style="font-size: 12.5px;">
+                                <div class="col-md-6">
+                                    <div class="p-2 border rounded bg-light">
+                                        <div class="fw-bold text-dark">Gender:</div>
+                                        <span class="text-muted">Male → 1 | Female → 0</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-2 border rounded bg-light">
+                                        <div class="fw-bold text-dark">Education:</div>
+                                        <span class="text-muted">Graduate → 1 | Not Graduate → 0</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-2 border rounded bg-light">
+                                        <div class="fw-bold text-dark">Married / Self_Employed:</div>
+                                        <span class="text-muted">Yes → 1 | No → 0</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="p-2 border rounded bg-light">
+                                        <div class="fw-bold text-danger">Loan_Status (Target):</div>
+                                        <span class="text-muted">Y (Approved) → 1 | N (Rejected) → 0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- BƯỚC 4: CHIA DỮ LIỆU TRAIN / TEST -->
+                        <div class="step-box">
+                            <div class="step-title">
+                                <span class="step-tag">Bước 4</span> Phân chia dữ liệu (Train/Test Split)
+                            </div>
+                            <div class="row g-3 align-items-center" style="font-size: 13px;">
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-semibold">Tỷ lệ phân chia:</label>
+                                    <select name="test_size" class="form-select form-select-sm">
+                                        <option value="0.2" selected>Training: 80% — Testing: 20%</option>
+                                        <option value="0.25">Training: 75% — Testing: 25%</option>
+                                        <option value="0.3">Training: 70% — Testing: 30%</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-muted fw-semibold">Random State:</label>
+                                    <input type="number" name="random_state" class="form-control form-control-sm" value="42" readonly>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- NÚT BẤM THỰC HIỆN TIỀN XỬ LÝ -->
+                        <div class="mt-3">
+                            <button type="submit" class="btn btn-primary fw-bold px-4 py-2 w-100 shadow-sm">
+                                <i class="fa-solid fa-play me-2"></i> THỰC HIỆN TIỀN XỬ LÝ DỮ LIỆU
+                            </button>
+                        </div>
+                    </form>
+
+                </div>
+
+                <!-- CỘT PHẢI: BÁO CÁO KẾT QUẢ TIỀN XỬ LÝ -->
+                <div class="col-lg-4">
+                    <div class="result-panel">
+                        <h5 class="fw-bold mb-3 text-uppercase" style="font-size: 15px;">
+                            <i class="fa-solid fa-square-poll-vertical text-success me-2"></i>KẾT QUẢ TIỀN XỬ LÝ
+                        </h5>
+
+                        {% if result %}
+                            <div class="alert alert-success py-2 mb-3 fw-bold" style="font-size: 13px;">
+                                <i class="fa-solid fa-circle-check me-1"></i> Tiền xử lý thành công!
+                            </div>
+                            <div class="result-item">
+                                <span class="text-secondary">Trước xử lý:</span>
+                                <span class="fw-bold">{{ result.rows_before }} bản ghi</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="text-secondary">Sau xử lý:</span>
+                                <span class="fw-bold text-success">{{ result.rows_after }} bản ghi</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="text-secondary">Missing values:</span>
+                                <span class="fw-bold text-success">{{ result.missing_after }}</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="text-secondary">Tập Training ({{ result.train_pct }}%):</span>
+                                <span class="fw-bold text-info">{{ result.train_count }} mẫu</span>
+                            </div>
+                            <div class="result-item">
+                                <span class="text-secondary">Tập Testing ({{ result.test_pct }}%):</span>
+                                <span class="fw-bold text-warning">{{ result.test_count }} mẫu</span>
+                            </div>
+
+                            <div class="mt-4 pt-2">
+                                <a href="/admin/ml/train" class="btn btn-light fw-bold text-dark w-100 py-2 d-flex align-items-center justify-content-center gap-2 shadow-sm text-decoration-none" style="font-size: 13.5px; border-radius: 8px;">
+                                    <span>🤖</span>
+                                    <span>Chuyển sang Huấn luyện Mô hình →</span>
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="text-center text-secondary py-5">
+                                <i class="fa-solid fa-wand-sparkles fs-1 mb-3"></i>
+                                <div style="font-size: 13px;">Nhấn nút <strong>"Thực hiện tiền xử lý"</strong> bên cạnh để bắt đầu làm sạch và chia dữ liệu.</div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

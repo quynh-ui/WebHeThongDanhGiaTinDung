@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiểm Tra Chất Lượng Dữ Liệu - Data Validation</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; }
+        
+        .top-navbar {
+            background-color: #ffffff; height: 60px; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .system-title { font-size: 16px; font-weight: 800; color: #034694; text-transform: uppercase; }
+        .wrapper { display: flex; margin-top: 60px; }
+
+        /* 1. Đồng bộ kích thước Sidebar 260px như các trang khác */
+        .sidebar {
+            width: 260px;
+            min-height: calc(100vh - 60px);
+            background-color: #081729;
+            padding: 20px 12px 60px 12px;
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+        }
+
+        .admin-menu-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #64748b;
+            letter-spacing: 1px;
+            margin: 0 0 12px 8px;
+            text-transform: uppercase;
+        }
+
+        .tree-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .tree-parent-item a, 
+        .tree-parent-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 8px;
+            user-select: none;
+        }
+        .tree-parent-item a { color: #ffffff; }
+        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.06); }
+        .tree-parent-item.active a { 
+            background-color: #0284c7; 
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35); 
+        }
+
+        /* Bảng màu chuẩn sáng rõ */
+        .color-dashboard { color: #f59e0b; }
+        .color-dataset   { color: #38bdf8 !important; }
+        .color-history   { color: #10b981; }
+        .color-ml        { color: #f87171 !important; }
+        .color-stats     { color: #fbbf24 !important; }
+        .color-users     { color: #a78bfa !important; }
+        .color-settings  { color: #94a3b8; }
+
+        .tree-branch {
+            list-style: none;
+            padding-left: 16px;
+            margin: 2px 0 8px 16px;
+            border-left: 1.5px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        /* Chống gãy dòng chữ và đồng bộ kích cỡ nút */
+        .tree-sub-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            color: #94a3b8;
+            font-size: 12.5px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 6px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+        .tree-sub-link:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.06);
+        }
+        .tree-sub-link.active-sub {
+            color: #ffffff !important;
+            background-color: #0284c7 !important;
+            font-weight: 700;
+        }
+
+        /* 2. Căn chỉnh lề nội dung chính theo đúng 260px */
+        .main-content {
+            margin-left: 260px;
+            padding: 24px 30px 60px 30px;
+            flex: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-navbar">
+        <div class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
+            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <!-- SIDEBAR ĐÃ SỬA ĐƯỜNG DẪN VÀ ĐỒNG BỘ MENU -->
+        <div class="sidebar">
+            <div class="admin-menu-label">ADMIN MENU</div>
+
+            <ul class="tree-list">
+                <!-- 1. Dashboard -->
+                <li class="tree-parent-item">
+                    <a href="/admin">
+                        <i class="fa-solid fa-house text-warning"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+
+                <!-- 2. Dataset -->
+                <li>
+                    <div class="tree-parent-label text-info">
+                        <i class="fa-solid fa-table-cells"></i>
+                        <span>Dataset</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/dataset" class="tree-sub-link">Xem Dataset</a></li>
+                        <li><a href="/admin/dataset/check" class="tree-sub-link active-sub">Kiểm tra Dataset</a></li>
+                        <li><a href="/admin/dataset/pending" class="tree-sub-link">Hồ sơ chờ duyệt</a></li>
+                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link">Tiền xử lý dữ liệu</a></li>
+                    </ul>
+                </li>
+
+                <!-- 3. Lịch sử dự đoán -->
+                <li class="tree-parent-item">
+                    <a href="/admin/history">
+                        <i class="fa-solid fa-clock-rotate-left text-success"></i>
+                        <span>Lịch sử dự đoán</span>
+                    </a>
+                </li>
+
+                <!-- 4. 🤖 MÔ HÌNH ML -->
+                <li>
+                    <div class="tree-parent-label" style="color: #f87171;">
+                        <i class="fa-solid fa-robot"></i>
+                        <span>Mô hình ML</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
+                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
+                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
+                        <li><a href="/admin/ml/evaluate" class="tree-sub-link active-sub"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
+                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
+                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
+                    </ul>
+                </li>
+
+                <!-- 5. 👥 NGƯỜI DÙNG -->
+                <li>
+                    <div class="tree-parent-label" style="color: #94a3b8;">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Người dùng</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin#usersSection" class="tree-sub-link">📋 Danh sách</a></li>
+                        <li><a href="#" class="tree-sub-link">➕ Thêm</a></li>
+                        <li><a href="#" class="tree-sub-link">✏️ Sửa</a></li>
+                        <li><a href="#" class="tree-sub-link">🔒 Khóa/Mở khóa</a></li>
+                        <li><a href="#" class="tree-sub-link">🔑 Phân quyền</a></li>
+                    </ul>
+                </li>
+
+                <!-- 6. Cài đặt hệ thống -->
+                <li class="tree-parent-item">
+                    <a href="/admin/settings">
+                        <i class="fa-solid fa-gear color-settings"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h1 class="page-heading mb-0">🔍 KIỂM TRA CHẤT LƯỢNG DATASET (DATA VALIDATION)</h1>
+                <a href="/admin/dataset/check" class="btn btn-sm btn-primary fw-bold px-3">
+                    <i class="fa-solid fa-arrows-rotate me-1"></i> Chạy lại kiểm tra
+                </a>
+            </div>
+
+            <div class="row g-3">
+                <!-- CỘT TRÁI: 4 KHỐI KIỂM TRA CHI TIẾT -->
+                <div class="col-lg-8">
+                    
+                    <!-- A. KIỂM TRA DỮ LIỆU THIẾU -->
+                    <div class="report-card">
+                        <div class="section-header">
+                            <i class="fa-solid fa-triangle-exclamation text-warning"></i> Mục I. Kiểm tra dữ liệu thiếu (Missing Values)
+                        </div>
+                        {% if report.has_missing %}
+                            <p class="text-danger fw-semibold mb-2" style="font-size: 13px;">
+                                ⚠ Phát hiện {{ report.missing_details|length }} thuộc tính có giá trị rỗng (NaN). Dữ liệu này bắt buộc cần được tiền xử lý trước khi nạp vào mô hình.
+                            </p>
+                            <table class="table table-sm table-bordered align-middle" style="font-size: 12.5px;">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Thuộc tính</th>
+                                        <th>Số lượng thiếu</th>
+                                        <th>Tỷ lệ khuyết (%)</th>
+                                        <th>Đánh giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in report.missing_details %}
+                                    <tr>
+                                        <td class="fw-bold">{{ item.column }}</td>
+                                        <td class="text-danger fw-bold">{{ item.count }}</td>
+                                        <td>{{ item.ratio }}%</td>
+                                        <td><span class="badge bg-warning text-dark">Cần Imputation</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <div class="alert alert-success mb-0 py-2" style="font-size: 13px;">
+                                ✓ Tuyệt vời! Dataset hoàn chỉnh 100%, không có ô dữ liệu nào bị thiếu.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- B. KIỂM TRA DỮ LIỆU TRÙNG -->
+                    <div class="report-card">
+                        <div class="section-header">
+                            <i class="fa-solid fa-clone text-info"></i> Mục II. Kiểm tra dữ liệu trùng lặp (Duplicates)
+                        </div>
+                        <div class="row g-2 mb-2" style="font-size: 13px;">
+                            <div class="col-md-4">
+                                <div class="border rounded p-2 bg-light">
+                                    <div class="text-muted">Tổng số bản ghi:</div>
+                                    <div class="fw-bold fs-6 text-dark">{{ report.total_rows }}</div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-2 bg-light">
+                                    <div class="text-muted">Bản ghi trùng lặp:</div>
+                                    <div class="fw-bold fs-6 {% if report.duplicates > 0 %}text-danger{% else %}text-success{% endif %}">
+                                        {{ report.duplicates }}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-2 bg-light">
+                                    <div class="text-muted">Bản ghi hợp lệ:</div>
+                                    <div class="fw-bold fs-6 text-primary">{{ report.valid_rows }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% if report.duplicates > 0 %}
+                            <div class="alert alert-danger py-2 mb-0" style="font-size: 12.5px;">
+                                ⚠ Phát hiện {{ report.duplicates }} bản ghi trùng hoàn toàn. Cần loại bỏ (Drop Duplicates) để tránh overfitting.
+                            </div>
+                        {% else %}
+                            <div class="text-success fw-bold" style="font-size: 12.5px;">
+                                ✓ Không phát hiện bản ghi trùng lặp. Độ tinh sạch bản ghi đạt 100%.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- C. KIỂM TRA GIÁ TRỊ BẤT THƯỜNG (OUTLIERS) -->
+                    <div class="report-card">
+                        <div class="section-header">
+                            <i class="fa-solid fa-chart-line text-primary"></i> Mục III. Kiểm tra phân vị & Giá trị bất thường (Outliers)
+                        </div>
+                        <table class="table table-sm table-hover align-middle" style="font-size: 12px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Thuộc tính số</th>
+                                    <th>Min</th>
+                                    <th>Max</th>
+                                    <th>Mean (TB)</th>
+                                    <th>Số ca ngoại lai</th>
+                                    <th>Cảnh báo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for out in report.outliers_report %}
+                                <tr>
+                                    <td class="fw-bold">{{ out.column }}</td>
+                                    <td>{{ out.min }}</td>
+                                    <td class="fw-bold text-danger">{{ out.max }}</td>
+                                    <td>{{ out.mean }}</td>
+                                    <td class="fw-bold">{{ out.outlier_count }}</td>
+                                    <td>
+                                        {% if out.has_suspicious %}
+                                            <span class="badge bg-warning text-dark">Trạng thái đáng nghi (Outlier)</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Chuẩn hóa tốt</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- D. PHÂN LOẠI KIỂU DỮ LIỆU ĐẦU VÀO -->
+                    <div class="report-card">
+                        <div class="section-header">
+                            <i class="fa-solid fa-tags text-secondary"></i> Mục IV. Phân loại cấu trúc thuộc tính ML
+                        </div>
+                        <div class="row g-2" style="font-size: 12.5px;">
+                            <div class="col-md-4">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="fw-bold text-primary mb-1">Numerical (Số học):</div>
+                                    <ul class="mb-0 ps-3">
+                                        {% for col in report.dtypes_categorized.Numerical %}
+                                            <li>{{ col }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="fw-bold text-secondary mb-1">Categorical (Phân loại):</div>
+                                    <ul class="mb-0 ps-3">
+                                        {% for col in report.dtypes_categorized.Categorical %}
+                                            <li>{{ col }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="fw-bold text-danger mb-1">Target Variable (Đích):</div>
+                                    <ul class="mb-0 ps-3">
+                                        {% for col in report.dtypes_categorized.Target %}
+                                            <li class="fw-bold">{{ col }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- CỘT PHẢI: KẾT QUẢ TỔNG THỂ & PHÂN BỐ TARGET -->
+                <div class="col-lg-4">
+                    
+                    <!-- BẢNG TỔNG KẾT KIỂM ĐỊNH DATASET -->
+                    <div class="summary-box mb-4">
+                        <h5 class="fw-bold mb-3 text-uppercase" style="font-size: 15px; letter-spacing: 0.5px;">
+                            <i class="fa-solid fa-clipboard-check text-success me-2"></i>KẾT QUẢ KIỂM TRA DATASET
+                        </h5>
+
+                        <div class="summary-status-item">
+                            <span>Kiểm tra tổng quan:</span>
+                            <span class="badge bg-success">✓ Hoàn tất</span>
+                        </div>
+                        <div class="summary-status-item">
+                            <span>Dữ liệu khuyết thiếu:</span>
+                            <span class="badge bg-{{ report.overall_status.missing_badge }}">{{ report.overall_status.missing_status }}</span>
+                        </div>
+                        <div class="summary-status-item">
+                            <span>Dữ liệu trùng lặp:</span>
+                            <span class="badge bg-{{ report.overall_status.duplicate_badge }}">{{ report.overall_status.duplicate_status }}</span>
+                        </div>
+                        <div class="summary-status-item">
+                            <span>Giá trị bất thường:</span>
+                            <span class="badge bg-warning text-dark">{{ report.overall_status.outlier_status }}</span>
+                        </div>
+                        <div class="summary-status-item">
+                            <span>Biến mục tiêu:</span>
+                            <span class="badge bg-info text-dark">{{ report.overall_status.target_status }}</span>
+                        </div>
+
+                        <div class="mt-4 pt-2">
+                            <a href="#" class="btn btn-warning w-100 fw-bold py-2 shadow-sm">
+                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i> TIẾN HÀNH TIỀN XỬ LÝ
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- BIỂU ĐỒ PHÂN BỐ BIẾN MỤC TIÊU LOAN_STATUS -->
+                    <div class="report-card">
+                        <div class="section-header">
+                            <i class="fa-solid fa-chart-pie text-success"></i> Mục V. Phân bố biến mục tiêu (Loan_Status)
+                        </div>
+                        <div style="height: 220px; position: relative;">
+                            <canvas id="targetCheckChart"></canvas>
+                        </div>
+                        <div class="d-flex justify-content-around mt-3 text-center" style="font-size: 12.5px;">
+                            <div>
+                                <span class="fw-bold text-success">Approved (Y):</span>
+                                <div class="fs-6 fw-bold">{{ report.target_distribution.Approved_Y }} ({{ report.target_distribution.Approved_Pct }}%)</div>
+                            </div>
+                            <div>
+                                <span class="fw-bold text-danger">Rejected (N):</span>
+                                <div class="fs-6 fw-bold">{{ report.target_distribution.Rejected_N }} ({{ report.target_distribution.Rejected_Pct }}%)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT RENDER DOUGHNUT BIẾN MỤC TIÊU -->
+    <script>
+        const ctxTarget = document.getElementById('targetCheckChart').getContext('2d');
+        new Chart(ctxTarget, {
+            type: 'doughnut',
+            data: {
+                labels: ['Approved (Y)', 'Rejected (N)'],
+                datasets: [{
+                    data: [
+                        {{ report.target_distribution.Approved_Y | default(422) }},
+                        {{ report.target_distribution.Rejected_N | default(192) }}
+                    ],
+                    backgroundColor: ['#10b981', '#ef4444'],
+                    borderWidth: 2,
+                    cutout: '65%'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

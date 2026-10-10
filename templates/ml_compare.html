@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>So Sánh Mô Hình ML - Smart Credit Scoring</title>
+
+    <!-- Bootstrap 5, FontAwesome & Chart.js -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
+
+        .top-navbar {
+            background-color: #ffffff; height: 60px; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        }
+        .system-title { font-size: 16.5px; font-weight: 800; color: #034694; text-transform: uppercase; }
+        .wrapper { display: flex; margin-top: 60px; }
+
+        /* SIDEBAR CHUẨN ĐỒNG BỘ */
+        .sidebar {
+            width: 250px; min-height: calc(100vh - 60px); background-color: #081729;
+            padding: 18px 12px 60px 12px; position: fixed; top: 60px; bottom: 0; left: 0;
+            overflow-y: auto; z-index: 999;
+        }
+        .admin-menu-label { font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 1.2px; margin: 0 0 14px 10px; text-transform: uppercase; }
+        .tree-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+        .tree-parent-item a, .tree-parent-label {
+            display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 12px;
+            font-size: 14px; font-weight: 700; text-decoration: none; border-radius: 8px; color: #ffffff;
+        }
+        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.05); }
+
+        .color-dashboard { color: #f59e0b; }
+        .color-dataset   { color: #00a8ff; }
+        .color-history   { color: #10b981; }
+        .color-ml        { color: #ff4757; }
+        .color-users     { color: #c084fc; }
+
+        .tree-branch {
+            list-style: none; padding-left: 14px; margin: 4px 0 6px 18px;
+            border-left: 1.5px solid rgba(255, 255, 255, 0.12); display: flex; flex-direction: column; gap: 3px;
+        }
+        .tree-sub-link {
+            display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px;
+            color: #94a3b8; font-size: 13px; font-weight: 500; text-decoration: none; border-radius: 8px;
+            transition: all 0.2s ease; white-space: nowrap;
+        }
+        .tree-sub-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.06); }
+        .menu-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 15px; }
+
+        .tree-sub-link.active-sub {
+            background-color: #0284c7 !important; color: #ffffff !important;
+            font-weight: 700; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+
+        /* NỘI DUNG CHÍNH */
+        .main-content { margin-left: 250px; padding: 24px 32px 60px 32px; flex: 1; width: calc(100% - 250px); }
+        .page-heading { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-transform: uppercase; }
+        .page-subheading { font-size: 13px; color: #64748b; margin-bottom: 22px; }
+
+        /* Highlight số cao nhất */
+        .best-score {
+            background-color: #dcfce7 !important;
+            color: #166534 !important;
+            font-weight: 800 !important;
+            border-radius: 6px;
+            padding: 3px 8px;
+            display: inline-block;
+        }
+
+        .filter-card {
+            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
+            padding: 20px; margin-bottom: 22px; box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOPBAR -->
+    <div class="top-navbar">
+        <span class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</span>
+        <div class="d-flex align-items-center gap-3">
+            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
+            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <!-- SIDEBAR -->
+        <div class="sidebar">
+            <div class="admin-menu-label">ADMIN MENU</div>
+            <ul class="tree-list">
+                <li class="tree-parent-item">
+                    <a href="/admin"><i class="fa-solid fa-house color-dashboard"></i><span>Dashboard</span></a>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-table-cells color-dataset"></i>
+                        <span style="color: #00a8ff;">Dataset</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/dataset" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-file-lines"></i></span><span>Xem Dataset</span></a></li>
+                        <li><a href="/admin/dataset/check" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span><span>Kiểm tra Dataset</span></a></li>
+                        <li><a href="/admin/dataset/pending" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-inbox"></i></span><span>Hồ sơ chờ duyệt</span></a></li>
+                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-paintbrush"></i></span><span>Tiền xử lý dữ liệu</span></a></li>
+                    </ul>
+                </li>
+
+                <li class="tree-parent-item">
+                    <a href="/admin/history"><i class="fa-solid fa-clock-rotate-left color-history"></i><span>Lịch sử dự đoán</span></a>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-robot color-ml"></i>
+                        <span style="color: #ff4757;">Mô hình ML</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
+                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
+                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
+                        <li><a href="/admin/ml/evaluate" class="tree-sub-link"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
+                        <li><a href="/admin/ml/compare" class="tree-sub-link active-sub"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
+                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
+                    </ul>
+                </li>
+
+                <li>
+                    <div class="tree-parent-label">
+                        <i class="fa-solid fa-users color-users"></i>
+                        <span style="color: #c084fc;">Người dùng</span>
+                    </div>
+                    <ul class="tree-branch">
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-clipboard"></i></span><span>Danh sách</span></a></li>
+                        <li><a href="/admin/users/add" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-plus"></i></span><span>Thêm</span></a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-pen"></i></span><span>Sửa</span></a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-lock"></i></span><span>Khóa/Mở khóa</span></a></li>
+                        <li><a href="/admin/users" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-key"></i></span><span>Phân quyền</span></a></li>
+                    </ul>
+                </li>
+                <!-- 6. Cài đặt hệ thống -->
+                <li class="tree-parent-item">
+                    <a href="/admin/settings">
+                        <i class="fa-solid fa-gear color-settings"></i>
+                        <span>Cài đặt hệ thống</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+            </ul>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div class="main-content">
+            <h1 class="page-heading">⚖️ ĐỐI CHIẾU & SO SÁNH HIỆU NĂNG MÔ HÌNH ML</h1>
+            <p class="page-subheading">So sánh trực quan các chỉ số Accuracy, Precision, Recall và F1-score để chọn phương án thẩm định tối ưu</p>
+
+            {% if valid_models|length < 2 %}
+                <div class="card p-5 text-center border-0 shadow-sm rounded-4">
+                    <i class="fa-solid fa-scale-unbalanced-flip text-muted fs-1 mb-3"></i>
+                    <h5 class="fw-bold text-secondary">Cần tối thiểu 2 mô hình đã huấn luyện để so sánh</h5>
+                    <p class="text-muted" style="font-size: 13.5px;">Hiện tại hệ thống chỉ ghi nhận {{ valid_models|length }} phiên bản có kết quả đánh giá hợp lệ.</p>
+                    <div>
+                        <a href="/admin/ml/train" class="btn btn-primary fw-bold px-4">
+                            <i class="fa-solid fa-gear me-1"></i> Huấn luyện thêm mô hình mới
+                        </a>
+                    </div>
+                </div>
+            {% else %}
+
+                <!-- KHU VỰC CHỌN MÔ HÌNH & TIÊU CHÍ -->
+                <div class="filter-card">
+                    <form method="POST" action="/admin/ml/compare">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="fw-bold m-0 text-dark">
+                                <i class="fa-solid fa-filter text-primary me-2"></i>Chọn các phiên bản mô hình cần đối chiếu:
+                            </h6>
+                            <span class="badge bg-light text-muted border">Chọn tối thiểu 2 mô hình</span>
+                        </div>
+
+                        <div class="row g-2 mb-3">
+                            {% for m in valid_models %}
+                            <div class="col-md-4 col-sm-6">
+                                <div class="form-check p-2 border rounded bg-light">
+                                    <input class="form-check-input ms-1" type="checkbox" name="selected_versions" value="{{ m.version }}" id="chk_{{ m.version }}"
+                                           {% if m.version in selected_versions %}checked{% endif %}>
+                                    <label class="form-check-label ms-2 fw-semibold" for="chk_{{ m.version }}" style="font-size: 13px;">
+                                        {{ m.version }} — {{ m.algorithm | default(m.name) }}
+                                        {% if m.status == 'Đang sử dụng' %}<span class="badge bg-success ms-1">Đang dùng</span>{% endif %}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row g-2 align-items-center pt-2 border-top">
+                            <div class="col-md-6 d-flex align-items-center gap-2">
+                                <label class="fw-bold text-secondary text-nowrap" style="font-size: 13px;">Sắp xếp theo:</label>
+                                <select name="criteria" class="form-select form-select-sm" style="max-width: 220px;">
+                                    <option value="f1_score" {% if criteria == 'f1_score' %}selected{% endif %}>F1-Score (Khuyến nghị)</option>
+                                    <option value="accuracy" {% if criteria == 'accuracy' %}selected{% endif %}>Accuracy (Độ chính xác)</option>
+                                    <option value="recall" {% if criteria == 'recall' %}selected{% endif %}>Recall (Độ nhạy)</option>
+                                    <option value="precision" {% if criteria == 'precision' %}selected{% endif %}>Precision (Độ chuẩn xác)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button type="submit" class="btn btn-sm btn-primary fw-bold px-4">
+                                    <i class="fa-solid fa-arrows-rotate me-1"></i> Cập nhật đối chiếu
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- BẢNG SO SÁNH CHỈ SỐ -->
+                <div class="card p-3 mb-4 border-0 shadow-sm rounded-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold m-0 text-dark">
+                            <i class="fa-solid fa-table-list text-primary me-2"></i>Bảng tổng hợp chỉ số đánh giá thực nghiệm
+                        </h6>
+                        <span class="text-muted" style="font-size: 12px;">Ô màu xanh biểu thị giá trị cao nhất trong nhóm so sánh</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0 text-center" style="font-size: 13px;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-start">Phiên bản & Thuật toán</th>
+                                    <th>Accuracy</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                    <th>Tập Train/Test</th>
+                                    <th>Trạng thái</th>
+                                    <th>Thao tác</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in compared_models %}
+                                <tr>
+                                    <td class="text-start">
+                                        <div class="fw-bold text-dark">{{ m.name | default(m.version) }}</div>
+                                        <div class="text-muted" style="font-size: 11.5px;">{{ m.algorithm }} — {{ m.version }}</div>
+                                    </td>
+                                    <td>
+                                        <span class="{% if m.accuracy == best_stats.accuracy and m.accuracy > 0 %}best-score{% endif %}">
+                                            {{ m.accuracy }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="{% if m.precision == best_stats.precision and m.precision > 0 %}best-score{% endif %}">
+                                            {{ m.precision }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="{% if m.recall == best_stats.recall and m.recall > 0 %}best-score{% endif %}">
+                                            {{ m.recall }}%
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="{% if m.f1_score == best_stats.f1_score and m.f1_score > 0 %}best-score{% endif %}">
+                                            {{ m.f1_score }}%
+                                        </span>
+                                    </td>
+                                    <td class="text-muted">{{ m.train_size }}</td>
+                                    <td>
+                                        {% if m.status == 'Đang sử dụng' %}
+                                            <span class="badge bg-success">Đang dùng</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Lưu trữ</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex justify-content-center gap-1">
+                                            <a href="/admin/ml/evaluate?version={{ m.version }}" class="btn btn-sm btn-outline-primary" title="Xem đánh giá chi tiết">
+                                                <i class="fa-regular fa-eye"></i>
+                                            </a>
+                                            {% if m.status != 'Đang sử dụng' %}
+                                            <form action="/admin/ml/activate/{{ m.version }}" method="POST" class="d-inline" onsubmit="return confirm('Kích hoạt phiên bản {{ m.version }} làm mô hình phục vụ dự đoán?');">
+                                                <button type="submit" class="btn btn-sm btn-outline-success" title="Đặt làm mô hình sử dụng">
+                                                    <i class="fa-solid fa-star"></i>
+                                                </button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- HÀNG BIỂU ĐỒ & NHẬN XÉT KHUYẾN NGHỊ -->
+                <div class="row g-4 mb-4">
+                    <!-- Cột 1: Biểu đồ cột -->
+                    <div class="col-lg-7">
+                        <div class="card p-3 border-0 shadow-sm rounded-3 h-100">
+                            <h6 class="fw-bold mb-3 text-dark">
+                                <i class="fa-solid fa-chart-column text-primary me-2"></i>Biểu đồ so sánh đa chiều giữa các mô hình
+                            </h6>
+                            <div style="height: 320px; position: relative;">
+                                <canvas id="compareChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cột 2: Nhận xét chuyên gia -->
+                    <div class="col-lg-5">
+                        <div class="card p-3 border-0 shadow-sm rounded-3 h-100">
+                            <h6 class="fw-bold mb-3 text-dark">
+                                <i class="fa-solid fa-lightbulb text-warning me-2"></i>Nhận xét & Khuyến nghị chuyên gia
+                            </h6>
+
+                            {% if recommendation %}
+                            <div class="d-flex flex-column gap-2" style="font-size: 13px;">
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted" style="font-size: 11px;">Mô hình có Accuracy cao nhất:</div>
+                                    <div class="fw-bold text-success">{{ recommendation.top_acc }}</div>
+                                </div>
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted" style="font-size: 11px;">Mô hình có F1-Score cân bằng nhất:</div>
+                                    <div class="fw-bold text-danger">{{ recommendation.top_f1 }}</div>
+                                </div>
+                                <div class="p-2 border rounded bg-light">
+                                    <div class="text-muted" style="font-size: 11px;">Mô hình có Recall tốt nhất (Tránh bỏ sót khách hàng):</div>
+                                    <div class="fw-bold text-warning">{{ recommendation.top_rec }}</div>
+                                </div>
+
+                                <div class="alert alert-info py-2 px-3 mt-2 mb-0" style="font-size: 12.5px;">
+                                    <i class="fa-solid fa-circle-info me-1"></i>
+                                    <strong>Đề xuất:</strong> Mô hình <strong>{{ recommendation.best_choice }} ({{ recommendation.best_choice_ver }})</strong> đang mang lại tỷ lệ F1 cân đối nhất cho việc thẩm định tín dụng.
+                                </div>
+
+                                <div class="text-muted mt-1" style="font-size: 11.5px; font-style: italic;">
+                                    * Lưu ý: {{ recommendation.note }}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BÁO CÁO ĐỐI CHIẾU CHI TIẾT & ĐÁNH GIÁ CHẤT LƯỢNG (FULL WIDTH) -->
+                {% if detailed_comparisons %}
+                <div class="card p-4 border-0 shadow-sm rounded-3">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="fw-bold m-0 text-dark" style="font-size: 15px;">
+                            <i class="fa-solid fa-file-lines text-primary me-2"></i>BÁO CÁO ĐỐI CHIẾU CHI TIẾT & ĐÁNH GIÁ CHẤT LƯỢNG
+                        </h6>
+                        <span class="badge bg-primary-subtle text-primary border px-2 py-1">Phân tích tự động AI</span>
+                    </div>
+
+                    {% if recommendation and recommendation.conclude %}
+                    <!-- KẾT LUẬN TỔNG QUAN -->
+                    <div class="alert alert-success d-flex align-items-center gap-3 p-3 mb-4" style="font-size: 13.5px;">
+                        <i class="fa-solid fa-award fs-2 text-success"></i>
+                        <div>
+                            <div class="fw-bold fs-6">KẾT LUẬN LỰA CHỌN MÔ HÌNH:</div>
+                            <div>{{ recommendation.conclude }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- ĐỐI CHIẾU TỪNG MÔ HÌNH -->
+                    <div class="row g-3">
+                        {% for item in detailed_comparisons %}
+                        <div class="col-md-4">
+                            <div class="p-3 border rounded-3 bg-light h-100" style="font-size: 12.5px;">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="fw-bold text-dark fs-6">{{ item.name }}</span>
+                                    {% if loop.first %}
+                                        <span class="badge bg-success"><i class="fa-solid fa-crown me-1"></i>Hạng 1 (Tốt nhất)</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Hạng {{ loop.index }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="text-muted mb-2"><em>{{ item.summary_text }}</em></div>
+
+                                <div class="mb-2">
+                                    <strong class="text-success"><i class="fa-solid fa-check me-1"></i>Ưu điểm:</strong>
+                                    <ul class="ps-3 mb-1 mt-1 text-secondary">
+                                        {% for p in item.pros %}
+                                            <li>{{ p }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+
+                                <div>
+                                    <strong class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i>Hạn chế:</strong>
+                                    <ul class="ps-3 mb-0 mt-1 text-secondary">
+                                        {% for c in item.cons %}
+                                            <li>{{ c }}</li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Thư viện Bootstrap & Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    {% if compared_models %}
+    <script>
+        const chartLabels = JSON.parse('{{ chart_labels | tojson | safe }}');
+        const chartAccuracy = JSON.parse('{{ chart_accuracy | tojson | safe }}');
+        const chartPrecision = JSON.parse('{{ chart_precision | tojson | safe }}');
+        const chartRecall = JSON.parse('{{ chart_recall | tojson | safe }}');
+        const chartF1 = JSON.parse('{{ chart_f1 | tojson | safe }}');
+
+        const ctx = document.getElementById('compareChart').getContext('2d');
+        const compareChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: chartLabels,
+                datasets: [
+                    {
+                        label: 'Accuracy (%)',
+                        data: chartAccuracy,
+                        backgroundColor: 'rgba(59, 130, 246, 0.85)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Precision (%)',
+                        data: chartPrecision,
+                        backgroundColor: 'rgba(6, 182, 212, 0.85)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Recall (%)',
+                        data: chartRecall,
+                        backgroundColor: 'rgba(245, 158, 11, 0.85)',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'F1-Score (%)',
+                        data: chartF1,
+                        backgroundColor: 'rgba(239, 68, 68, 0.85)',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) { return value + '%'; }
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: { boxWidth: 12, font: { size: 12 } }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>

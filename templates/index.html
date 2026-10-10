@@ -7,8 +7,8 @@
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- FontAwesome Icon -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
         * {
@@ -18,134 +18,324 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         body {
-            background-color: #f8fafc;
+            background: linear-gradient(135deg, #1c3d5a 0%, #0f2336 100%);
+            min-height: 100vh;
             color: #334155;
+            padding-bottom: 50px;
         }
+
+        /* Top Navbar */
         .navbar-custom {
-            background: #ffffff;
-            padding: 15px 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 28px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .logo { 
-            font-size: 18px; 
+            font-size: 15.5px; 
             font-weight: 800; 
-            color: #1e40af; 
+            color: #0c4a6e; 
             text-decoration: none; 
             letter-spacing: 0.5px;
         }
-        .user-profile { font-size: 14px; font-weight: 700; color: #0f172a; }
-        .logout-link { color: #dc2626; font-size: 13px; margin-left: 10px; text-decoration: none; }
+        .user-profile { font-size: 13.5px; font-weight: 600; color: #1e293b; }
+        .logout-link { color: #dc2626; margin-left: 10px; text-decoration: none; font-size: 13px; }
         .logout-link:hover { text-decoration: underline; }
 
-        /* KHUNG CHÍNH - FORM THẨM ĐỊNH */
-        .main-container {
-            max-width: 950px;
-            margin: 40px auto;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.05);
+        /* Khung Form Card */
+        .app-card {
+            max-width: 820px;
+            margin: 25px auto 10px auto;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.3);
             overflow: hidden;
-            border: 1px solid #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        .banner-header {
-            background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+
+        /* Banner Header */
+        .card-header-banner {
+            background: linear-gradient(135deg, #02457a 0%, #018abd 100%);
             color: white;
-            padding: 30px;
             text-align: center;
+            padding: 22px 20px 18px 20px;
+            position: relative;
         }
-        .banner-header h1 {
-            font-size: 24px;
+        .card-header-banner h2 {
+            font-size: 21px;
             font-weight: 800;
-            margin-bottom: 6px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            margin-bottom: 4px;
         }
-        .banner-header p {
-            font-size: 14px;
-            color: #dbeafe;
+        .card-header-banner p {
+            font-size: 13px;
+            color: #e0f2fe;
             margin: 0;
         }
-        .form-content {
-            padding: 35px;
+
+        /* Thanh Chuyển Tab Bước */
+        .stepper-nav {
+            display: flex;
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 30px;
+            margin: 18px 25px 5px 25px;
         }
-        .result { 
-            margin-top: 25px; 
-            padding: 18px; 
-            border-radius: 10px; 
-            font-weight: 700; 
-            text-align: center; 
+        .step-pill {
+            flex: 1;
+            text-align: center;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 25px;
+            color: #64748b;
+            transition: all 0.3s ease;
+            user-select: none;
         }
-        .result.approved { 
-            background-color: #d1fae5; 
-            color: #065f46; 
-            border: 1px solid #a7f3d0; 
+        .step-pill.active {
+            background: #0284c7;
+            color: #ffffff;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.35);
         }
-        .result.rejected { 
-            background-color: #fee2e2; 
-            color: #991b1b; 
-            border: 1px solid #fca5a5; 
+        .step-pill.completed {
+            background: #0d9488;
+            color: #ffffff;
         }
 
-        /* ---------------------------------------------------- */
-        /* STYLES CHATBOT BONG BÓNG VỚI HÌNH ROBOT ĐỘNG NHÚN NHẢY */
-        /* ---------------------------------------------------- */
-        /* Hiệu ứng nhún nhảy lên xuống tự nhiên như robot đang bay */
-        @keyframes robotFloat {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-            100% { transform: translateY(0px); }
+        /* Form Body */
+        .step-section {
+            padding: 22px 32px 28px 32px;
+        }
+        .section-header {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0f172a;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            letter-spacing: 0.3px;
         }
 
-        /* Nút bong bóng chứa ảnh Robot */
-        .chat-bubble-btn {
+        .form-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 5px;
+        }
+        .form-control, .form-select {
+            font-size: 13.5px;
+            border-radius: 8px;
+            border: 1.5px solid #cbd5e1;
+            padding: 8px 12px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #0284c7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        }
+
+        /* Tag Button Selection (Pills) */
+        .select-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .select-btn {
+            border: 1.5px solid #cbd5e1;
+            background: #ffffff;
+            color: #475569;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .select-btn:hover {
+            border-color: #0284c7;
+            color: #0284c7;
+            background: #f0f9ff;
+        }
+        .select-btn.active {
+            border-color: #0284c7;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.2);
+        }
+
+        /* Range Slider Khoản Vay */
+        .slider-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 18px;
+        }
+        .loan-display-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #0284c7;
+            text-align: center;
+            margin: 6px 0 10px 0;
+        }
+        .form-range::-webkit-slider-thumb {
+            background: #0284c7;
+            cursor: pointer;
+        }
+
+        /* Upload Box */
+        .upload-card {
+            border: 2px dashed #94a3b8;
+            border-radius: 10px;
+            padding: 16px;
+            text-align: center;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .upload-card:hover {
+            background: #f0f9ff;
+            border-color: #0284c7;
+        }
+
+        /* Action Buttons */
+        .btn-step-next {
+            background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 10px 24px;
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+        }
+        .btn-step-next:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #075985 100%);
+            color: white;
+        }
+
+        .btn-step-back {
+            background: #ffffff;
+            color: #0284c7;
+            border: 1.5px solid #0284c7;
+            font-weight: 700;
+            font-size: 14px;
+            padding: 9px 22px;
+            border-radius: 8px;
+        }
+        .btn-step-back:hover {
+            background: #f0f9ff;
+        }
+
+        .btn-step-submit {
+            background: linear-gradient(135deg, #0284c7 0%, #1e40af 100%);
+            color: white;
+            font-weight: 800;
+            font-size: 14.5px;
+            padding: 11px 28px;
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 6px 16px rgba(2, 132, 199, 0.4);
+        }
+        .btn-step-submit:hover {
+            background: linear-gradient(135deg, #0369a1 0%, #1e3a8a 100%);
+            color: white;
+        }
+
+        /* Trust Badges Footer */
+        .trust-badges-bar {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 20px 14px 20px;
+            border-top: 1px solid #f1f5f9;
+            background: #f8fafc;
+            font-size: 12px;
+            font-weight: 600;
+            color: #475569;
+        }
+        .trust-badges-bar i {
+            color: #0d9488;
+            margin-right: 5px;
+        }
+
+        /* Result Cards */
+        .result-notification {
+            margin: 18px 32px 0 32px;
+            padding: 16px;
+            border-radius: 12px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .result-notification.approved {
+            background-color: #ecfdf5;
+            color: #065f46;
+            border: 1.5px solid #10b981;
+        }
+        .result-notification.rejected {
+            background-color: #fef2f2;
+            color: #991b1b;
+            border: 1.5px solid #f87171;
+        }
+
+        /* Chat Widget & Tooltip Bubble */
+        @keyframes robotBounce {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+            100% { transform: translateY(0); }
+        }
+        .floating-chat-container {
             position: fixed;
             bottom: 25px;
             right: 25px;
-            width: 68px;
-            height: 68px;
-            background-color: #2563eb;
-            color: white;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+        }
+        .chat-pill-tooltip {
+            background: white;
+            color: #0f172a;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 12.5px;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+            border: 1px solid #e2e8f0;
+            cursor: pointer;
+        }
+        .chat-bubble-button {
+            width: 60px;
+            height: 60px;
+            background-color: #0284c7;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 22px rgba(37, 99, 235, 0.4);
+            box-shadow: 0 8px 22px rgba(2, 132, 199, 0.4);
             cursor: pointer;
-            z-index: 1000;
-            transition: transform 0.3s ease, background-color 0.3s ease;
-            animation: robotFloat 3s ease-in-out infinite; /* Tạo hiệu ứng bay nhẹ */
+            animation: robotBounce 3s ease-in-out infinite;
         }
-        .chat-bubble-btn:hover {
-            transform: scale(1.1);
-            background-color: #1d4ed8;
-        }
-
-        /* Kích thước ảnh robot bên trong bong bóng */
-        .chat-bubble-btn img {
-            width: 52px;
-            height: 52px;
+        .chat-bubble-button img {
+            width: 44px;
+            height: 44px;
             object-fit: contain;
         }
 
-        .chat-bubble-btn i {
-            font-size: 28px;
-        }
-
-        /* Cửa sổ Chatbot Floating Widget */
-        .chat-box-widget {
+        .chat-window {
             position: fixed;
-            bottom: 105px;
+            bottom: 95px;
             right: 25px;
-            width: 380px;
-            height: 520px;
+            width: 350px;
+            height: 460px;
             background: white;
             border-radius: 16px;
-            box-shadow: 0 12px 30px rgba(0,0,0,0.15);
-            border: 1px solid #e2e8f0;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.25);
             display: flex;
             flex-direction: column;
             z-index: 1000;
@@ -153,83 +343,45 @@
             opacity: 0;
             visibility: hidden;
             transform: translateY(20px) scale(0.95);
-            transition: all 0.3s ease-in-out;
+            transition: all 0.3s ease;
         }
-
-        .chat-box-widget.active {
+        .chat-window.active {
             opacity: 1;
             visibility: visible;
             transform: translateY(0) scale(1);
         }
-
         .chat-header {
-            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            background: linear-gradient(135deg, #02457a 0%, #018abd 100%);
             color: white;
-            padding: 16px 20px;
+            padding: 12px 16px;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
-        .chat-header-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: white;
-            padding: 2px;
-            object-fit: contain;
-        }
-        .chat-header .status-dot {
-            width: 8px;
-            height: 8px;
-            background-color: #10b981;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .chat-header-close {
-            background: none;
-            border: none;
-            color: #94a3b8;
-            font-size: 18px;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .chat-header-close:hover {
-            color: white;
-        }
-
         .chat-body {
             flex: 1;
-            padding: 18px;
+            padding: 14px;
             overflow-y: auto;
             background-color: #f8fafc;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
-        .message {
-            max-width: 82%;
-            padding: 10px 14px;
-            border-radius: 14px;
-            font-size: 13.5px;
-            line-height: 1.5;
+        .chat-msg {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-size: 13px;
         }
-        .message.bot {
-            background: #ffffff;
-            color: #1e293b;
-            align-self: flex-start;
+        .chat-msg.bot {
+            background: white;
             border: 1px solid #e2e8f0;
-            border-bottom-left-radius: 2px;
+            align-self: flex-start;
         }
-        .message.user {
-            background: #2563eb;
+        .chat-msg.user {
+            background: #0284c7;
             color: white;
             align-self: flex-end;
-            border-bottom-right-radius: 2px;
-        }
-        .chat-footer {
-            padding: 12px 15px;
-            background: white;
-            border-top: 1px solid #e2e8f0;
         }
     </style>
 </head>
@@ -238,7 +390,7 @@
     <!-- NAVBAR HEADER -->
     <div class="navbar-custom">
         <a class="logo" href="/user">
-            <i class="fa-solid fa-shield-halved me-2"></i>HỆ THỐNG ĐÁNH GIÁ TÍN DỤNG THÔNG MINH
+            <i class="fa-solid fa-shield-halved me-2 text-primary"></i>HỆ THỐNG ĐÁNH GIÁ TÍN DỤNG THÔNG MINH
         </a>
         <div class="user-profile">
             <i class="fa-solid fa-circle-user me-1 text-primary"></i> Xin chào, <strong>{{ user.username }}</strong>!
@@ -246,260 +398,380 @@
         </div>
     </div>
 
-    <!-- MAIN CONTAINER - FORM THẨM ĐỊNH -->
-    <div class="main-container">
-        <div class="banner-header">
-            <h1>Hệ Thống Thẩm Định Hồ Sơ Tín Dụng</h1>
-            <p>Đánh giá & Phân tích khả năng duyệt vay dựa trên mô hình trí tuệ nhân tạo</p>
+    <!-- MAIN FORM CARD CONTAINER -->
+    <div class="app-card">
+        <!-- Banner Header (Tiêu đề thay đổi động theo từng bước) -->
+        <div class="card-header-banner">
+            <h2 id="bannerTitle">BƯỚC 1: THÔNG TIN CỦA BẠN</h2>
+            <p id="bannerSubtitle">Chỉ mất 1 phút để điền thông tin cơ bản</p>
         </div>
 
-        <div class="form-content">
-            <form id="creditForm" action="/user" method="POST">
-                
-                <input type="hidden" id="income" name="income">
-                <input type="hidden" id="loan_amount" name="loan_amount">
+        <!-- Stepper Navigation -->
+        <div class="stepper-nav">
+            <div class="step-pill active" id="tabStep1">
+                Bước 1: Giới thiệu bản thân 📝
+            </div>
+            <div class="step-pill" id="tabStep2">
+                Bước 2: Nhu cầu của bạn 🎯
+            </div>
+        </div>
 
-                <div class="row g-3">
-                    <!-- Thu nhập hàng tháng -->
-                    <div class="col-md-6 mb-3">
-                        <label for="income_display" class="form-label fw-bold text-dark">
-                            <i class="fa-solid fa-money-bill-wave text-primary me-1"></i> Thu nhập hàng tháng (VNĐ):
-                        </label>
-                        <input 
-                            type="text" 
-                            id="income_display" 
-                            class="form-control form-control-lg fs-6 py-2 currency-input" 
-                            placeholder="Ví dụ: 15.000.000" 
-                            required
-                        >
+        <!-- FORM CHÍNH -->
+        <form id="creditForm" action="/user" method="POST" enctype="multipart/form-data">
+            <!-- Hidden inputs quy đổi số liệu cho backend Machine Learning -->
+            <input type="hidden" id="income" name="income">
+            <input type="hidden" id="loan_amount" name="loan_amount">
+            <input type="hidden" id="credit_history" name="credit_history" value="1">
+            <input type="hidden" id="salary_method" name="salary_method" value="bank">
+            <input type="hidden" id="loan_term_input" name="loan_term" value="24">
+
+            <!-- ============================================== -->
+            <!-- BƯỚC 1: THÔNG TIN CÁ NHÂN & THU NHẬP           -->
+            <!-- ============================================== -->
+            <div class="step-section" id="step1Content">
+                <div class="section-header">
+                    BƯỚC 1: THÔNG TIN CỦA BẠN
+                </div>
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">😃 Họ và tên:</label>
+                        <input type="text" class="form-control" name="full_name" placeholder="Ví dụ: Nguyễn Văn A">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">📱 Số điện thoại:</label>
+                        <input type="text" class="form-control" name="phone" placeholder="Ví dụ: 0912345678">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">💳 Số CCCD / CMND:</label>
+                        <input type="text" class="form-control" name="id_card" placeholder="Ví dụ: 031xxxxxxxxx">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">🎂 Tuổi người vay: <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="age" name="age" placeholder="Ví dụ: 25" required>
+                    </div>
+                </div>
+
+                <div class="section-header mt-4">
+                    Thu nhập & Công việc
+                </div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <label class="form-label">💰 Thu nhập hàng tháng: <span class="text-danger">*</span></label>
+                        <input type="text" id="income_display" class="form-control currency-input" placeholder="Ví dụ: 15.000.000 VNĐ" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">💼 Nghề nghiệp:</label>
+                        <select class="form-select" name="job_title">
+                            <option value="office" selected>Nhân viên văn phòng, Kinh doanh ...</option>
+                            <option value="worker">Công nhân / Lao động phổ thông</option>
+                            <option value="freelance">Kinh doanh tự do (Self-employed)</option>
+                            <option value="civil_servant">Công chức / Nhà nước</option>
+                        </select>
+                    </div>
+                    <div class="col-md-12">
+                        <label class="form-label d-block">🏦 Hình thức nhận lương:</label>
+                        <div class="select-group">
+                            <div class="select-btn active" onclick="selectSalaryMethod('bank', this)">
+                                🏦 Chuyển khoản
+                            </div>
+                            <div class="select-btn" onclick="selectSalaryMethod('cash', this)">
+                                💵 Tiền mặt
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-step-next" onclick="goToStep(2)">
+                        TIẾP TỤC BƯỚC 2 🚀
+                    </button>
+                </div>
+            </div>
+
+            <!-- ============================================== -->
+            <!-- BƯỚC 2: NHU CẦU VAY & ĐÁNH GIÁ ML              -->
+            <!-- ============================================== -->
+            <div class="step-section" id="step2Content" style="display: none;">
+                <!-- Thanh trượt chọn số tiền vay -->
+                <div class="slider-box">
+                    <label class="form-label d-flex justify-content-between">
+                        <span>💸 <strong>Số tiền đề xuất vay:</strong></span>
+                    </label>
+                    <div class="loan-display-value" id="loanAmountText">100.000.000 VNĐ</div>
+                    <input type="range" class="form-range" id="loanRange" min="10" max="500" step="5" value="100" oninput="updateLoanSlider(this.value)">
+                    <div class="d-flex justify-content-between text-muted" style="font-size: 11.5px; font-weight: 600;">
+                        <span>10tr</span>
+                        <span>500tr</span>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <!-- Thời hạn vay dạng Pills -->
+                    <div class="col-md-6">
+                        <label class="form-label">📅 Thời hạn vay:</label>
+                        <div class="select-group">
+                            <div class="select-btn" onclick="selectLoanTerm('6', this)">6 tháng</div>
+                            <div class="select-btn" onclick="selectLoanTerm('12', this)">12 tháng</div>
+                            <div class="select-btn active" onclick="selectLoanTerm('24', this)">24 tháng</div>
+                        </div>
                     </div>
 
-                    <!-- Lịch sử tín dụng -->
-                    <div class="col-md-6 mb-3">
-                        <label for="credit_history" class="form-label fw-bold text-dark">
-                            <i class="fa-solid fa-clock-rotate-left text-primary me-1"></i> Lịch sử tín dụng (CIC):
-                        </label>
-                        <select 
-                            id="credit_history" 
-                            name="credit_history" 
-                            class="form-select form-select-lg fs-6 py-2" 
-                            required
-                        >
-                            <option value="1" selected>Tốt (Không có nợ xấu)</option>
-                            <option value="0">Kém (Từng có nợ xấu/Nợ quá hạn)</option>
+                    <!-- Mục đích vay -->
+                    <div class="col-md-6">
+                        <label class="form-label">🛍️ Mục đích vay:</label>
+                        <select class="form-select" name="loan_purpose">
+                            <option value="personal" selected>Mua sắm / Tiêu dùng</option>
+                            <option value="business">Kinh doanh</option>
+                            <option value="repair">Sửa chữa nhà cửa</option>
                         </select>
                     </div>
 
-                    <!-- Số tiền đề xuất vay -->
-                    <div class="col-md-6 mb-3">
-                        <label for="loan_amount_display" class="form-label fw-bold text-dark">
-                            <i class="fa-solid fa-hand-holding-dollar text-primary me-1"></i> Số tiền đề xuất vay (VNĐ):
-                        </label>
-                        <input 
-                            type="text" 
-                            id="loan_amount_display" 
-                            class="form-control form-control-lg fs-6 py-2 currency-input" 
-                            placeholder="Ví dụ: 100.000.000" 
-                            required
-                        >
-                    </div>
-
-                    <!-- Tuổi người vay -->
-                    <div class="col-md-6 mb-4">
-                        <label for="age" class="form-label fw-bold text-dark">
-                            <i class="fa-solid fa-cake-candles text-primary me-1"></i> Tuổi người vay:
-                        </label>
-                        <input 
-                            type="number" 
-                            id="age" 
-                            name="age" 
-                            class="form-control form-control-lg fs-6 py-2" 
-                            placeholder="Ví dụ: 25" 
-                            required
-                        >
+                    <!-- Lịch sử tín dụng dạng Pills -->
+                    <div class="col-md-12">
+                        <label class="form-label d-block">🕒 Lịch sử tín dụng (CIC):</label>
+                        <div class="select-group">
+                            <div class="select-btn active" onclick="selectCreditHistory('1', this)">
+                                😃 Rất tốt (Không nợ xấu)
+                            </div>
+                            <div class="select-btn" onclick="selectCreditHistory('0', this)">
+                                😐 Đã từng trả muộn
+                            </div>
+                            <div class="select-btn" onclick="selectCreditHistory('1', this)">
+                                🆕 Chưa từng vay
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Nút gửi form -->
-                <button type="submit" class="btn btn-primary btn-lg w-100 fw-bold py-3 text-uppercase shadow-sm">
-                    <i class="fa-solid fa-chart-line me-2"></i> Đánh Giá Hồ Sơ Tín Dụng
-                </button>
-            </form>
-
-          <!-- HIỂN THỊ KẾT QUẢ VÀ LÝ DO TỪ CHỐI -->
-                {% if application %}
-                    {% if application.status == 'Đã Phê Duyệt' %}
-                        <div class="result approved" style="background-color: #d1fae5; border: 1px solid #10b981; padding: 15px; border-radius: 8px; color: #065f46; text-align: center;">
-                            <div class="fs-5 font-bold">
-                                <i class="fa-solid fa-circle-check" style="font-size: 24px; margin-right: 8px;"></i>
-                                🎉 Hồ sơ của bạn đã được PHÊ DUYỆT!
-                            </div>
+                <!-- Tải lên chứng từ -->
+                <div class="mb-3">
+                    <label class="form-label">Tải lên chứng từ (Tùy chọn):</label>
+                    <div class="upload-card" onclick="document.getElementById('fileProofInput').click()">
+                        <div class="fw-bold" style="font-size: 13px; color: #1e293b;">
+                            ☁️ Tải lên sao kê/bảng lương
                         </div>
-
-                    {% elif application.status == 'Từ Chối' %}
-                        <div class="result rejected" style="background-color: #fef2f2; border: 1px solid #f87171; padding: 15px; border-radius: 8px; color: #991b1b;">
-                            <div class="fs-5 font-bold" style="text-align: center;">
-                                <i class="fa-solid fa-circle-xmark" style="font-size: 24px; margin-right: 8px;"></i>
-                                ❌ Hồ sơ của bạn bị TỪ CHỐI
-                            </div>
-
-                            <div style="text-align: left; margin-top: 12px; font-weight: normal; font-size: 14px;">
-                                <!-- Phản hồi từ Admin/Ngân hàng -->
-                                {% if application.reject_reason %}
-                                    <strong style="color: #991b1b; display: block; margin-bottom: 5px;">Phản hồi từ ngân hàng:</strong>
-                                    <p style="color: #7f1d1d; margin-bottom: 10px; background: #ffffff; padding: 10px; border-radius: 4px; border: 1px solid #fca5a5;">
-                                        {{ application.reject_reason }}
-                                    </p>
-                                {% endif %}
-
-                                <!-- Lý do phân tích từ AI/Hệ thống (nếu có) -->
-                                {% if reasons %}
-                                    <strong style="color: #991b1b; display: block; margin-bottom: 5px;">Lý do chi tiết từ hệ thống:</strong>
-                                    <ul style="padding-left: 20px; color: #7f1d1d; margin-bottom: 0;">
-                                        {% for reason in reasons %}
-                                            <li>{{ reason }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                {% endif %}
-                            </div>
+                        <div id="fileUploadNote" class="text-muted" style="font-size: 11.5px;">
+                            Chụp ảnh hoặc tải file để tăng 80% cơ hội duyệt!
                         </div>
-
-                    {% else %}
-                        <div class="result pending" style="background-color: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 8px; color: #92400e; text-align: center;">
-                            <div class="fs-5 font-bold">
-                                <i class="fa-solid fa-clock" style="font-size: 24px; margin-right: 8px;"></i>
-                                ⏳ Hồ sơ của bạn đang được xét duyệt...
-                            </div>
-                        </div>
-                    {% endif %}
-                {% endif %}
-
-                </div> <!-- ĐÓNG BỔ SUNG CHO <div class="form-content"> -->
-            </div> <!-- ĐÓNG BỔ SUNG CHO <div class="main-container"> -->
-
-    <!-- ---------------------------------------------------- -->
-    <!-- BONG BÓNG VÀ CỬA SỔ CHATBOT (FLOATING WIDGET)        -->
-    <!-- ---------------------------------------------------- -->
-    <!-- Nút Bấm Bong Bóng Robot -->
-    <div class="chat-bubble-btn" onclick="toggleChatWindow()">
-        <span id="chatIconContainer">
-            <img src="{{ url_for('static', filename='images/robot1.png') }}" alt="Robot Chatbot">
-        </span>
-    </div>
-
-    <!-- Cửa Sổ Chatbot -->
-    <div class="chat-box-widget" id="chatBoxWidget">
-        <div class="chat-header">
-            <div class="d-flex align-items-center gap-2">
-                <img src="{{ url_for('static', filename='images/robot1.png') }}" class="chat-header-avatar" alt="Robot AI">
-                <div>
-                    <div class="fw-bold" style="font-size: 14px;">Trợ Lý Tín Dụng AI</div>
-                    <div style="font-size: 11px; color: #94a3b8;"><span class="status-dot me-1"></span>Trực tuyến 24/7</div>
+                        <input type="file" id="fileProofInput" name="salary_proof" style="display: none;" onchange="handleFileChange(this)">
+                    </div>
                 </div>
-            </div>
-            <button class="chat-header-close" onclick="toggleChatWindow()"><i class="fa-solid fa-xmark"></i></button>
-        </div>
 
-        <div class="chat-body" id="chatBody">
-            <div class="message bot">
-                Xin chào <strong>{{ user.username }}</strong>! 👋<br>
-                Tôi là trợ lý ảo hỗ trợ thẩm định tín dụng. Bạn cần tư vấn về hạn mức hay thủ tục vay?
-            </div>
-        </div>
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="consentCheck" required checked>
+                    <label class="form-check-label text-muted" for="consentCheck" style="font-size: 12.5px;">
+                        Tôi cam kết thông tin chính xác và đồng ý để AI đánh giá 🔒
+                    </label>
+                </div>
 
-        <div class="chat-footer">
-            <form id="chatForm" onsubmit="sendMessage(event)">
-                <div class="input-group">
-                    <input 
-                        type="text" 
-                        id="chatInput" 
-                        class="form-control form-control-sm py-2" 
-                        placeholder="Nhập tin nhắn..." 
-                        autocomplete="off"
-                        required
-                    >
-                    <button class="btn btn-primary btn-sm px-3" type="submit">
-                        <i class="fa-solid fa-paper-plane"></i>
+                <!-- Nút điều hướng Bước 2 -->
+                <div class="d-flex justify-content-between align-items-center">
+                    <button type="button" class="btn btn-step-back" onclick="goToStep(1)">
+                        👈 QUAY LẠI
+                    </button>
+                    <button type="submit" class="btn btn-step-submit">
+                        ĐÁNH GIÁ NGAY 🎉
                     </button>
                 </div>
+            </div>
+        </form>
+
+        <!-- KẾT QUẢ THẨM ĐỊNH TỪ FLASK / MODEL ML -->
+        {% if application %}
+            {% if application.status == 'Đã Phê Duyệt' or application.status == 'Phê Duyệt' %}
+                <div class="result-notification approved">
+                    <div class="fs-5">
+                        <i class="fa-solid fa-circle-check text-success me-2 fs-4"></i>
+                        🎉 Hồ sơ của bạn đã được PHÊ DUYỆT!
+                    </div>
+                    {% if result %}
+                        <div class="mt-2 text-muted fw-normal" style="font-size: 13px;">{{ result }}</div>
+                    {% endif %}
+                </div>
+            {% elif application.status == 'Từ Chối' %}
+                <div class="result-notification rejected">
+                    <div class="fs-5">
+                        <i class="fa-solid fa-circle-xmark text-danger me-2 fs-4"></i>
+                        ❌ Hồ sơ của bạn bị TỪ CHỐI
+                    </div>
+                    {% if application.reject_reason %}
+                        <div class="mt-2 text-start p-2 bg-white rounded border border-danger-subtle text-danger" style="font-size: 13px; font-weight: normal;">
+                            <strong>Lý do:</strong> {{ application.reject_reason }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <!-- Trust Badges Footer -->
+        <div class="trust-badges-bar mt-3">
+            <span><i class="fa-solid fa-shield-halved"></i> Bảo mật dữ liệu 100% theo tiêu chuẩn ngân hàng</span>
+            <span><i class="fa-solid fa-bolt text-warning"></i> Phân tích tức thì lập tức bằng AI</span>
+            <span><i class="fa-solid fa-chart-line text-primary"></i> Chính xác & Khách quan</span>
+        </div>
+    </div>
+
+    <!-- ---------------------------------------------------- -->
+    <!-- BONG BÓNG CHATBOT AI VỚI TOOLTIP                     -->
+    <!-- ---------------------------------------------------- -->
+    <div class="floating-chat-container">
+        <div class="chat-pill-tooltip" onclick="toggleChat()">
+            Chat với AI Robot 💬
+        </div>
+        <div class="chat-bubble-button" onclick="toggleChat()">
+            <img src="{{ url_for('static', filename='images/robot1.png') }}" alt="Robot AI">
+        </div>
+    </div>
+
+    <!-- Cửa sổ Chatbot AI -->
+    <div class="chat-window" id="chatBox">
+        <div class="chat-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="fa-solid fa-robot text-warning"></i>
+                <div class="fw-bold" style="font-size: 13px;">AI Tư Vấn Tín Dụng</div>
+            </div>
+            <button class="btn btn-sm text-white" onclick="toggleChat()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="chat-body" id="chatContent">
+            <div class="chat-msg bot">
+                Chào <strong>{{ user.username }}</strong>! Bạn cần hỗ trợ tính hạn mức hay chọn thời hạn vay?
+            </div>
+        </div>
+        <div class="p-2 border-top bg-white">
+            <form id="botForm" onsubmit="sendChat(event)" class="d-flex gap-1">
+                <input type="text" id="botInput" class="form-control form-control-sm" placeholder="Nhập tin nhắn..." autocomplete="off" required>
+                <button class="btn btn-primary btn-sm px-3" type="submit"><i class="fa-solid fa-paper-plane"></i></button>
             </form>
         </div>
     </div>
 
-    <!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT ĐIỀU KHIỂN GIAO DIỆN -->
     <script>
-        // Đường dẫn ảnh robot từ Flask Jinja
-        const robotImgUrl = "{{ url_for('static', filename='images/robot1.png') }}";
+        let currentLoanMillion = 100;
 
-        // 1. Bật/Tắt Cửa Sổ Chatbot & Chuyển Đổi Nút Đóng / Mở
-        function toggleChatWindow() {
-            const chatWidget = document.getElementById('chatBoxWidget');
-            const iconContainer = document.getElementById('chatIconContainer');
+        // 1. Chuyển bước Form & Cập nhật Header Banner
+        function goToStep(step) {
+            const step1 = document.getElementById('step1Content');
+            const step2 = document.getElementById('step2Content');
+            const tab1 = document.getElementById('tabStep1');
+            const tab2 = document.getElementById('tabStep2');
+            const bannerTitle = document.getElementById('bannerTitle');
+            const bannerSubtitle = document.getElementById('bannerSubtitle');
 
-            chatWidget.classList.toggle('active');
+            if (step === 2) {
+                const age = document.getElementById('age').value.trim();
+                const incomeDisp = document.getElementById('income_display').value.trim();
 
-            if (chatWidget.classList.contains('active')) {
-                iconContainer.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+                if (!age) {
+                    alert('Vui lòng nhập tuổi người vay trước khi tiếp tục!');
+                    document.getElementById('age').focus();
+                    return;
+                }
+                if (!incomeDisp) {
+                    alert('Vui lòng nhập thu nhập hàng tháng!');
+                    document.getElementById('income_display').focus();
+                    return;
+                }
+
+                step1.style.display = 'none';
+                step2.style.display = 'block';
+
+                bannerTitle.innerHTML = 'BƯỚC 2: NHU CẦU & ĐÁNH GIÁ ⚡';
+                bannerSubtitle.innerText = 'Chỉ mất 1 phút để điền thông tin cơ bản';
+
+                tab1.className = 'step-pill completed';
+                tab1.innerHTML = 'Bước 1: Xong! ✔';
+                tab2.className = 'step-pill active';
+                tab2.innerHTML = 'Bước 2: Nhu cầu & Đánh giá 🔥';
             } else {
-                iconContainer.innerHTML = `<img src="${robotImgUrl}" alt="Robot Chatbot">`;
+                step2.style.display = 'none';
+                step1.style.display = 'block';
+
+                bannerTitle.innerHTML = 'BƯỚC 1: THÔNG TIN CỦA BẠN';
+                bannerSubtitle.innerText = 'Chỉ mất 1 phút để điền thông tin cơ bản';
+
+                tab2.className = 'step-pill';
+                tab2.innerHTML = 'Bước 2: Nhu cầu của bạn 🎯';
+                tab1.className = 'step-pill active';
+                tab1.innerHTML = 'Bước 1: Giới thiệu bản thân 📝';
             }
         }
 
-        // 2. Định dạng tiền tự động khi gõ
+        // 2. Cập nhật Slider Khoản Vay
+        function updateLoanSlider(val) {
+            currentLoanMillion = parseInt(val, 10);
+            const totalMoney = currentLoanMillion * 1000000;
+            document.getElementById('loanAmountText').innerText = totalMoney.toLocaleString('vi-VN') + ' VNĐ';
+        }
+
+        // 3. Chọn Pills: Hình thức nhận lương
+        function selectSalaryMethod(val, elem) {
+            document.getElementById('salary_method').value = val;
+            elem.parentElement.querySelectorAll('.select-btn').forEach(b => b.classList.remove('active'));
+            elem.classList.add('active');
+        }
+
+        // 4. Chọn Pills: Thời hạn vay
+        function selectLoanTerm(val, elem) {
+            document.getElementById('loan_term_input').value = val;
+            elem.parentElement.querySelectorAll('.select-btn').forEach(b => b.classList.remove('active'));
+            elem.classList.add('active');
+        }
+
+        // 5. Chọn Pills: Lịch sử tín dụng CIC
+        function selectCreditHistory(val, elem) {
+            document.getElementById('credit_history').value = val;
+            elem.parentElement.querySelectorAll('.select-btn').forEach(b => b.classList.remove('active'));
+            elem.classList.add('active');
+        }
+
+        // 6. Format tiền nhập tay ở ô Thu nhập
         document.querySelectorAll('.currency-input').forEach(function(input) {
-            input.addEventListener('input', function(e) {
+            input.addEventListener('input', function() {
                 let value = this.value.replace(/\D/g, '');
-                if (value) {
-                    this.value = parseInt(value, 10).toLocaleString('vi-VN');
-                } else {
-                    this.value = '';
-                }
+                this.value = value ? parseInt(value, 10).toLocaleString('vi-VN') + ' VNĐ' : '';
             });
         });
 
-        // 3. Quy đổi tiền triệu VNĐ trước khi Submit Form
+        // 7. Quy đổi dữ liệu chuẩn bị gửi về Flask
         document.getElementById('creditForm').addEventListener('submit', function(e) {
-            let rawIncome = document.getElementById('income_display').value.replace(/\./g, '');
-            let rawLoan = document.getElementById('loan_amount_display').value.replace(/\./g, '');
-
+            let rawIncome = document.getElementById('income_display').value.replace(/\D/g, '');
             document.getElementById('income').value = parseFloat(rawIncome) / 1000000;
-            document.getElementById('loan_amount').value = parseFloat(rawLoan) / 1000000;
+            document.getElementById('loan_amount').value = currentLoanMillion;
         });
 
-        // 4. Logic gửi và trả lời tin nhắn trong Chatbot
-        function sendMessage(e) {
+        // 8. Tên file khi upload
+        function handleFileChange(input) {
+            if (input.files && input.files[0]) {
+                document.getElementById('fileUploadNote').innerHTML = 
+                    `<strong class="text-primary"><i class="fa-solid fa-file-circle-check me-1"></i>Đã chọn: ${input.files[0].name}</strong>`;
+            }
+        }
+
+        // 9. Bật/Tắt Chatbot
+        function toggleChat() {
+            document.getElementById('chatBox').classList.toggle('active');
+        }
+
+        function sendChat(e) {
             e.preventDefault();
-            const input = document.getElementById('chatInput');
-            const messageText = input.value.trim();
-            if (!messageText) return;
+            const input = document.getElementById('botInput');
+            const msg = input.value.trim();
+            if (!msg) return;
 
-            const chatBody = document.getElementById('chatBody');
-
-            const userMsg = document.createElement('div');
-            userMsg.className = 'message user';
-            userMsg.textContent = messageText;
-            chatBody.appendChild(userMsg);
-
+            const chat = document.getElementById('chatContent');
+            chat.innerHTML += `<div class="chat-msg user">${msg}</div>`;
             input.value = '';
-            chatBody.scrollTop = chatBody.scrollHeight;
+            chat.scrollTop = chat.scrollHeight;
 
             setTimeout(() => {
-                const botMsg = document.createElement('div');
-                botMsg.className = 'message bot';
-                
-                const textLower = messageText.toLowerCase();
-                if (textLower.includes('lãi suất')) {
-                    botMsg.innerHTML = 'Lãi suất ưu đãi hiện tại dao động từ <strong>0.8% - 1.2%/tháng</strong> tùy thuộc vào điểm tín dụng của bạn.';
-                } else if (textLower.includes('điều kiện') || textLower.includes('hồ sơ')) {
-                    botMsg.innerHTML = 'Điều kiện cơ bản: Thu nhập từ 5 triệu/tháng, tuổi từ 18-60 và không có nợ xấu trên hệ thống CIC.';
-                } else {
-                    botMsg.innerHTML = 'Cảm ơn bạn đã nhắn tin. Hệ thống đã ghi nhận yêu cầu và sẽ tư vấn thêm cho bạn!';
-                }
-                chatBody.appendChild(botMsg);
-                chatBody.scrollTop = chatBody.scrollHeight;
+                chat.innerHTML += `<div class="chat-msg bot">Mô hình AI đã sẵn sàng phân tích hồ sơ của bạn với độ chính xác cao. Hãy hoàn tất thông tin và bấm 'Đánh giá ngay' nhé!</div>`;
+                chat.scrollTop = chat.scrollHeight;
             }, 500);
         }
-    </script>
 
+        // Khởi tạo giá trị ban đầu cho slider
+        updateLoanSlider(100);
+    </script>
 </body>
 </html>
