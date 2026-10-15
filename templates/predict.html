@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dự Đoán Khoản Vay - Hệ Thống AI</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-page: #edf3f8;
+            --card-bg: #ffffff;
+            --primary-blue: #0284c7;
+            --primary-hover: #0369a1;
+            --border-color: #e2e8f0;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --radius-card: 20px;
+            --radius-input: 12px;
+            --shadow-card: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #334155;
+            
+            /* Màu nền phối Gradient theo ảnh: Xanh nhạt -> Trắng ấm -> Cam nhạt */
+            background-color: #f7fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(224, 242, 254, 0.75) 0px, transparent 55%),
+                radial-gradient(at 100% 100%, rgba(254, 243, 199, 0.45) 0px, transparent 50%),
+                radial-gradient(at 0% 60%, rgba(255, 237, 213, 0.35) 0px, transparent 50%),
+                /* Họa tiết mạng nhện công nghệ mờ */
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cpath d='M0 100L100 0L200 100L100 200Z M200 100L300 0L400 100L300 200Z M100 200L200 100L300 200L200 300Z M0 300L100 200L200 300L100 400Z M200 300L300 200L400 300L300 400Z' fill='none' stroke='%2394a3b8' stroke-width='0.45' stroke-opacity='0.18'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+            background-attachment: fixed;
+        }
+
+        /* 1. TOP NAVBAR */
+        .top-navbar {
+            height: 70px;
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 36px;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-logo i {
+            font-size: 24px;
+            color: #0f172a;
+        }
+
+        .brand-text-wrap h1 {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1.2;
+        }
+
+        .brand-text-wrap span {
+            font-size: 10.5px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .nav-menu {
+            display: flex;
+            align-items: center;
+            list-style: none;
+            gap: 8px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-blue);
+            background-color: #f1f5f9;
+        }
+
+        .nav-link.active {
+            background-color: #e0f2fe;
+            color: var(--primary-blue);
+            font-weight: 700;
+        }
+
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #fed7aa;
+            color: #9a3412;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 15px;
+        }
+
+        /* 2. MAIN CONTAINER */
+        .main-container {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 28px 20px 60px 20px;
+        }
+
+        /* KHỐI KẾT QUẢ DỰ ĐOÁN */
+        .analysis-card {
+            background: #ffffff;
+            border: 1px solid #dbeafe;
+            border-radius: var(--radius-card);
+            padding: 28px 32px;
+            box-shadow: 0 8px 30px rgba(2, 132, 199, 0.08);
+            margin-bottom: 24px;
+        }
+
+        .analysis-top-grid {
+            display: grid;
+            grid-template-columns: 1fr 1.25fr;
+            gap: 28px;
+            border-bottom: 1.5px dashed #e2e8f0;
+            padding-bottom: 24px;
+            margin-bottom: 20px;
+        }
+
+        /* Đồng hồ vòm % */
+        .gauge-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-radius: 16px;
+            border: 1px solid #edf2f7;
+        }
+
+        .gauge-circle {
+            position: relative;
+            width: 150px;
+            height: 80px;
+            overflow: hidden;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .gauge-arc {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            box-sizing: border-box;
+            border: 15px solid #e2e8f0;
+            border-top-color: #10b981;
+            border-right-color: #10b981;
+            transform: rotate(-45deg);
+        }
+
+        .gauge-arc.rejected {
+            border-top-color: #ef4444;
+            border-right-color: #ef4444;
+        }
+
+        .gauge-percent {
+            position: absolute;
+            bottom: 0;
+            font-size: 30px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .gauge-verdict {
+            font-size: 20px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+
+        .verdict-approved { color: #10b981; }
+        .verdict-rejected { color: #ef4444; }
+
+        .gauge-subtext {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            line-height: 1.45;
+        }
+
+        /* Bảng Phân tích hồ sơ */
+        .profile-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+
+        .profile-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .profile-table td:first-child {
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .profile-table td:last-child {
+            text-align: right;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        /* Yếu tố ảnh hưởng (Key Factors) */
+        .factors-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #334155;
+            margin-bottom: 14px;
+        }
+
+        .factors-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+
+        .factor-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .factor-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 17px;
+        }
+
+        .icon-green { background: #dcfce7; color: #16a34a; }
+        .icon-amber { background: #fef3c7; color: #d97706; }
+        .icon-blue  { background: #e0f2fe; color: #0284c7; }
+
+        .factor-info p {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .factor-info h5 {
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .confidence-strip {
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        /* Nút quay lại sau khi xem kết quả */
+        .result-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 24px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 14px;
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+            transition: all 0.2s ease;
+        }
+
+        .btn-back:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-history {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 14px;
+            background-color: #ffffff;
+            color: #334155;
+            font-size: 14px;
+            font-weight: 700;
+            border: 1.5px solid var(--border-color);
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-history:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        /* FORM NHẬP LIỆU */
+        .form-card-block {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 24px 28px;
+            margin-bottom: 22px;
+            box-shadow: var(--shadow-card);
+        }
+
+        .block-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15.5px;
+            font-weight: 800;
+            color: #0f172a;
+            margin-bottom: 20px;
+        }
+
+        .block-header i {
+            color: #0284c7;
+            font-size: 17px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px 24px;
+        }
+
+        .form-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px 24px;
+            margin-top: 18px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .form-label {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #334155;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .form-label .req {
+            color: #ef4444;
+            font-size: 13px;
+        }
+
+        .input-box-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-box-wrapper .field-icon {
+            position: absolute;
+            left: 14px;
+            color: #64748b;
+            font-size: 14px;
+            pointer-events: none;
+        }
+
+        .input-box-wrapper .unit-badge {
+            position: absolute;
+            right: 14px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            pointer-events: none;
+        }
+
+        .custom-control {
+            width: 100%;
+            height: 44px;
+            background: #ffffff;
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-input);
+            font-size: 13.5px;
+            color: #1e293b;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        select.custom-control {
+            padding-left: 38px;
+            padding-right: 32px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            background-size: 13px;
+            cursor: pointer;
+        }
+
+        input.custom-control {
+            padding-left: 14px;
+            padding-right: 48px;
+        }
+
+        .custom-control:focus {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+        }
+
+        .form-actions-bar {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 14px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 11px 22px;
+            border-radius: 12px;
+            font-size: 13.5px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-predict {
+            background-color: var(--primary-blue);
+            color: #ffffff;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+
+        .btn-predict:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-reset {
+            background-color: #ffffff;
+            color: #475569;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-reset:hover {
+            background-color: #f1f5f9;
+        }
+
+        .btn-cancel {
+            background-color: transparent;
+            color: var(--text-muted);
+        }
+
+        .btn-cancel:hover {
+            color: #ef4444;
+        }
+
+        .alert-flash {
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 18px;
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        /* DROPDOWN USER TRÊN TOP NAVBAR */
+.nav-right {
+    display: flex;
+    align-items: center;
+}
+
+.user-dropdown-wrapper {
+    position: relative;
+    user-select: none;
+}
+
+.user-profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 6px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.user-profile-trigger:hover {
+    background-color: #f1f5f9;
+}
+
+.avatar-circle {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: #fed7aa;
+    color: #9a3412;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 14.5px;
+}
+
+.user-name-text {
+    font-size: 14px;
+    font-weight: 700;
+    color: #334155;
+}
+
+.dropdown-arrow-icon {
+    font-size: 11px;
+    color: #94a3b8;
+    margin-left: 2px;
+    transition: transform 0.2s ease;
+}
+
+.user-dropdown-wrapper.open .dropdown-arrow-icon {
+    transform: rotate(180deg);
+}
+
+/* KHUNG MENU XỔ XUỐNG THEO ẢNH MẪU */
+.user-menu-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    width: 195px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+    padding: 6px;
+    list-style: none;
+    display: none;
+    z-index: 2000;
+}
+
+.user-menu-dropdown.show {
+    display: block;
+    animation: menuFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes menuFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.user-menu-dropdown li a {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #334155;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+}
+
+.user-menu-dropdown li a i {
+    font-size: 15px;
+    color: #64748b;
+    width: 18px;
+    text-align: center;
+}
+
+.user-menu-dropdown li a:hover {
+    background-color: #f8fafc;
+    color: #0284c7;
+}
+
+.user-menu-dropdown li a:hover i {
+    color: #0284c7;
+}
+
+/* ĐƯỜNG KẺ PHÂN CÁCH */
+.menu-divider {
+    height: 1px;
+    background-color: #f1f5f9;
+    margin: 4px 6px;
+}
+
+/* MỤC ĐĂNG XUẤT MÀU ĐỎ NỔI BẬT THEO ẢNH */
+.user-menu-dropdown li a.menu-logout-item {
+    color: #ef4444;
+}
+
+.user-menu-dropdown li a.menu-logout-item i {
+    color: #ef4444;
+}
+
+.user-menu-dropdown li a.menu-logout-item:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+}
+
+.user-menu-dropdown li a.menu-logout-item:hover i {
+    color: #dc2626;
+}
+    </style>
+</head>
+<body>
+
+    <!-- TOP NAVBAR -->
+    <header class="top-navbar">
+        <div class="nav-left">
+            <a href="/user" class="brand-logo">
+                <i class="fa-solid fa-building-columns"></i>
+                <div class="brand-text-wrap">
+                    <h1>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h1>
+                    <span>USER PORTAL</span>
+                </div>
+            </a>
+
+            <ul class="nav-menu">
+                <li><a href="/user" class="nav-link"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
+                <li><a href="/predict" class="nav-link active"><i class="fa-solid fa-arrows-rotate"></i> Dự đoán</a></li>
+                <li><a href="/history" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</a></li>
+                <li><a href="/profile" class="nav-link"><i class="fa-regular fa-user"></i> Hồ sơ</a></li>
+                <li><a href="/guide" class="nav-link"><i class="fa-regular fa-circle-question"></i> Hướng dẫn</a></li>
+            </ul>
+        </div>
+
+        <div class="nav-right">
+    <div class="user-dropdown-wrapper" id="userDropdownWrapper">
+        <div class="user-profile-trigger" onclick="toggleUserDropdown(event)">
+            <div class="avatar-circle">
+                {{ (user_fullname or current_user.username or 'U')[0] | upper }}
+            </div>
+            <span class="user-name-text">
+                {{ user_fullname or current_user.username }}
+            </span>
+            <i class="fa-solid fa-chevron-down dropdown-arrow-icon"></i>
+        </div>
+
+        <!-- MENU XỔ XUỐNG ĐỒNG BỘ CHUẨN THEO ẢNH -->
+        <ul class="user-menu-dropdown" id="userMenuDropdown">
+            <li>
+                <a href="/profile">
+                    <i class="fa-regular fa-id-card"></i>
+                    <span>Thông tin cá nhân</span>
+                </a>
+            </li>
+            <li>
+                <a href="/guide">
+                    <i class="fa-regular fa-circle-question"></i>
+                    <span>Trợ giúp & HDSD</span>
+                </a>
+            </li>
+            <div class="menu-divider"></div>
+            <li>
+                <a href="/logout" class="menu-logout-item">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span>Đăng xuất</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>
+    </header>
+
+    <main class="main-container">
+
+        <!-- Thông báo Flash lỗi ràng buộc (nếu có) -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert-flash">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- 👉 NẾU ĐÃ CÓ KẾT QUẢ DỰ ĐOÁN: CHỈ HIỂN THỊ BẢNG KẾT QUẢ VÀ NÚT QUAY LẠI -->
+        {% if result %}
+        <div class="analysis-card">
+            <div class="analysis-top-grid">
+                <!-- Vòng đồng hồ Gauge % -->
+                <div class="gauge-box">
+                    <div class="gauge-circle">
+                        <div class="gauge-arc {% if result.prediction_code != 'Y' %}rejected{% endif %}"></div>
+                        <span class="gauge-percent">{{ result.approval_percentage }}%</span>
+                    </div>
+                    <div class="gauge-verdict {% if result.prediction_code == 'Y' %}verdict-approved{% else %}verdict-rejected{% endif %}">
+                        {{ 'APPROVED' if result.prediction_code == 'Y' else 'REJECTED' }}
+                    </div>
+                    <p class="gauge-subtext">
+                        {% if result.prediction_code == 'Y' %}
+                            Khoản vay được phê duyệt sơ bộ (Preliminary Loan Approved).
+                        {% else %}
+                            Khoản vay chưa đạt điều kiện phê duyệt tự động.
+                        {% endif %}
+                        <br>Hồ sơ: <strong>{{ user_fullname or 'Thiện' }} (#{{ result.app_id }})</strong>
+                    </p>
+                </div>
+
+                <!-- Bảng Profile Analysis -->
+                <div>
+                    <h4 style="font-size: 14px; font-weight: 800; color: #1e293b; margin-bottom: 12px;">
+                        Phân tích hồ sơ (Profile Analysis)
+                    </h4>
+                    <table class="profile-table">
+                        <tr>
+                            <td>Khoản vay yêu cầu</td>
+                            <td>{{ result.loan_amount }} triệu VNĐ (Loan)</td>
+                        </tr>
+                        <tr>
+                            <td>Thời hạn yêu cầu</td>
+                            <td>{{ result.loan_term }} tháng (Loan Term)</td>
+                        </tr>
+                        <tr>
+                            <td>Dự báo rủi ro</td>
+                            <td>
+                                <i class="fa-solid fa-gauge-high" style="color: {% if result.prediction_code == 'Y' %}#10b981{% else %}#ef4444{% endif %}; margin-right: 4px;"></i>
+                                {{ result.risk_level }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Hạn mức tối đa có thể duyệt</td>
+                            <td>{{ result.max_approved_amount }} triệu VNĐ (Max Approved Amount)</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Yếu tố chính ảnh hưởng (Key Factors) -->
+            <div class="factors-title">Yếu tố chính ảnh hưởng đến dự đoán (Key Factors):</div>
+            <div class="factors-grid">
+                <div class="factor-card">
+                    <div class="factor-icon icon-green">
+                        <i class="fa-solid fa-thumbs-up"></i>
+                    </div>
+                    <div class="factor-info">
+                        <p>Lịch sử tín dụng</p>
+                        <h5>{{ result.credit_status_text }}</h5>
+                    </div>
+                </div>
+
+                <div class="factor-card">
+                    <div class="factor-icon icon-amber">
+                        <i class="fa-solid fa-scale-balanced"></i>
+                    </div>
+                    <div class="factor-info">
+                        <p>Tỷ lệ nợ</p>
+                        <h5>{{ result.dti_status }}</h5>
+                    </div>
+                </div>
+
+                <div class="factor-card">
+                    <div class="factor-icon icon-blue">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                    <div class="factor-info">
+                        <p>Khu vực tài sản</p>
+                        <h5>{{ result.property_area_text }}</h5>
+                    </div>
+                </div>
+            </div>
+
+            <div class="confidence-strip">
+                <i class="fa-solid fa-chart-line" style="color: #0284c7;"></i>
+                <span>Độ tin cậy dự đoán (Prediction Confidence): {{ result.confidence }}%</span>
+            </div>
+
+            <!-- NÚT QUAY LẠI VỀ GIAO DIỆN NHẬP LIỆU BAN ĐẦU -->
+            <div class="result-actions">
+                <a href="/predict" class="btn-back">
+                    <i class="fa-solid fa-arrow-left"></i> Quay lại dự đoán hồ sơ mới
+                </a>
+                <a href="/history" class="btn-history">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Xem lịch sử hồ sơ
+                </a>
+            </div>
+        </div>
+
+        <!-- 👉 NẾU CHƯA DỰ ĐOÁN HOẶC ĐÃ BẤM QUAY LẠI: HIỂN THỊ BIỂU MẪU BAN ĐẦU -->
+        {% else %}
+        <form id="loanPredictForm" action="/predict" method="POST" onsubmit="return handleFormSubmit()">
+            <!-- KHỐI TIÊU ĐỀ ĐỒNG BỘ THEO MẪU TRANG LỊCH SỬ -->
+                <div class="page-title-header">
+                    <div class="title-icon-box">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                    </div>
+                    <div class="title-text-wrap">
+                        <h2>Dự đoán khoản vay</h2>
+                        <p>Nhập thông tin hồ sơ để mô hình Học máy tính toán và phân tích khả năng phê duyệt.</p>
+                    </div>
+                </div>
+            <!-- KHỐI A. THÔNG TIN CÁ NHÂN -->
+            <div class="form-card-block">
+                <div class="block-header">
+                    <i class="fa-solid fa-user-check"></i>
+                    <span>A. THÔNG TIN CÁ NHÂN</span>
+                </div>
+
+                <!-- Hàng 1: Giới tính, Hôn nhân, Số người phụ thuộc -->
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Giới tính (Gender) <span class="req">*</span></label>
+                        <div class="input-box-wrapper">
+                            <i class="fa-regular fa-user field-icon"></i>
+                            <select name="gender" class="custom-control" required>
+                                <option value="Male" selected>Nam (Male)</option>
+                                <option value="Female">Nữ (Female)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tình trạng hôn nhân (Married) <span class="req">*</span></label>
+                        <div class="input-box-wrapper">
+                            <i class="fa-solid fa-ring field-icon"></i>
+                            <select name="married" class="custom-control" required>
+                                <option value="Yes" selected>Đã kết hôn (Yes)</option>
+                                <option value="No">Độc thân / Chưa kết hôn (No)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Số người phụ thuộc (Dependents) <span class="req">*</span></label>
+                        <div class="input-box-wrapper">
+                            <i class="fa-solid fa-user-group field-icon"></i>
+                            <select name="dependents" class="custom-control" required>
+                                <option value="0" selected>0 người</option>
+                                <option value="1">1 người</option>
+                                <option value="2">2 người</option>
+                                <option value="3+">3 người trở lên (3+)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hàng 2: Trình độ học vấn, Tự kinh doanh, Tuổi -->
+                <div class="form-grid-3" style="margin-top: 18px;">
+                    <div class="form-group">
+                        <label class="form-label">Trình độ học vấn (Education) <span class="req">*</span></label>
+                        <div class="input-box-wrapper">
+                            <i class="fa-solid fa-graduation-cap field-icon"></i>
+                            <select name="education" class="custom-control" required>
+                                <option value="Graduate" selected>Tốt nghiệp ĐH (Graduate)</option>
+                                <option value="THPT">Tốt nghiệp THPT</option>
+                                <option value="THCS">Tốt nghiệp THCS</option>
+                                <option value="Not Graduate">Chưa tốt nghiệp (Not Graduate)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tự kinh doanh (Self_Employed) <span class="req">*</span></label>
+                        <div class="input-box-wrapper">
+                            <i class="fa-solid fa-briefcase field-icon"></i>
+                            <select name="self_employed" id="selfEmployedSelect" class="custom-control" onchange="toggleBusinessModel(this.value)" required>
+                                <option value="No" selected>Không (No)</option>
+                                <option value="Yes">Có (Yes)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Tuổi người vay (Age) <span class="req">*</span></label>
+                        <div class="input-box-wrapper">
+                            <input type="number" min="18" max="60" name="age" id="applicantAge" class="custom-control" 
+                                   placeholder="Ví dụ: 28 (18 - 60 tuổi)" value="28" style="padding-left: 14px;" required>
+                            <span class="unit-badge">Tuổi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ô nhập Mô hình kinh doanh: Chỉ hiện khi chọn Có -->
+                <div class="form-group" id="businessModelGroup" style="margin-top: 18px; display: none;">
+                    <label class="form-label">Mô hình kinh doanh là gì? (Business Model)</label>
+                    <div class="input-box-wrapper">
+                        <i class="fa-solid fa-store field-icon"></i>
+                        <input type="text" name="business_model" class="custom-control" placeholder="Ví dụ: Bán đồng hồ, Cửa hàng tiện lợi, Xưởng cơ khí..." 
+                               style="padding-left: 38px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- KHỐI B. THÔNG TIN TÀI CHÍNH -->
+            <div class="form-card-block">
+                <div class="block-header">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>B. THÔNG TIN TÀI CHÍNH</span>
+                </div>
+
+                <!-- Hàng 1: Thu nhập người vay, Thu nhập người đồng vay, Số tiền vay -->
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Thu nhập người vay (ApplicantIncome) <span class="req">*</span></label>
+                        <div class="input-box-wrapper">
+                            <input type="number" step="any" min="0" id="applicantIncome" name="applicant_income" 
+                                   class="custom-control" placeholder="Ví dụ: 25 (triệu VNĐ)" required>
+                            <span class="unit-badge">VNĐ</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Thu nhập người đồng vay (CoapplicantIncome)</label>
+                        <div class="input-box-wrapper">
+                            <input type="number" step="any" min="0" id="coapplicantIncome" name="coapplicant_income" 
+                                   class="custom-control" placeholder="0" value="0">
+                            <span class="unit-badge">VNĐ</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Số tiền vay (LoanAmount) <span class="req">*</span></label>
+                        <div class="input-box-wrapper">
+                            <input type="number" step="any" min="1" id="loanAmount" name="loan_amount" 
+                                   class="custom-control" placeholder="Ví dụ: 350 (triệu VNĐ)" required>
+                            <span class="unit-badge">VNĐ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hàng 2: Thời hạn vay & Lịch sử tín dụng -->
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label class="form-label">Thời hạn vay (Loan_Amount_Term) <span class="req">*</span></label>
+                        <select name="loan_term" class="custom-control" style="padding-left: 14px;" required>
+                            <option value="6">6 tháng (Nửa năm)</option>
+                            <option value="12">12 tháng (1 năm)</option>
+                            <option value="36">36 tháng (3 năm)</option>
+                            <option value="60">60 tháng (5 năm)</option>
+                            <option value="84">84 tháng (7 năm)</option>
+                            <option value="120">120 tháng (10 năm)</option>
+                            <option value="180">180 tháng (15 năm)</option>
+                            <option value="240">240 tháng (20 năm)</option>
+                            <option value="360" selected>360 tháng (30 năm)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Lịch sử tín dụng (Credit_History) <span class="req">*</span></label>
+                        <select name="credit_history" class="custom-control" style="padding-left: 14px;" required>
+                            <option value="1" selected>Đạt yêu cầu (Không có nợ xấu - 1.0)</option>
+                            <option value="0">Không đạt yêu cầu (Từng có nợ quá hạn - 0.0)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KHỐI C. THÔNG TIN KHU VỰC -->
+            <div class="form-card-block">
+                <div class="block-header">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>C. THÔNG TIN KHU VỰC</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Khu vực tài sản (Property_Area) <span class="req">*</span></label>
+                    <select name="property_area" class="custom-control" style="padding-left: 14px;" required>
+                        <option value="Semiurban" selected>Bán thành thị (Semiurban)</option>
+                        <option value="Urban">Thành thị (Urban)</option>
+                        <option value="Rural">Nông thôn (Rural)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- CÁC NÚT THAO TÁC -->
+            <div class="form-actions-bar">
+                <a href="/user" class="btn btn-cancel" onclick="return confirmCancel()">
+                    <i class="fa-solid fa-xmark"></i> Hủy
+                </a>
+                <button type="button" class="btn btn-reset" onclick="resetFormToDefaults()">
+                    <i class="fa-solid fa-rotate-left"></i> Làm mới
+                </button>
+                <button type="submit" id="submitBtn" class="btn btn-predict">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Dự đoán
+                </button>
+            </div>
+
+        </form>
+        {% endif %}
+
+    </main>
+
+    <script>
+        function toggleBusinessModel(val) {
+            const group = document.getElementById('businessModelGroup');
+            if (group) {
+                group.style.display = (val === 'Yes') ? 'block' : 'none';
+            }
+        }
+
+        function handleFormSubmit() {
+            const income = parseFloat(document.getElementById('applicantIncome').value);
+            const coIncome = parseFloat(document.getElementById('coapplicantIncome').value || 0);
+            const amount = parseFloat(document.getElementById('loanAmount').value);
+            const age = parseInt(document.getElementById('applicantAge').value);
+
+            if (isNaN(age) || age < 18 || age > 60) {
+                alert("Lỗi: Độ tuổi thẩm định hợp lệ phải từ 18 đến 60 tuổi!");
+                return false;
+            }
+            if (isNaN(income) || income < 0) {
+                alert("Lỗi: Thu nhập người vay phải là số hợp lệ và không âm!");
+                return false;
+            }
+            if (isNaN(coIncome) || coIncome < 0) {
+                alert("Lỗi: Thu nhập người đồng vay không được là số âm!");
+                return false;
+            }
+            if (isNaN(amount) || amount <= 0) {
+                alert("Lỗi: Số tiền vay phải lớn hơn 0!");
+                return false;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang phân tích mô hình...';
+            return true;
+        }
+
+        function resetFormToDefaults() {
+            if (confirm("Bạn có chắc chắn muốn làm mới toàn bộ biểu mẫu?")) {
+                document.getElementById('loanPredictForm').reset();
+                document.getElementById('applicantIncome').value = '';
+                document.getElementById('coapplicantIncome').value = '0';
+                document.getElementById('loanAmount').value = '';
+                const group = document.getElementById('businessModelGroup');
+                if (group) group.style.display = 'none';
+            }
+        }
+
+        function confirmCancel() {
+            const income = document.getElementById('applicantIncome').value;
+            const amount = document.getElementById('loanAmount').value;
+            if (income || amount) {
+                return confirm("Dữ liệu đang nhập chưa được lưu. Bạn có chắc chắn muốn hủy và quay về trang chủ?");
+            }
+            return true;
+        }
+    </script>
+    <script>
+    function toggleUserDropdown(event) {
+        event.stopPropagation();
+        const wrapper = document.getElementById('userDropdownWrapper');
+        const dropdown = document.getElementById('userMenuDropdown');
+        
+        wrapper.classList.toggle('open');
+        dropdown.classList.toggle('show');
+    }
+
+    // Tự động đóng dropdown khi click chuột ra bất kỳ vị trí nào bên ngoài
+    window.addEventListener('click', function(e) {
+        const wrapper = document.getElementById('userDropdownWrapper');
+        const dropdown = document.getElementById('userMenuDropdown');
+        if (dropdown && dropdown.classList.contains('show')) {
+            dropdown.classList.remove('show');
+            if (wrapper) wrapper.classList.remove('open');
+        }
+    });
+</script>
+</body>
+</html>

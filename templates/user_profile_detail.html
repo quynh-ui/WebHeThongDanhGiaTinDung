@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi Tiết Hồ Sơ #{{ app.app_id }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-page: #f8fafc; --card-bg: #ffffff; --primary-blue: #0284c7; --border-color: #e2e8f0;
+            --text-dark: #0f172a; --text-muted: #64748b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body {
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #334155;
+            
+            /* Màu nền phối Gradient theo ảnh: Xanh nhạt -> Trắng ấm -> Cam nhạt */
+            background-color: #f7fafc;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(224, 242, 254, 0.75) 0px, transparent 55%),
+                radial-gradient(at 100% 100%, rgba(254, 243, 199, 0.45) 0px, transparent 50%),
+                radial-gradient(at 0% 60%, rgba(255, 237, 213, 0.35) 0px, transparent 50%),
+                /* Họa tiết mạng nhện công nghệ mờ */
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cpath d='M0 100L100 0L200 100L100 200Z M200 100L300 0L400 100L300 200Z M100 200L200 100L300 200L200 300Z M0 300L100 200L200 300L100 400Z M200 300L300 200L400 300L300 400Z' fill='none' stroke='%2394a3b8' stroke-width='0.45' stroke-opacity='0.18'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+            background-attachment: fixed;
+        }
+        .detail-container { max-width: 860px; margin: 0 auto; }
+        .top-back { display: inline-flex; align-items: center; gap: 8px; color: var(--primary-blue); text-decoration: none; font-weight: 700; font-size: 14px; margin-bottom: 20px; }
+        .card-box { background: #fff; border: 1px solid var(--border-color); border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04); }
+        .card-header-flex { display: flex; align-items: center; justify-content: space-between; border-bottom: 1.5px dashed var(--border-color); padding-bottom: 20px; margin-bottom: 24px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 28px; font-size: 14px; }
+        .info-item span { color: var(--text-muted); font-size: 12.5px; display: block; margin-bottom: 3px; }
+        .info-item strong { color: #0f172a; font-weight: 700; }
+        .section-title { font-size: 14px; font-weight: 800; color: var(--primary-blue); margin: 24px 0 14px 0; text-transform: uppercase; letter-spacing: 0.5px; }
+        .decision-banner { padding: 18px 24px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+        .banner-app { background: #ecfdf5; border: 1.5px solid #a7f3d0; color: #065f46; }
+        .banner-rej { background: #fef2f2; border: 1.5px solid #fecaca; color: #991b1b; }
+    </style>
+</head>
+<body>
+
+    <div class="detail-container">
+        <a href="/profile" class="top-back"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách hồ sơ</a>
+
+        <div class="card-box">
+            <div class="card-header-flex">
+                <div>
+                    <h2 style="font-size: 22px; font-weight: 800;">Hồ sơ khoản vay #{{ app.app_id }}</h2>
+                    <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                        Ngày khởi tạo: <strong>{{ app.created_at.strftime('%d/%m/%Y %H:%M:%S') if app.created_at else '--' }}</strong> • Người tạo: <strong>{{ app.username }}</strong>
+                    </p>
+                </div>
+                <div>
+                    <span style="display: block; font-size: 12px; color: var(--text-muted); text-align: right;">Trạng thái xử lý:</span>
+                    <strong style="color: #0284c7; font-size: 15px;">{{ app.app_status or 'Processed' }}</strong>
+                </div>
+            </div>
+
+            <!-- KẾT QUẢ DỰ ĐOÁN & THÔNG TIN MÔ HÌNH -->
+            <div class="decision-banner {% if is_approved %}banner-app{% else %}banner-rej{% endif %}">
+                <div>
+                    <h4 style="font-size: 16px; font-weight: 800;">
+                        {% if is_approved %}
+                            <i class="fa-solid fa-circle-check"></i> KẾT QUẢ: ĐỦ ĐIỀU KIỆN VAY (Y)
+                        {% else %}
+                            <i class="fa-solid fa-circle-xmark"></i> KẾT QUẢ: KHÔNG ĐỦ ĐIỀU KIỆN VAY (N)
+                        {% endif %}
+                    </h4>
+                    <p style="font-size: 13px; margin-top: 4px; opacity: 0.9;">
+                        Điểm tín dụng: <strong>{{ app.score }}/850</strong> • Ghi chú: {{ app.reject_reason or 'Hồ sơ đạt tiêu chuẩn an toàn.' }}
+                    </p>
+                </div>
+                <div style="text-align: right; font-size: 13px;">
+                    <span>Mô hình thực hiện:</span>
+                    <strong style="display: block; font-size: 14px;">{{ app.model_version or 'LR_v1' }}</strong>
+                </div>
+            </div>
+
+            <!-- THÔNG TIN ĐẦU VÀO: CÁ NHÂN -->
+            <div class="section-title"><i class="fa-regular fa-user"></i> A. Thông tin cá nhân</div>
+            <div class="grid-2">
+                <div class="info-item"><span>Giới tính:</span><strong>{{ 'Nam' if app.gender == 'Male' else 'Nữ' }}</strong></div>
+                <div class="info-item"><span>Tình trạng hôn nhân:</span><strong>{{ 'Đã kết hôn' if app.married == 'Yes' else 'Độc thân' }}</strong></div>
+                <div class="info-item"><span>Số người phụ thuộc:</span><strong>{{ app.dependents or '0' }} người</strong></div>
+                <div class="info-item"><span>Trình độ học vấn:</span><strong>{{ app.education or 'Graduate' }}</strong></div>
+                <div class="info-item"><span>Độ tuổi:</span><strong>{{ app.age or '28' }} tuổi</strong></div>
+                <div class="info-item"><span>Tự kinh doanh:</span><strong>{{ 'Có' if app.self_employed == 'Yes' else 'Không' }}</strong></div>
+            </div>
+
+            <!-- THÔNG TIN ĐẦU VÀO: TÀI CHÍNH -->
+            <div class="section-title"><i class="fa-solid fa-wallet"></i> B. Thông tin tài chính</div>
+            <div class="grid-2">
+                <div class="info-item"><span>Thu nhập người vay:</span><strong>{{ "{:,.1f}".format(app.income or 0) }} triệu VNĐ/tháng</strong></div>
+                <div class="info-item"><span>Thu nhập người đồng vay:</span><strong>{{ "{:,.1f}".format(app.coapplicant_income or 0) }} triệu VNĐ</strong></div>
+                <div class="info-item"><span>Số tiền đề nghị vay:</span><strong style="font-size: 16px; color: #0284c7;">{{ "{:,.0f}".format(app.amount or 0) }} triệu VNĐ</strong></div>
+                <div class="info-item"><span>Thời hạn vay vốn:</span><strong>{{ (app.loan_term | int) if app.loan_term else 360 }} tháng</strong></div>
+                <div class="info-item" style="grid-column: span 2;">
+                    <span>Lịch sử tín dụng CIC:</span>
+                    <strong>{{ 'Đạt yêu cầu (Không ghi nhận nợ xấu)' if app.credit_history == 1 else 'Không đạt chuẩn (Từng quá hạn)' }}</strong>
+                </div>
+            </div>
+
+            <!-- THÔNG TIN KHU VỰC -->
+            <div class="section-title"><i class="fa-solid fa-location-dot"></i> C. Thông tin tài sản & Khu vực</div>
+            <div class="grid-2">
+                <div class="info-item"><span>Khu vực tài sản bảo đảm:</span><strong>{{ app.property_area or 'Semiurban' }}</strong></div>
+            </div>
+
+            <!-- THAO TÁC -->
+            <div style="margin-top: 32px; display: flex; gap: 14px; justify-content: flex-end;">
+                {% if app.app_status in ['Draft', 'Returned', 'Pending'] %}
+                    <a href="/profile/loan/edit/{{ app.id }}" style="padding: 10px 20px; border-radius: 12px; background: #0f172a; color: #fff; text-decoration: none; font-size: 13.5px; font-weight: 700;">
+                        <i class="fa-regular fa-pen-to-square"></i> Chỉnh sửa hồ sơ
+                    </a>
+                {% endif %}
+                <a href="/predict" style="padding: 10px 20px; border-radius: 12px; background: var(--primary-blue); color: #fff; text-decoration: none; font-size: 13.5px; font-weight: 700;">
+                    <i class="fa-solid fa-plus"></i> Tạo hồ sơ mới
+                </a>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

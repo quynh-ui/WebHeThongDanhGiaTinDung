@@ -81,27 +81,34 @@ class Application(db.Model):
     __tablename__ = 'applications'
     id = db.Column(db.Integer, primary_key=True)
     app_id = db.Column(db.String(20), unique=True, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     username = db.Column(db.String(50), nullable=False)
-    score = db.Column(db.Integer, nullable=False)
-    amount = db.Column(db.Float, nullable=False)
-    status = db.Column(db.String(50), nullable=False)       # Dự đoán của AI ('Phê Duyệt' / 'Từ Chối')
-    badge = db.Column(db.String(20), nullable=False)
-    reject_reason = db.Column(db.Text, nullable=True)      # Lý do từ chối (ghi chú của Admin)
     
-    # Các trường dữ liệu phục vụ thẩm định và nạp Dataset
+    # Trạng thái hồ sơ & Kết quả AI
+    app_status = db.Column(db.String(30), default='Processed')
+    status = db.Column(db.String(50), nullable=False)
+    score = db.Column(db.Integer, default=650)
+    amount = db.Column(db.Float, nullable=False)
+    loan_term = db.Column(db.Float, default=360.0)
+    
+    # Thông tin tài chính & nhân thân
     income = db.Column(db.Float, default=15.0)
+    coapplicant_income = db.Column(db.Float, default=0.0)
     credit_history = db.Column(db.Integer, default=1)
     gender = db.Column(db.String(10), default='Male')
     married = db.Column(db.String(10), default='Yes')
     dependents = db.Column(db.String(10), default='0')
     education = db.Column(db.String(20), default='Graduate')
     self_employed = db.Column(db.String(10), default='No')
+    business_model = db.Column(db.String(100), nullable=True)
     property_area = db.Column(db.String(20), default='Semiurban')
-    loan_term = db.Column(db.Float, default=360.0)
+    age = db.Column(db.Integer, default=30)
     
-    # Kết quả thực tế do Admin xác nhận (Y/N) để máy học từ ca đúng/sai
-    actual_status = db.Column(db.String(10), nullable=True) 
-    in_dataset = db.Column(db.Boolean, default=False)       # False: Chờ duyệt, True: Đã nạp vào Dataset
+    model_version = db.Column(db.String(50), default='LR_v1')
+    badge = db.Column(db.String(20), default='approved')
+    reject_reason = db.Column(db.Text, nullable=True)
+    actual_status = db.Column(db.String(10), nullable=True)
+    in_dataset = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.now)
 
 class TrainingHistory(db.Model):
@@ -333,17 +340,516 @@ def user_home():
             db.session.rollback()
             flash(f"Lỗi khi lưu dữ liệu: {e}", "danger")
 
+    # Lấy hồ sơ gần nhất của người dùng
     user_app = Application.query.filter_by(username=current_user.username).order_by(Application.id.desc()).first()
 
+    # 2. Tính toán các chỉ số thống kê động từ Database theo đúng trường username
+    total_submitted = Application.query.filter_by(username=current_user.username).count()
+    total_completed = Application.query.filter(
+        Application.username == current_user.username,
+        Application.status.in_(['Phê Duyệt', 'Từ Chối', 'Approved', 'Rejected'])
+    ).count()
+    total_pending = Application.query.filter(
+        Application.username == current_user.username,
+        Application.in_dataset == False,
+        Application.status != 'Bị Từ Chối Bởi Admin'
+    ).count()
+
+    stats = {
+        'total_submitted': total_submitted,
+        'total_completed': total_completed,
+        'total_pending': total_pending
+    }
+
+    # 3. Lấy 5 hồ sơ gần nhất
+    recent_applications = Application.query.filter_by(username=current_user.username).order_by(Application.id.desc()).limit(5).all()
+
+    # 4. Trả về template với đầy đủ các biến cần thiết
     return render_template(
         'index.html',
         result=result,
         status=status,
         reasons=reasons,
         user=current_user,
-        application=user_app
+        user_fullname=getattr(current_user, 'fullname', current_user.username),
+        stats=stats,
+        latest_prediction=user_app,
+        recent_applications=recent_applications
     )
 
+# CHỨC NĂNG 2.2: DỰ ĐOÁN KHOẢN VAY (CẬP NHẬT MỚI)
+# ============================================================
+@app.route('/predict', methods=['GET', 'POST'])
+@login_required
+def predict_loan():
+    prediction_result = None
+    input_data = {}
+    validation_errors = []
+
+    # 1. Lấy thông tin mô hình đang được kích hoạt
+    history = read_training_history()
+    active_model_info = next((h for h in history if h.get('status') == 'Đang sử dụng'), None)
+    if not active_model_info and history:
+        active_model_info = history[-1]
+    active_model_name = active_model_info.get('name', 'Mô hình ML mặc định') if active_model_info else "Mô hình mặc định"
+
+    if request.method == 'POST':
+        # Thu thập dữ liệu
+        gender = request.form.get('gender', 'Male').strip()
+        married = request.form.get('married', 'Yes').strip()
+        dependents = request.form.get('dependents', '0').strip()
+        education = request.form.get('education', 'Graduate').strip()
+        self_employed = request.form.get('self_employed', 'No').strip()
+        business_model = request.form.get('business_model', '').strip()
+        age_raw = request.form.get('age', '').strip()
+
+        applicant_income_raw = request.form.get('applicant_income', '').strip()
+        coapplicant_income_raw = request.form.get('coapplicant_income', '0').strip()
+        loan_amount_raw = request.form.get('loan_amount', '').strip()
+        loan_term_raw = request.form.get('loan_term', '360').strip()
+        credit_history_raw = request.form.get('credit_history', '1').strip()
+        property_area = request.form.get('property_area', 'Semiurban').strip()
+
+        input_data = {
+            "gender": gender,
+            "married": married,
+            "dependents": dependents,
+            "education": education,
+            "self_employed": self_employed,
+            "business_model": business_model,
+            "age": age_raw,
+            "applicant_income": applicant_income_raw,
+            "coapplicant_income": coapplicant_income_raw,
+            "loan_amount": loan_amount_raw,
+            "loan_term": loan_term_raw,
+            "credit_history": credit_history_raw,
+            "property_area": property_area
+        }
+
+        # 2. KIỂM TRA DỮ LIỆU ĐẦU VÀO
+        try:
+            age = int(age_raw)
+            if age < 18 or age > 60:
+                validation_errors.append("Độ tuổi vay vốn phải từ 18 đến 60 tuổi.")
+        except ValueError:
+            validation_errors.append("Vui lòng nhập độ tuổi hợp lệ.")
+
+        try:
+            applicant_income = float(applicant_income_raw)
+            if applicant_income < 0:
+                validation_errors.append("Thu nhập người vay không được là số âm.")
+        except ValueError:
+            validation_errors.append("Thu nhập người vay phải là số hợp lệ.")
+
+        try:
+            coapplicant_income = float(coapplicant_income_raw) if coapplicant_income_raw else 0.0
+            if coapplicant_income < 0:
+                validation_errors.append("Thu nhập người đồng vay không được là số âm.")
+        except ValueError:
+            validation_errors.append("Thu nhập người đồng vay không hợp lệ.")
+
+        try:
+            loan_amount = float(loan_amount_raw)
+            if loan_amount <= 0:
+                validation_errors.append("Số tiền vay phải lớn hơn 0.")
+        except ValueError:
+            validation_errors.append("Số tiền vay phải là số hợp lệ.")
+
+        try:
+            loan_term = float(loan_term_raw)
+            if loan_term <= 0:
+                validation_errors.append("Thời hạn vay không hợp lệ.")
+        except ValueError:
+            validation_errors.append("Thời hạn vay không hợp lệ.")
+
+        credit_history = float(credit_history_raw) if credit_history_raw in ['1', '0', '1.0', '0.0'] else 1.0
+
+        if validation_errors:
+            for err in validation_errors:
+                flash(err, "danger")
+            return render_template(
+                'predict.html',
+                user=current_user,
+                user_fullname=getattr(current_user, 'fullname', current_user.username),
+                input_data=input_data,
+                active_model_name=active_model_name
+            )
+
+        # 3. TIỀN XỬ LÝ & CHẠY MÔ HÌNH DỰ ĐOÁN
+        app_income_norm = applicant_income * 300.0
+        coapp_income_norm = coapplicant_income * 300.0
+        loan_amount_norm = loan_amount * 1.5
+
+        prob_approved = 0.5
+        ai_code = 'N'
+        status_db = 'Từ Chối'
+        reasons = []
+
+        if ml_model is not None:
+            try:
+                input_df = pd.DataFrame([{
+                    "Gender": gender,
+                    "Married": married,
+                    "Dependents": dependents,
+                    "Education": education,
+                    "Self_Employed": self_employed,
+                    "ApplicantIncome": app_income_norm,
+                    "CoapplicantIncome": coapp_income_norm,
+                    "LoanAmount": loan_amount_norm,
+                    "Loan_Amount_Term": loan_term,
+                    "Credit_History": credit_history,
+                    "Property_Area": property_area
+                }])
+
+                pred = ml_model.predict(input_df)[0]
+                proba = ml_model.predict_proba(input_df)[0]
+                y_idx = list(ml_model.classes_).index('Y') if 'Y' in ml_model.classes_ else 1
+                prob_approved = float(proba[y_idx])
+
+                if pred == 'Y':
+                    ai_code = 'Y'
+                    status_db = 'Phê Duyệt'
+                    badge_type = 'approved'
+                    score = int(620 + (prob_approved * 230))
+                else:
+                    ai_code = 'N'
+                    status_db = 'Từ Chối'
+                    badge_type = 'rejected'
+                    score = int(400 + (prob_approved * 240))
+
+                    if credit_history == 0.0:
+                        reasons.append("Lịch sử tín dụng không đạt tiêu chuẩn (CIC phát sinh nợ quá hạn).")
+                    if (loan_amount / (applicant_income + coapplicant_income)) > 15:
+                        reasons.append("Tỷ lệ số tiền vay vượt quá ngưỡng an toàn so với thu nhập hàng tháng.")
+            except Exception as e:
+                print(f"Lỗi chạy mô hình: {e}")
+                prob_approved = 0.85 if credit_history == 1.0 else 0.35
+                ai_code = 'Y' if prob_approved >= 0.5 else 'N'
+                status_db = 'Phê Duyệt' if ai_code == 'Y' else 'Từ Chối'
+                badge_type = 'approved' if ai_code == 'Y' else 'rejected'
+                score = 720 if ai_code == 'Y' else 480
+        else:
+            prob_approved = 0.88 if credit_history == 1.0 and (applicant_income + coapplicant_income) >= 12 else 0.32
+            ai_code = 'Y' if prob_approved >= 0.5 else 'N'
+            status_db = 'Phê Duyệt' if ai_code == 'Y' else 'Từ Chối'
+            badge_type = 'approved' if ai_code == 'Y' else 'rejected'
+            score = 700 if ai_code == 'Y' else 450
+
+        # Đánh giá các yếu tố ảnh hưởng
+        total_income = applicant_income + coapplicant_income
+        dti = (loan_amount / total_income) if total_income > 0 else 20
+        dti_status = "Ổn định" if dti <= 15 else "Khá cao"
+        credit_status_text = "Rất tốt" if credit_history == 1.0 else "Có nợ chú ý/nợ xấu"
+        risk_level = "Thấp (Low)" if prob_approved >= 0.75 else ("Trung bình (Medium)" if prob_approved >= 0.5 else "Cao (High)")
+
+        # 4. LƯU VÀO DATABASE
+        generated_app_id = f"HS-{random.randint(100000, 999999)}"
+        while Application.query.filter_by(app_id=generated_app_id).first():
+            generated_app_id = f"HS-{random.randint(100000, 999999)}"
+
+        new_app = Application(
+            app_id=generated_app_id,
+            user_id=current_user.id,
+            username=current_user.username,
+            model_version=active_model_name,
+            score=score,
+            amount=loan_amount,
+            status=status_db,
+            badge=badge_type,
+            income=applicant_income,
+            credit_history=int(credit_history),
+            gender=gender,
+            married=married,
+            dependents=dependents,
+            education=education,
+            self_employed=self_employed,
+            property_area=property_area,
+            loan_term=loan_term,
+            in_dataset=False,
+            reject_reason="; ".join(reasons) if reasons else None
+        )
+        db.session.add(new_app)
+        db.session.commit()
+
+        # 5. KẾT QUẢ HIỂN THỊ LÊN BẢNG PHÂN TÍCH
+        prediction_result = {
+            "app_id": generated_app_id,
+            "created_at": datetime.now().strftime("%d/%m/%Y %H:%M"),
+            "prediction_code": ai_code,
+            "approval_percentage": int(round(prob_approved * 100)),
+            "model_version": active_model_name,
+            "score": score,
+            "risk_level": risk_level,
+            "loan_amount": loan_amount,
+            "loan_term": int(loan_term),
+            "max_approved_amount": loan_amount if ai_code == 'Y' else round(total_income * 10, 1),
+            "credit_status_text": credit_status_text,
+            "dti_status": dti_status,
+            "property_area_text": "Phù hợp" if property_area in ['Semiurban', 'Urban'] else "Khu vực rủi ro nhẹ",
+            "confidence": int(round(prob_approved * 100)) if ai_code == 'Y' else int(round((1 - prob_approved) * 100)),
+            "reasons": reasons
+        }
+
+    return render_template(
+        'predict.html',
+        user=current_user,
+        user_fullname=getattr(current_user, 'fullname', current_user.username),
+        result=prediction_result,
+        active_model_name=active_model_name,
+        input_data=input_data
+    )
+
+# CHỨC NĂNG 2.3: LỊCH SỬ DỰ ĐOÁN KHOẢN VAY (USER PORTAL)
+from datetime import datetime, timedelta
+@app.route('/history')
+@login_required
+def user_history():
+    search_query = request.args.get('q', '').strip()
+    status_filter = request.args.get('status', 'all').strip()
+    time_filter = request.args.get('time_range', 'all').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = 5
+
+    # 1. Truy vấn các hồ sơ của người dùng hiện tại
+    query = Application.query.filter_by(username=current_user.username)
+
+    # 2. Tìm kiếm theo mã hồ sơ hoặc số tiền vay
+    if search_query:
+        if search_query.replace('.', '', 1).isdigit():
+            query = query.filter(
+                (Application.app_id.ilike(f"%{search_query}%")) | 
+                (Application.amount == float(search_query))
+            )
+        else:
+            query = query.filter(Application.app_id.ilike(f"%{search_query}%"))
+
+    # 3. Lọc theo trạng thái
+    if status_filter in ['Y', 'Approved']:
+        query = query.filter(Application.status.in_(['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y']))
+    elif status_filter in ['N', 'Rejected']:
+        query = query.filter(Application.status.in_(['Từ Chối', 'Rejected', 'Bị Từ Chối Bởi Admin', 'N']))
+
+    # 4. Lọc theo khoảng thời gian
+    now = datetime.now()
+    if time_filter == '7days':
+        query = query.filter(Application.created_at >= now - timedelta(days=7))
+    elif time_filter == 'this_week':
+        start_week = now - timedelta(days=now.weekday())
+        query = query.filter(Application.created_at >= start_week)
+    elif time_filter == 'this_month':
+        start_month = datetime(now.year, now.month, 1)
+        query = query.filter(Application.created_at >= start_month)
+
+    # 5. Đếm thống kê cho 3 thẻ đầu trang
+    user_all_apps = Application.query.filter_by(username=current_user.username).all()
+    total_records = len(user_all_apps)
+    total_approved = sum(1 for a in user_all_apps if a.status in ['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y'])
+    total_rejected = total_records - total_approved
+
+    # 6. Sắp xếp & phân trang
+    query = query.order_by(Application.created_at.desc(), Application.id.desc())
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    applications = pagination.items
+
+    return render_template(
+        'user_history.html',
+        applications=applications,
+        pagination=pagination,
+        search_query=search_query,
+        status_filter=status_filter,
+        time_filter=time_filter,
+        total_records=total_records,
+        total_approved=total_approved,
+        total_rejected=total_rejected,
+        user=current_user,
+        user_fullname=getattr(current_user, 'fullname', current_user.username)
+    )
+# ============================================================
+# CHỨC NĂNG 2.4: QUẢN LÝ HỒ SƠ KHOẢN VAY (USER PORTAL)
+# ============================================================
+
+# 1. Danh sách hồ sơ & Bộ lọc
+@app.route('/profile/loans')
+@app.route('/profile')
+@login_required
+def user_loan_profiles():
+    search_query = request.args.get('q', '').strip()
+    status_filter = request.args.get('app_status', 'all').strip()
+    result_filter = request.args.get('prediction_result', 'all').strip()
+    page = request.args.get('page', 1, type=int)
+    per_page = 6
+
+    # Bảo mật: Chỉ lấy hồ sơ của chính user đăng nhập
+    query = Application.query.filter_by(username=current_user.username)
+
+    # 1. Tìm kiếm theo mã hồ sơ
+    if search_query:
+        query = query.filter(Application.app_id.ilike(f"%{search_query}%"))
+
+    # 2. Lọc theo trạng thái hồ sơ (Hỗ trợ lọc riêng hồ sơ Admin đã duyệt)
+    if status_filter == 'Admin_Approved':
+        query = query.filter((Application.in_dataset == True) | (Application.actual_status == 'Y'))
+    elif status_filter == 'Admin_Rejected':
+        query = query.filter(Application.status == 'Bị Từ Chối Bởi Admin')
+    elif status_filter != 'all':
+        query = query.filter(Application.app_status == status_filter)
+
+    # 3. Lọc theo kết quả AI (Y / N)
+    if result_filter == 'Y':
+        query = query.filter(Application.status.in_(['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y']))
+    elif result_filter == 'N':
+        query = query.filter(Application.status.in_(['Từ Chối', 'Rejected', 'Bị Từ Chối Bởi Admin', 'N']))
+
+    query = query.order_by(Application.created_at.desc(), Application.id.desc())
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    applications = pagination.items
+
+    # 4. Đếm số lượng hiển thị lên 5 thẻ thống kê (có thêm Admin phê duyệt)
+    all_user_apps = Application.query.filter_by(username=current_user.username).all()
+    admin_approved_count = sum(1 for a in all_user_apps if getattr(a, 'in_dataset', False) or getattr(a, 'actual_status', '') == 'Y')
+    
+    stats_counts = {
+        'total': len(all_user_apps),
+        'admin_approved': admin_approved_count, # 👉 Đếm riêng hồ sơ Admin đã duyệt
+        'processed': sum(1 for a in all_user_apps if getattr(a, 'app_status', 'Processed') == 'Processed'),
+        'pending': sum(1 for a in all_user_apps if getattr(a, 'app_status', '') in ['Pending', 'Submitted']),
+        'draft': sum(1 for a in all_user_apps if getattr(a, 'app_status', '') in ['Draft', 'Returned'])
+    }
+
+    return render_template(
+        'user_profiles.html',
+        applications=applications,
+        pagination=pagination,
+        search_query=search_query,
+        status_filter=status_filter,
+        result_filter=result_filter,
+        stats_counts=stats_counts,
+        user=current_user,
+        user_fullname=getattr(current_user, 'fullname', current_user.username)
+    )
+
+
+# 2. Xem chi tiết hồ sơ
+@app.route('/profile/loan/<int:app_id>')
+@login_required
+def view_loan_profile_detail(app_id):
+    # Bảo mật: Kiểm tra quyền sở hữu hồ sơ phía máy chủ
+    application = Application.query.filter_by(id=app_id, username=current_user.username).first_or_404()
+    
+    is_approved = application.status in ['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y']
+    return render_template(
+        'user_profile_detail.html',
+        app=application,
+        is_approved=is_approved,
+        user=current_user,
+        user_fullname=getattr(current_user, 'fullname', current_user.username)
+    )
+
+
+# 3. Hủy hồ sơ (2.4.3 - Bước 9)
+@app.route('/profile/loan/cancel/<int:app_id>', methods=['POST'])
+@login_required
+def cancel_loan_profile(app_id):
+    application = Application.query.filter_by(id=app_id, username=current_user.username).first_or_404()
+    
+    # Chỉ cho phép hủy hồ sơ bản nháp hoặc đang chờ xử lý
+    current_st = getattr(application, 'app_status', 'Processed')
+    if current_st in ['Draft', 'Pending', 'Submitted', 'Returned']:
+        db.session.delete(application)
+        db.session.commit()
+        flash(f"Đã hủy và xóa bỏ hồ sơ #{application.app_id} thành công!", "success")
+    else:
+        # Nếu đã xử lý, chuyển cờ trạng thái sang Đã hủy
+        application.app_status = 'Cancelled'
+        db.session.commit()
+        flash(f"Hồ sơ #{application.app_id} đã được chuyển sang trạng thái Đã hủy.", "info")
+
+    return redirect(url_for('user_loan_profiles'))
+
+
+# 4. Chỉnh sửa và cập nhật hồ sơ (2.4.3 - Bước 7 & Quy tắc dự đoán mới)
+@app.route('/profile/loan/edit/<int:app_id>', methods=['GET', 'POST'])
+@login_required
+def edit_loan_profile(app_id):
+    application = Application.query.filter_by(id=app_id, username=current_user.username).first_or_404()
+
+    if request.method == 'POST':
+        try:
+            # Thu thập dữ liệu cập nhật
+            income = float(request.form.get('income', 0))
+            coapplicant_income = float(request.form.get('coapplicant_income', 0))
+            amount = float(request.form.get('amount', 0))
+            loan_term = float(request.form.get('loan_term', 360))
+            credit_history = float(request.form.get('credit_history', 1.0))
+            education = request.form.get('education', 'Graduate')
+            self_employed = request.form.get('self_employed', 'No')
+            property_area = request.form.get('property_area', 'Semiurban')
+            
+            # Cập nhật thông tin đầu vào
+            application.income = income
+            application.coapplicant_income = coapplicant_income
+            application.amount = amount
+            application.loan_term = loan_term
+            application.credit_history = int(credit_history)
+            application.education = education
+            application.self_employed = self_employed
+            application.property_area = property_area
+
+            # Quy tắc quan trọng: Khi sửa dữ liệu, hệ thống chạy thẩm định mới và ghi nhận phiên bản kết quả mới
+            app_income_norm = income * 300.0
+            coapp_income_norm = coapplicant_income * 300.0
+            loan_amount_norm = amount * 1.5
+
+            if ml_model is not None:
+                ml_edu = 'Graduate' if education in ['Graduate', 'THPT', 'THCS'] else 'Not Graduate'
+                input_df = pd.DataFrame([{
+                    "Gender": application.gender or 'Male',
+                    "Married": application.married or 'Yes',
+                    "Dependents": application.dependents or '0',
+                    "Education": ml_edu,
+                    "Self_Employed": self_employed,
+                    "ApplicantIncome": app_income_norm,
+                    "CoapplicantIncome": coapp_income_norm,
+                    "LoanAmount": loan_amount_norm,
+                    "Loan_Amount_Term": loan_term,
+                    "Credit_History": credit_history,
+                    "Property_Area": property_area
+                }])
+                pred = ml_model.predict(input_df)[0]
+                proba = ml_model.predict_proba(input_df)[0]
+                y_idx = list(ml_model.classes_).index('Y') if 'Y' in ml_model.classes_ else 1
+                conf = proba[y_idx]
+
+                application.status = 'Phê Duyệt' if pred == 'Y' else 'Từ Chối'
+                application.badge = 'approved' if pred == 'Y' else 'rejected'
+                application.score = int(620 + (conf * 230)) if pred == 'Y' else int(400 + (conf * 240))
+            else:
+                application.status = 'Phê Duyệt' if credit_history == 1.0 and (income + coapplicant_income) >= 12 else 'Từ Chối'
+                application.badge = 'approved' if application.status == 'Phê Duyệt' else 'rejected'
+
+            application.app_status = 'Processed'
+            application.created_at = datetime.now() # Cập nhật thời gian thực hiện dự đoán mới
+            db.session.commit()
+
+            flash("Cập nhật hồ sơ và tính toán lại kết quả dự đoán thành công!", "success")
+            return redirect(url_for('view_loan_profile_detail', app_id=application.id))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Lỗi cập nhật: {e}", "danger")
+
+    return render_template('user_profile_edit.html', app=application, user=current_user)
+# ============================================================
+# CHỨC NĂNG 2.5: HƯỚNG DẪN SỬ DỤNG (USER PORTAL)
+# ============================================================
+@app.route('/guide')
+@login_required
+def user_guide():
+    return render_template(
+        'user_guide.html',
+        user=current_user,
+        user_fullname=getattr(current_user, 'fullname', current_user.username)
+    )
 # ============================================================
 # 11. ADMIN DASHBOARD & TÍNH TOÁN REAL-TIME
     # ROUTE ADMIN DUYỆT HỒ SƠ ĐẨY VÀO DATASET
@@ -519,7 +1025,9 @@ def dataset_pending():
     return render_template('pending_applications.html', pending_list=pending_list, user=current_user)
 
 
+# ============================================================
 # 2. Xử lý Admin DUYỆT hồ sơ (Gắn nhãn thực tế & nạp vào train.csv)
+# ============================================================
 @app.route('/admin/dataset/approve/<int:app_id>', methods=['POST'])
 @login_required
 def approve_pending_application(app_id):
@@ -545,15 +1053,27 @@ def approve_pending_application(app_id):
         loan_status=actual_status
     )
 
+    # Cập nhật thông tin nạp Dataset
     application.in_dataset = True
     application.actual_status = actual_status
+    
+    # 👉 ĐỒNG BỘ SANG USER PORTAL:
+    # 1. Chuyển trạng thái quy trình xử lý sang 'Processed' (Đã xử lý)
+    application.app_status = 'Processed'
+    
+    # 2. Cập nhật kết quả quyết định chính thức tương ứng với nhãn thực tế
+    application.status = 'Phê Duyệt' if actual_status == 'Y' else 'Từ Chối'
+    application.badge = 'approved' if actual_status == 'Y' else 'rejected'
+
     db.session.commit()
 
     flash(f"✅ Đã duyệt hồ sơ {application.app_id} vào Dataset với nhãn thực tế: '{actual_status}'!", "success")
     return redirect(url_for('dataset_pending'))
 
 
+# ============================================================
 # 3. Xử lý Admin TỪ CHỐI hồ sơ (Kèm lý do / Ghi chú)
+# ============================================================
 @app.route('/admin/dataset/reject/<int:app_id>', methods=['POST'])
 @login_required
 def reject_pending_application(app_id):
@@ -564,9 +1084,17 @@ def reject_pending_application(app_id):
     application = Application.query.get_or_404(app_id)
     reason = request.form.get('reject_reason', 'Dữ liệu không đủ độ tin cậy hoặc thông tin chưa chính xác.')
 
+    # Không đưa vào Dataset
     application.in_dataset = False
     application.reject_reason = reason
     application.status = 'Bị Từ Chối Bởi Admin'
+    application.badge = 'rejected'
+
+    # 👉 ĐỒNG BỘ SANG USER PORTAL:
+    # Chuyển trạng thái quy trình sang 'Returned' (Yêu cầu bổ sung/Chỉnh sửa)
+    # hoặc 'Processed' tùy theo việc bạn muốn user sửa lại hay từ chối dứt điểm:
+    application.app_status = 'Returned'
+
     db.session.commit()
 
     flash(f"❌ Đã từ chối đưa hồ sơ {application.app_id} vào Dataset. Lý do: {reason}", "warning")
@@ -2064,6 +2592,184 @@ def download_backup(filename):
     if current_user.role != 'admin':
         return redirect(url_for('user_home'))
     return send_from_directory(BACKUP_DIR, filename, as_attachment=True)
+
+
+# ============================================================
+# API LẤY CHI TIẾT HỒ SƠ PHỤC VỤ MODAL (XEM CHI TIẾT)
+# ============================================================
+@app.route('/api/history/<int:app_id>')
+@login_required
+def api_application_detail(app_id):
+    app_record = Application.query.filter_by(id=app_id, username=current_user.username).first()
+    if not app_record:
+        return jsonify({"success": False, "message": "Không tìm thấy hồ sơ!"}), 404
+
+    is_approved = app_record.status in ['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y']
+    return jsonify({
+        "success": True,
+        "data": {
+            "id": app_record.id,
+            "app_id": app_record.app_id,
+            "created_at": app_record.created_at.strftime('%d/%m/%Y %H:%M') if app_record.created_at else '--',
+            "status": "Y" if is_approved else "N",
+            "status_text": "Y – Dự đoán chấp thuận" if is_approved else "N – Dự đoán không chấp thuận",
+            "score": getattr(app_record, 'score', 720),
+            "gender": "Nam" if getattr(app_record, 'gender', 'Male') == 'Male' else "Nữ",
+            "married": "Đã kết hôn" if getattr(app_record, 'married', 'Yes') == 'Yes' else "Độc thân",
+            "dependents": getattr(app_record, 'dependents', '0'),
+            "education": getattr(app_record, 'education', 'Graduate'),
+            "self_employed": "Có" if getattr(app_record, 'self_employed', 'No') == 'Yes' else "Không",
+            "applicant_income": f"{getattr(app_record, 'income', 0):,.1f} triệu VNĐ",
+            "coapplicant_income": "0 triệu VNĐ",
+            "amount": f"{app_record.amount:,.1f} triệu VNĐ",
+            "loan_term": f"{int(getattr(app_record, 'loan_term', 360))} tháng",
+            "credit_history": "Đạt yêu cầu (Không có nợ xấu)" if getattr(app_record, 'credit_history', 1) == 1 else "Không đạt yêu cầu",
+            "property_area": getattr(app_record, 'property_area', 'Semiurban'),
+            "model_version": "LR_v1",
+            "reject_reason": getattr(app_record, 'reject_reason', '') or "Hồ sơ an toàn, không có ghi chú cảnh báo rủi ro."
+        }
+    })
+
+# API XỬ LÝ THAO TÁC HÀNG LOẠT (XÓA / XUẤT DỮ LIỆU)
+@app.route('/api/history/bulk_action', methods=['POST'])
+@login_required
+def bulk_action():
+    data = request.get_json() or {}
+    action = data.get('action')
+    app_ids = data.get('ids', [])
+
+    if not app_ids:
+        return jsonify({"success": False, "message": "Vui lòng chọn ít nhất một hồ sơ!"})
+
+    if action == 'delete':
+        Application.query.filter(Application.id.in_(app_ids), Application.username == current_user.username).delete(synchronize_session=False)
+        db.session.commit()
+        return jsonify({"success": True, "message": f"Đã xóa thành công {len(app_ids)} hồ sơ!"})
+
+    return jsonify({"success": True, "message": "Thao tác thành công!"})
+# ============================================================
+# API TRỢ LÝ CHATBOT AI (TỰ ĐỘNG LỌC VÀ ĐIỀU HƯỚNG CÂU HỎI LỆCH HƯỚNG)
+# ============================================================
+@app.route('/api/chatbot', methods=['POST'])
+@login_required
+def chatbot_assistant():
+    data = request.get_json() or {}
+    raw_msg = data.get('message', '').strip()
+    user_msg = raw_msg.lower()
+
+    if not user_msg:
+        return jsonify({
+            'reply': 'Xin chào! Tôi là Trợ lý AI của Hệ Thống Dự Đoán Tín Dụng. Tôi có thể hỗ trợ gì cho bạn hôm nay?',
+            'suggestions': ['💡 Tư vấn tối ưu hồ sơ gần nhất', '📋 Hướng dẫn nhập thông tin vay', '📊 Giải thích nhãn Y / N']
+        })
+
+    # 1. Truy vấn hồ sơ gần nhất của người dùng hiện tại
+    latest_app = Application.query.filter_by(username=current_user.username)\
+                                  .order_by(Application.created_at.desc(), Application.id.desc()).first()
+
+    app_info = ""
+    if latest_app:
+        is_approved = latest_app.status in ['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y']
+        res_str = "Chấp thuận (Y)" if is_approved else "Không chấp thuận (N)"
+        wf_str = getattr(latest_app, 'app_status', 'Processed')
+        app_info = f"Hồ sơ gần nhất của bạn là #{latest_app.app_id} (Khoản vay {latest_app.amount:,.0f} triệu VNĐ, Kết quả: {res_str}, Trạng thái: {wf_str})."
+
+    # ============================================================
+    # A. XỬ LÝ CÁC NGỮ CẢNH HỢP LỆ TRONG PHẠM VI DỰ ÁN (IN-SCOPE)
+    # ============================================================
+
+    # 1. Tối ưu hồ sơ / Lời khuyên tăng tỷ lệ duyệt
+    if any(k in user_msg for k in ['tối ưu', 'lời khuyên', 'tăng tỷ lệ', 'làm sao để duyệt', 'tư vấn giúp', 'duyệt hồ sơ']):
+        if not latest_app:
+            return jsonify({
+                'reply': 'Bạn chưa có hồ sơ nào trong hệ thống! Hãy chọn menu <strong>Dự đoán</strong> để gửi hồ sơ đầu tiên, tôi sẽ phân tích và tư vấn cụ thể cho bạn.',
+                'suggestions': ['📋 Hướng dẫn quy chuẩn nhập form', '❓ Lịch sử tín dụng CIC tính sao?']
+            })
+        
+        if latest_app.status in ['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y']:
+            reply_text = f"🎉 <strong>Phân tích hồ sơ #{latest_app.app_id}:</strong><br>" \
+                         f"Hồ sơ của bạn đã được mô hình AI đánh giá đạt tiêu chuẩn an toàn cao. Tỷ lệ nợ/thu nhập rất tốt. " \
+                         f"Nếu cần bổ sung vốn, bạn có thể cân nhắc nâng hạn mức thêm 10%–15% mà vẫn đảm bảo tỷ lệ duyệt trên 80%."
+        else:
+            reduced = round(latest_app.amount * 0.9, 0)
+            suggested_term = min(360, int((latest_app.loan_term or 36) + 24))
+            reply_text = f"💡 <strong>Gợi ý tối ưu tăng tỷ lệ duyệt cho hồ sơ #{latest_app.app_id}:</strong><br>" \
+                         f"Hồ sơ hiện tại đang nhận kết quả <em>Từ chối (N)</em>. Bạn nên:<br>" \
+                         f"1. <strong>Giảm hạn mức vay:</strong> Giảm từ {latest_app.amount:,.0f} tr xuống khoảng <strong>{reduced:,.0f} triệu VNĐ</strong> (-10%).<br>" \
+                         f"2. <strong>Kéo dài thời hạn:</strong> Nâng kỳ hạn lên <strong>{suggested_term} tháng</strong> để giảm áp lực trả góp hàng tháng.<br>" \
+                         f"3. <strong>Bổ sung người đồng vay:</strong> Thêm người bảo lãnh có thu nhập ổn định để tăng điểm tín dụng."
+        return jsonify({
+            'reply': reply_text,
+            'suggestions': ['Dự đoán khoản vay mới ngay', 'Giải thích ý nghĩa kết quả Y và N', 'Kiểm tra trạng thái hồ sơ']
+        })
+
+    # 2. Giải thích kết quả Y / N và Bản chất mô hình Học máy
+    if any(k in user_msg for k in ['kết quả', 'y là gì', 'n là gì', 'chấp thuận', 'tại sao từ chối', 'mô hình', 'học máy', 'machine learning']):
+        return jsonify({
+            'reply': "📊 <strong>Giải thích kết quả dự đoán từ Mô hình Học máy:</strong><br>" \
+                     "• <strong>Nhãn Y (Chấp thuận):</strong> Hồ sơ mang đặc điểm tương đồng với nhóm khách hàng uy tín đã được giải ngân an toàn trong tập dữ liệu huấn luyện.<br>" \
+                     "• <strong>Nhãn N (Không chấp thuận):</strong> Hồ sơ tiềm ẩn rủi ro trả nợ (thường do nợ quá hạn CIC hoặc khoản vay vượt quá năng lực tích lũy).<br><br>" \
+                     "<em>⚠️ Lưu ý: Kết quả trên là dự đoán toán học để tham khảo, không thay thế quyết định giải ngân chính thức từ phía ngân hàng.</em>",
+            'suggestions': ['Làm sao để tăng tỷ lệ duyệt?', 'Đơn vị tiền tệ nhập như thế nào?', 'Xem hồ sơ gần nhất']
+        })
+
+    # 3. Hướng dẫn điền biểu mẫu (Form) & Giải thích 11 thuộc tính đầu vào
+    if any(k in user_msg for k in ['nhập', 'điền', 'thu nhập', 'cic', 'đơn vị', 'kỳ hạn', 'hướng dẫn', 'thuộc tính', 'học vấn', 'tự kinh doanh', 'tài sản']):
+        return jsonify({
+            'reply': "📋 <strong>Quy chuẩn nhập dữ liệu thẩm định:</strong><br>" \
+                     "• <strong>Thu nhập & Số tiền vay:</strong> Đơn vị tính là <strong>Triệu VNĐ</strong> (Ví dụ: 25 triệu VNĐ thì nhập số <code>25</code>, không điền thêm số 0 hoặc chữ).<br>" \
+                     "• <strong>Lịch sử tín dụng (CIC):</strong> Chọn <em>Đạt yêu cầu (1.0)</em> nếu không có nợ quá hạn; chọn <em>Không đạt (0.0)</em> nếu từng có nợ xấu.<br>" \
+                     "• <strong>Kỳ hạn:</strong> Tính theo số tháng (từ 6 đến 360 tháng).",
+            'suggestions': ['Tối ưu hồ sơ gần nhất', 'Mở form dự đoán ngay', 'Trạng thái hồ sơ có ý nghĩa gì?']
+        })
+
+    # 4. Trạng thái hồ sơ & Phân biệt Admin duyệt (Workflow)
+    if any(k in user_msg for k in ['trạng thái', 'admin duyệt', 'pending', 'processed', 'returned', 'hồ sơ', 'kiểm tra']):
+        st_reply = f"{app_info}<br><br>" if app_info else ""
+        st_reply += "📑 <strong>Ý nghĩa các trạng thái xử lý hồ sơ:</strong><br>" \
+                    "• <strong>Pending (Chờ duyệt):</strong> Hồ sơ đã gửi và đang chờ Admin kiểm tra.<br>" \
+                    "• <strong>Processed (Đã xử lý):</strong> Hồ sơ đã hoàn tất thẩm định tự động qua mô hình AI.<br>" \
+                    "• <strong>Returned (Yêu cầu bổ sung):</strong> Hồ sơ cần bạn chỉnh sửa lại thông tin.<br>" \
+                    "• <strong>Admin đã duyệt:</strong> Hồ sơ đã được Ban thẩm định phê duyệt chính thức vào hệ thống."
+        return jsonify({
+            'reply': st_reply,
+            'suggestions': ['Cách sửa hồ sơ Returned', 'Xem danh sách hồ sơ cá nhân', 'Tối ưu hồ sơ']
+        })
+
+    # ============================================================
+    # B. XỬ LÝ NGOÀI PHẠM VI HOÀN TOÀN (OUT-OF-SCOPE FILTER)
+    # ============================================================
+
+    # B.1: Các câu hỏi ngoài lề hoàn toàn (Thời tiết, thể thao, code, đời sống, chứng khoán, tin tức...)
+    completely_irrelevant = ['thời tiết', 'hôm nay', 'chứng khoán', 'bitcoin', 'crypto', 'bóng đá', 'giải toán', 
+                             'lập trình', 'code', 'python', 'java', 'tin tức', 'ai tạo ra bạn', 'tổng thống', 
+                             'người yêu', 'ăn gì', 'chơi gì', 'ca sĩ', 'bài hát', 'phim', 'mua bán']
+    
+    if any(w in user_msg for w in completely_irrelevant):
+        return jsonify({
+            'reply': f"Xin lỗi bạn, câu hỏi <em>\"{raw_msg}\"</em> <strong>hoàn toàn không liên quan đến hệ thống</strong>!<br><br>" \
+                     "🤖 <strong>Tôi là Trợ lý AI Dự Đoán Tín Dụng</strong>, chỉ được đào tạo để giải quyết các vấn đề liên quan đến quy trình thẩm định và hồ sơ vay vốn.<br><br>" \
+                     "👉 <strong>Tôi có thể giúp bạn giải quyết các nhu cầu sau:</strong>",
+            'suggestions': [
+                '💡 Phân tích & Tối ưu hồ sơ gần nhất',
+                '📊 Giải thích kết quả Y (Duyệt) / N (Từ chối)',
+                '📋 Hướng dẫn cách điền thông tin vay chuẩn',
+                '🔍 Kiểm tra tình trạng Admin đã duyệt chưa'
+            ]
+        })
+
+    # B.2: Câu hỏi tài chính chung chung ngoài phạm vi hệ thống (Hỏi lãi suất từng ngân hàng, nợ xấu làm sao xóa, ...)
+    return jsonify({
+        'reply': "Rất tiếc, thông tin bạn vừa hỏi hiện không nằm trong phạm vi hỗ trợ của hệ thống dự đoán tín dụng tự động!<br><br>" \
+                 "Để đảm bảo kết quả chính xác nhất, hệ thống tập trung hỗ trợ bạn <strong>chuẩn bị hồ sơ, dự đoán khả năng duyệt và tối ưu hóa các tham số khoản vay</strong>.<br><br>" \
+                 "👉 <strong>Hãy chọn một chủ đề bạn đang cần giải đáp:</strong>",
+        'suggestions': [
+            '💡 Làm sao để tăng tỷ lệ duyệt hồ sơ?',
+            '📋 Đơn vị tiền tệ và cách nhập thu nhập?',
+            '📊 Sự khác biệt giữa kết quả Y và N?',
+            '📑 Kiểm tra trạng thái hồ sơ của tôi'
+        ]
+    })
 
 # ============================================================
 # 14. CHẠY FLASK

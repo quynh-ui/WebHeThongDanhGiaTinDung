@@ -20,46 +20,159 @@
         .system-title { font-size: 16px; font-weight: 800; color: #034694; text-transform: uppercase; }
 
         .wrapper { display: flex; margin-top: 60px; }
-
-        /* SIDEBAR CHUẨN ĐỒNG BỘ */
+        /* ================= SIDEBAR CHUẨN ĐỒNG BỘ GIAO DIỆN ================= */
         .sidebar {
-            width: 250px; min-height: calc(100vh - 60px); background-color: #081729;
-            padding: 18px 12px 60px 12px; position: fixed; top: 60px; bottom: 0; left: 0;
-            overflow-y: auto; z-index: 999;
+            width: 250px;
+            min-height: calc(100vh - 60px);
+            background-color: #081729;
+            padding: 18px 12px 60px 12px;
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            overflow-y: auto;
+            z-index: 999;
         }
-        .admin-menu-label { font-size: 11px; font-weight: 800; color: #475569; letter-spacing: 1.2px; margin: 0 0 14px 10px; text-transform: uppercase; }
-        .tree-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
-        .tree-parent-item a, .tree-parent-label {
-            display: flex; align-items: center; gap: 10px; padding: 9px 12px;
-            font-size: 13.5px; font-weight: 700; text-decoration: none; border-radius: 8px; color: #ffffff;
+
+        /* Tinh chỉnh thanh cuộn Sidebar mượt mà, đồng bộ kích thước */
+        .sidebar::-webkit-scrollbar {
+            width: 5px;
         }
-        .tree-parent-item a:hover { background-color: rgba(255, 255, 255, 0.05); }
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .admin-menu-label {
+            font-size: 11px;
+            font-weight: 800;
+            color: #475569;
+            letter-spacing: 1.2px;
+            margin: 0 0 14px 10px;
+            text-transform: uppercase;
+        }
+
+        .tree-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .tree-parent-item a, .tree-parent-link, .tree-parent-label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 38px;
+            padding: 0 12px;
+            font-size: 13.5px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 8px;
+            color: #ffffff;
+            user-select: none;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            cursor: pointer;
+        }
+        .tree-parent-item a:hover, .tree-parent-link:hover {
+            background-color: rgba(255, 255, 255, 0.06);
+            color: #ffffff;
+        }
 
         .color-dashboard { color: #f59e0b; }
         .color-dataset   { color: #00a8ff; }
         .color-history   { color: #10b981; }
         .color-ml        { color: #ff4757; }
         .color-users     { color: #c084fc; }
+        .color-settings  { color: #94a3b8; }
 
         .tree-branch {
-            list-style: none; padding-left: 14px; margin: 4px 0 6px 20px;
-            border-left: 1.5px solid rgba(255, 255, 255, 0.12); display: flex; flex-direction: column; gap: 3px;
+            list-style: none;
+            padding-left: 14px;
+            margin: 4px 0 6px 20px;
+            border-left: 1.5px solid rgba(255, 255, 255, 0.12);
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
         }
+        
         .tree-sub-link {
-            display: flex; align-items: center; gap: 10px; height: 38px; padding: 0 12px;
-            color: #94a3b8; font-size: 13px; font-weight: 500; text-decoration: none; border-radius: 8px;
-            transition: all 0.2s ease; white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 38px;
+            padding: 0 12px;
+            color: #94a3b8;
+            font-size: 13px;
+            font-weight: 500;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            box-sizing: border-box;
+            cursor: pointer;
         }
-        .tree-sub-link:hover { color: #ffffff; background-color: rgba(255, 255, 255, 0.06); }
-        .menu-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; font-size: 15px; }
-
-        .tree-sub-link.active-sub {
-            background-color: #0284c7 !important; color: #ffffff !important;
-            font-weight: 700; box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        .tree-sub-link:hover {
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.06);
         }
 
-        /* NỘI DUNG CHÍNH */
-        .main-content { margin-left: 250px; padding: 24px 32px 60px 32px; flex: 1; width: calc(100% - 250px); }
+        .menu-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            font-size: 14px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        .tree-parent-item a i, .tree-parent-link i, .tree-parent-label i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            font-size: 15px;
+            flex-shrink: 0;
+            text-align: center;
+        }
+
+        /* Nút Active chuẩn màu xanh - đồng bộ kích thước & hiệu ứng con trỏ */
+        .tree-sub-link.active-sub,
+        .tree-parent-link.active-sub,
+        .tree-parent-item a.active-sub,
+        .tree-parent-item.active > a,
+        .tree-parent-item.active-menu > a {
+            background-color: #0284c7 !important;
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+        .tree-sub-link.active-sub .menu-icon,
+        .tree-parent-link.active-sub i,
+        .tree-parent-item a.active-sub i,
+        .tree-parent-item.active > a i,
+        .tree-parent-item.active-menu > a i {
+            color: #ffffff !important;
+        }
+
+
+        /* Main Content */
+        .main-content {
+            margin-left: 250px; padding: 24px 32px 60px 32px;
+            flex: 1; width: calc(100% - 250px);
+        }
         .page-heading { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-transform: uppercase; }
         .page-subheading { font-size: 13px; color: #64748b; margin-bottom: 22px; }
 
@@ -98,31 +211,42 @@
     </div>
 
     <div class="wrapper">
-        <!-- SIDEBAR -->
+        <!-- SIDEBAR ĐỒNG BỘ CHUẨN MENU -->
         <div class="sidebar">
             <div class="admin-menu-label">ADMIN MENU</div>
+
             <ul class="tree-list">
+                <!-- 1. Dashboard -->
                 <li class="tree-parent-item">
-                    <a href="/admin"><i class="fa-solid fa-house color-dashboard"></i><span>Dashboard</span></a>
+                    <a href="/admin" class="tree-parent-link">
+                        <i class="fa-solid fa-house color-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
                 </li>
 
+                <!-- 2. Dataset -->
                 <li>
                     <div class="tree-parent-label">
                         <i class="fa-solid fa-table-cells color-dataset"></i>
                         <span style="color: #00a8ff;">Dataset</span>
                     </div>
                     <ul class="tree-branch">
-                        <li><a href="/admin/dataset" class="tree-sub-link"><i class="fa-regular fa-file-lines me-1"></i> Xem Dataset</a></li>
-                        <li><a href="/admin/dataset/check" class="tree-sub-link"><i class="fa-solid fa-magnifying-glass me-1"></i> Kiểm tra Dataset</a></li>
-                        <li><a href="/admin/dataset/pending" class="tree-sub-link"><i class="fa-solid fa-inbox me-1"></i> Hồ sơ chờ duyệt</a></li>
-                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link"><i class="fa-solid fa-paintbrush me-1"></i> Tiền xử lý dữ liệu</a></li>
+                        <li><a href="/admin/dataset" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-file-lines"></i></span><span>Xem Dataset</span></a></li>
+                        <li><a href="/admin/dataset/check" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span><span>Kiểm tra Dataset</span></a></li>
+                        <li><a href="/admin/dataset/pending" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-inbox"></i></span><span>Hồ sơ chờ duyệt</span></a></li>
+                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-paintbrush"></i></span><span>Tiền xử lý dữ liệu</span></a></li>
                     </ul>
                 </li>
 
+                <!-- 3. Lịch sử dự đoán -->
                 <li class="tree-parent-item">
-                    <a href="/admin/history"><i class="fa-solid fa-clock-rotate-left color-history"></i><span>Lịch sử dự đoán</span></a>
+                    <a href="/admin/history" class="tree-parent-link">
+                        <i class="fa-solid fa-clock-rotate-left color-history"></i>
+                        <span>Lịch sử dự đoán</span>
+                    </a>
                 </li>
 
+                <!-- 4. Mô hình ML -->
                 <li>
                     <div class="tree-parent-label">
                         <i class="fa-solid fa-robot color-ml"></i>
@@ -138,30 +262,31 @@
                     </ul>
                 </li>
 
+                <!-- 5. Người dùng -->
                 <li>
                     <div class="tree-parent-label">
                         <i class="fa-solid fa-users color-users"></i>
                         <span style="color: #c084fc;">Người dùng</span>
                     </div>
                     <ul class="tree-branch">
-                        <li><a href="/admin/users" class="tree-sub-link"><i class="fa-regular fa-clipboard"></i> Danh sách</a></li>
-                        <li><a href="/admin/users/add" class="tree-sub-link"><i class="fa-solid fa-plus"></i> Thêm</a></li>
-                        <li><a href="/admin/users" class="tree-sub-link"><i class="fa-solid fa-pen"></i> Sửa</a></li>
-                        <li><a href="/admin/users" class="tree-sub-link"><i class="fa-solid fa-lock"></i> Khóa/Mở khóa</a></li>
-                        <li><a href="/admin/users" class="tree-sub-link"><i class="fa-solid fa-key"></i> Phân quyền</a></li>
+                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-clipboard"></i></span><span>Danh sách</span></a></li>
+                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-plus"></i></span><span>Thêm</span></a></li>
+                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-pen"></i></span><span>Sửa</span></a></li>
+                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-lock"></i></span><span>Khóa/Mở khóa</span></a></li>
+                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-key"></i></span><span>Phân quyền</span></a></li>
                     </ul>
                 </li>
+
                 <!-- 6. Cài đặt hệ thống -->
                 <li class="tree-parent-item">
-                    <a href="/admin/settings">
+                    <a href="/admin/settings" class="tree-parent-link">
                         <i class="fa-solid fa-gear color-settings"></i>
                         <span>Cài đặt hệ thống</span>
                     </a>
                 </li>
             </ul>
         </div>
-            </ul>
-        </div>
+
 
         <!-- MAIN CONTENT -->
         <div class="main-content">
@@ -415,6 +540,38 @@
 
             detailModal.show();
         }
+    </script>
+    <!-- Script đồng bộ thao tác click trên Admin Menu: Mỗi khi click chỉ hiển thị 1 con trỏ/active duy nhất -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.querySelector('.sidebar');
+            if (!sidebar) return;
+
+            const allNavLinks = sidebar.querySelectorAll('.tree-sub-link, .tree-parent-link');
+
+            // 1. Tự động kiểm tra URL hiện tại và đồng bộ duy nhất 1 mục active
+            const currentPath = window.location.pathname;
+            let exactMatch = null;
+            allNavLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                if (href && href === currentPath) {
+                    exactMatch = link;
+                }
+            });
+
+            if (exactMatch) {
+                allNavLinks.forEach(l => l.classList.remove('active-sub'));
+                exactMatch.classList.add('active-sub');
+            }
+
+            // 2. Thao tác click: Mỗi khi click chỉ hiển thị 1 con trỏ / active tới chức năng đó
+            allNavLinks.forEach(link => {
+                link.addEventListener('click', function () {
+                    allNavLinks.forEach(l => l.classList.remove('active-sub'));
+                    this.classList.add('active-sub');
+                });
+            });
+        });
     </script>
 </body>
 </html>
