@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Hệ Thống Dự Đoán Tín Dụng - User Portal</title>
     <!-- Google Fonts & Font Awesome Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -640,6 +640,141 @@
             justify-content: center;
             font-size: 14px;
         }
+        /* ============================================================
+   RESPONSIVE DESIGN CHO MỌI THIẾT BỊ (MOBILE, TABLET, DESKTOP)
+   ============================================================ */
+
+/* 1. Màn hình máy tính bảng và điện thoại (< 992px) */
+@media (max-width: 992px) {
+    .top-navbar {
+        padding: 0 16px !important;
+        height: auto !important;
+        min-height: 60px !important;
+        flex-wrap: wrap !important;
+        gap: 10px !important;
+    }
+
+    .main-container {
+        padding: 20px 14px 80px 14px !important;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+}
+
+/* 2. Màn hình điện thoại thông minh (< 768px) */
+@media (max-width: 768px) {
+    /* Thanh Top Navbar: Cho phép cuộn ngang menu mượt mà */
+    .nav-left {
+        width: 100% !important;
+        justify-content: space-between !important;
+        gap: 12px !important;
+    }
+
+    .brand-logo .brand-text-wrap {
+        display: none !important; /* Trên điện thoại ẩn bớt chữ thương hiệu dài, chỉ giữ icon logo */
+    }
+
+    .brand-logo i {
+        font-size: 26px !important;
+    }
+
+    /* Menu các chức năng chuyển thành thanh trượt ngang không bị vỡ */
+    .nav-menu {
+        display: flex !important;
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        gap: 6px !important;
+        padding-bottom: 4px !important;
+        scrollbar-width: none; /* Ẩn thanh cuộn trên Firefox */
+        -webkit-overflow-scrolling: touch;
+    }
+    .nav-menu::-webkit-scrollbar {
+        display: none; /* Ẩn thanh cuộn trên Chrome/Safari */
+    }
+
+    .nav-link {
+        padding: 6px 12px !important;
+        font-size: 12.5px !important;
+        border-radius: 10px !important;
+    }
+
+    .nav-right {
+        position: absolute !important;
+        top: 14px !important;
+        right: 14px !important;
+    }
+
+    .user-name-text {
+        display: none !important; /* Ẩn chữ tên người dùng, chỉ giữ hình tròn Avatar */
+    }
+
+    /* Tiêu đề & Lời chào */
+    .dashboard-header, .page-header-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 14px !important;
+    }
+
+    .welcome-text h2 {
+        font-size: 20px !important;
+    }
+
+    /* 3 thẻ thống kê: Trên điện thoại xếp 1 cột hoặc 3 thẻ dạng ngang gọn */
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    .stat-card {
+        padding: 16px 18px !important;
+    }
+
+    .stat-info h3 {
+        font-size: 24px !important;
+    }
+
+    /* Thẻ Kết quả gần nhất */
+    .recent-banner, .ai-recommendation-card {
+        padding: 16px !important;
+        border-radius: 14px !important;
+    }
+
+    /* Bảng dữ liệu: Bật khung cuộn ngang chuyên dụng */
+    .table-card {
+        width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 14px !important;
+    }
+
+    .data-table {
+        min-width: 580px !important; /* Đảm bảo bảng giữ nguyên cấu trúc chuẩn, vuốt ngang xem chi tiết mà không bị ép co rút */
+    }
+
+    .data-table th, .data-table td {
+        padding: 12px 10px !important;
+        font-size: 12.5px !important;
+    }
+
+    /* Cửa sổ Chatbot trên điện thoại */
+    .chatbot-window {
+        width: calc(100vw - 24px) !important;
+        height: 75vh !important;
+        bottom: 84px !important;
+        right: 12px !important;
+    }
+
+    .chatbot-fab-btn {
+        bottom: 18px !important;
+        right: 18px !important;
+        width: 52px !important;
+        height: 52px !important;
+        font-size: 20px !important;
+    }
+}
     </style>
 </head>
 <body>
@@ -823,7 +958,8 @@
                 <a href="/admin/history" class="link-action">Xem tất cả lịch sử &rarr;</a>
             </div>
 
-            <table class="data-table">
+            <div class="table-card" style="overflow-x: auto; width: 100%; -webkit-overflow-scrolling: touch;">
+                <table class="data-table">
                 <thead>
                     <tr>
                         <th>MÃ HỒ SƠ</th>
