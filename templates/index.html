@@ -640,146 +640,154 @@
             justify-content: center;
             font-size: 14px;
         }
-        /* ============================================================
-   RESPONSIVE DESIGN CHO MỌI THIẾT BỊ (MOBILE, TABLET, DESKTOP)
+       /* ============================================================
+   RESPONSIVE DESIGN CHUẨN CHO ĐIỆN THOẠI (< 768px)
    ============================================================ */
-
-/* 1. Màn hình máy tính bảng và điện thoại (< 992px) */
-@media (max-width: 992px) {
-    .top-navbar {
-        padding: 0 16px !important;
-        height: auto !important;
-        min-height: 60px !important;
-        flex-wrap: wrap !important;
-        gap: 10px !important;
-    }
-
-    .main-container {
-        padding: 20px 14px 80px 14px !important;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 12px !important;
-    }
-}
-
-/* 2. Màn hình điện thoại thông minh (< 768px) */
 @media (max-width: 768px) {
-    /* Thanh Top Navbar: Cho phép cuộn ngang menu mượt mà */
+    /* Thanh Navbar chuyển thành 2 tầng ngăn nắp */
+    .top-navbar {
+        height: auto !important;
+        padding: 10px 14px 8px 14px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1000 !important;
+        background: #ffffff !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    /* Hàng trên: Logo bên trái, Avatar bên phải */
     .nav-left {
         width: 100% !important;
-        justify-content: space-between !important;
-        gap: 12px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
     }
 
-    .brand-logo .brand-text-wrap {
-        display: none !important; /* Trên điện thoại ẩn bớt chữ thương hiệu dài, chỉ giữ icon logo */
+    .brand-logo {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .brand-logo .brand-text-wrap h1 {
+        font-size: 12px !important;
+        line-height: 1.2 !important;
+    }
+
+    .brand-logo .brand-text-wrap span {
+        font-size: 9.5px !important;
     }
 
     .brand-logo i {
-        font-size: 26px !important;
+        font-size: 20px !important;
     }
 
-    /* Menu các chức năng chuyển thành thanh trượt ngang không bị vỡ */
+    /* Đưa Avatar lên góc phải trên cùng ngang hàng với Logo */
+    .nav-right {
+        position: absolute !important;
+        top: 10px !important;
+        right: 14px !important;
+        gap: 0 !important;
+    }
+
+    /* Ẩn nút xanh "+ Dự đoán khoản vay mới" trên Navbar mobile để tránh chèn ép */
+    .btn-predict-desktop {
+        display: none !important;
+    }
+
+    /* Ẩn chữ tên người dùng trên mobile, chỉ giữ vòng tròn avatar */
+    .user-display-name, .dropdown-chevron {
+        display: none !important;
+    }
+
+    .avatar-circle {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 13px !important;
+    }
+
+    /* Hàng dưới: Menu các chức năng vuốt ngang mượt mà */
     .nav-menu {
         display: flex !important;
         overflow-x: auto !important;
         white-space: nowrap !important;
         gap: 6px !important;
-        padding-bottom: 4px !important;
-        scrollbar-width: none; /* Ẩn thanh cuộn trên Firefox */
-        -webkit-overflow-scrolling: touch;
+        padding: 2px 0 4px 0 !important;
+        margin: 0 !important;
+        scrollbar-width: none !important;
+        -webkit-overflow-scrolling: touch !important;
     }
+
     .nav-menu::-webkit-scrollbar {
-        display: none; /* Ẩn thanh cuộn trên Chrome/Safari */
+        display: none !important;
     }
 
     .nav-link {
         padding: 6px 12px !important;
-        font-size: 12.5px !important;
-        border-radius: 10px !important;
+        font-size: 12px !important;
+        border-radius: 8px !important;
+        flex-shrink: 0 !important; /* Không cho phép co rút làm rách chữ */
     }
 
-    .nav-right {
-        position: absolute !important;
-        top: 14px !important;
-        right: 14px !important;
+    /* Căn lề nội dung chính */
+    .main-container {
+        padding: 16px 12px 70px 12px !important;
     }
 
-    .user-name-text {
-        display: none !important; /* Ẩn chữ tên người dùng, chỉ giữ hình tròn Avatar */
-    }
-
-    /* Tiêu đề & Lời chào */
-    .dashboard-header, .page-header-row {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 14px !important;
-    }
-
-    .welcome-text h2 {
+    .greeting-section h2 {
         font-size: 20px !important;
     }
 
-    /* 3 thẻ thống kê: Trên điện thoại xếp 1 cột hoặc 3 thẻ dạng ngang gọn */
+    /* 3 thẻ thống kê xếp dọc gọn gàng */
     .stats-grid {
         grid-template-columns: 1fr !important;
         gap: 10px !important;
     }
 
     .stat-card {
-        padding: 16px 18px !important;
+        padding: 14px 18px !important;
     }
 
-    .stat-info h3 {
-        font-size: 24px !important;
-    }
-
-    /* Thẻ Kết quả gần nhất */
-    .recent-banner, .ai-recommendation-card {
+    /* Bảng dữ liệu hỗ trợ cuộn ngang ngón tay */
+    .table-panel {
         padding: 16px !important;
         border-radius: 14px !important;
     }
 
-    /* Bảng dữ liệu: Bật khung cuộn ngang chuyên dụng */
     .table-card {
         width: 100% !important;
         overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-        border-radius: 14px !important;
+        -webkit-overflow-scrolling: touch !important;
     }
 
     .data-table {
-        min-width: 580px !important; /* Đảm bảo bảng giữ nguyên cấu trúc chuẩn, vuốt ngang xem chi tiết mà không bị ép co rút */
+        min-width: 560px !important; /* Đảm bảo các cột không bị ép chữ */
     }
 
-    .data-table th, .data-table td {
-        padding: 12px 10px !important;
-        font-size: 12.5px !important;
-    }
-
-    /* Cửa sổ Chatbot trên điện thoại */
-    .chatbot-window {
-        width: calc(100vw - 24px) !important;
-        height: 75vh !important;
-        bottom: 84px !important;
-        right: 12px !important;
-    }
-
+    /* Chatbot widget trên mobile */
     .chatbot-fab-btn {
-        bottom: 18px !important;
-        right: 18px !important;
-        width: 52px !important;
-        height: 52px !important;
+        bottom: 16px !important;
+        right: 16px !important;
+        width: 50px !important;
+        height: 50px !important;
         font-size: 20px !important;
+    }
+
+    .chatbot-window {
+        width: calc(100vw - 20px) !important;
+        height: 70vh !important;
+        bottom: 76px !important;
+        right: 10px !important;
     }
 }
     </style>
 </head>
 <body>
 
-    <!-- 1. TOP NAVBAR -->
+<!-- 1. TOP NAVBAR CHUẨN RESPONSIVE -->
     <header class="top-navbar">
         <div class="nav-left">
             <a href="/user" class="brand-logo">
@@ -790,7 +798,7 @@
                 </div>
             </a>
 
-            <!-- Menu ngang: Đã sửa chính xác href -->
+            <!-- Menu ngang: Cho phép vuốt ngang cảm ứng trên điện thoại -->
             <ul class="nav-menu">
                 <li>
                     <a href="/user" class="nav-link active">
@@ -826,20 +834,20 @@
         </div>
 
         <div class="nav-right">
-            <!-- Nút tạo mới: Chuyển trực tiếp sang trang /predict -->
-            <a href="/predict" class="btn-predict">
+            <!-- Nút tạo mới: Tự động ẩn trên mobile để không chèn ép menu, chỉ hiện trên PC/Tablet -->
+            <a href="/predict" class="btn-predict btn-predict-desktop">
                 <i class="fa-solid fa-plus"></i>
                 <span>Dự đoán khoản vay mới</span>
             </a>
 
-            <!-- Dropdown người dùng & Đăng xuất -->
+            <!-- Dropdown người dùng -->
             <div class="user-dropdown-wrapper">
                 <button class="user-profile-btn" id="userMenuBtn" onclick="toggleUserDropdown(event)">
                     <div class="avatar-circle">
-                        {{ (user_fullname or (user.fullname if user and user.fullname else (user.username if user else 'T')))[0] | upper }}
+                        {{ (user_fullname or (user.fullname if user and user.fullname else (user.username if user else 'U')))[0] | upper }}
                     </div>
                     <span class="user-display-name">
-                        {{ user_fullname or (user.fullname if user and user.fullname else (user.username if user else 'Thiện')) }}
+                        {{ user_fullname or (user.fullname if user and user.fullname else (user.username if user else 'user')) }}
                     </span>
                     <i class="fa-solid fa-chevron-down dropdown-chevron" id="dropdownChevron"></i>
                 </button>
@@ -868,7 +876,6 @@
             </div>
         </div>
     </header>
-
     <!-- 2. NỘI DUNG DASHBOARD -->
     <main class="main-container">
         
