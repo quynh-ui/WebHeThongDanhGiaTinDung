@@ -803,16 +803,7 @@
 <body>
 
     <!-- 1. SIDEBAR TRÁI -->
-    <aside class="sidebar">
-        <a href="/admin" class="sidebar-brand">
-            <i class="fa-solid fa-building-columns"></i>
-            <div class="sidebar-brand-text">
-                <h2>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h2>
-                <span>Admin Panel</span>
-            </div>
-        </a>
-
-        <ul class="sidebar-menu">
+    <ul class="sidebar-menu">
             <li>
                 <a href="/admin" class="menu-item-main">
                     <i class="fa-solid fa-house"></i>
@@ -820,6 +811,7 @@
                 </a>
             </li>
 
+            <!-- Nhóm 1: Dataset (Trang hiện tại active: Xem dữ liệu) -->
             <li class="menu-group">
                 <div class="menu-group-label">
                     <i class="fa-solid fa-database"></i>
@@ -827,10 +819,11 @@
                 </div>
                 <ul class="menu-sub-list">
                     <li><a href="/admin/dataset" class="menu-sub-link active-sub">&gt; Xem dữ liệu</a></li>
-                    <li><a href="/admin/dataset/stats" class="menu-sub-link">&gt; Thông tin thống kê</a></li>
+                    <li><a href="/admin/dataset/check" class="menu-sub-link">&gt; Kiểm tra dữ liệu</a></li>
                 </ul>
             </li>
 
+            <!-- Nhóm 2: Tiền xử lý -->
             <li class="menu-group">
                 <div class="menu-group-label">
                     <i class="fa-solid fa-filter"></i>
@@ -838,10 +831,11 @@
                 </div>
                 <ul class="menu-sub-list">
                     <li><a href="/admin/dataset/preprocess" class="menu-sub-link">&gt; Xử lý dữ liệu</a></li>
-                    <li><a href="/admin/dataset/check" class="menu-sub-link">&gt; Thông tin thống kê</a></li>
+                    <li><a href="/admin/dataset/stats" class="menu-sub-link">&gt; Thông tin thống kê</a></li>
                 </ul>
             </li>
 
+            <!-- Nhóm 3: Mô hình Machine Learning -->
             <li class="menu-group">
                 <div class="menu-group-label">
                     <i class="fa-solid fa-microchip"></i>
@@ -856,6 +850,7 @@
                 </ul>
             </li>
 
+            <!-- Nhóm 4: Cài đặt -->
             <li class="menu-group">
                 <div class="menu-group-label">
                     <i class="fa-solid fa-gear"></i>
@@ -866,7 +861,6 @@
                 </ul>
             </li>
         </ul>
-
         <div class="sidebar-logout">
             <a href="/logout" class="btn-logout">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i>
