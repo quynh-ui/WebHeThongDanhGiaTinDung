@@ -3,550 +3,1056 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kiểm Tra Chất Lượng Dữ Liệu - Data Validation</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Kiểm Tra Dữ Liệu - Hệ Thống Dự Đoán Tín Dụng</title>
+    <!-- Google Fonts, Font Awesome & Chart.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f8fafc; color: #1e293b; }
-        
-        .top-navbar {
-            background-color: #ffffff; height: 60px; padding: 0 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        :root {
+            --sidebar-width: 260px;
+            --bg-page: #f1f5fa;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --radius-card: 16px;
         }
-        .system-title { font-size: 16px; font-weight: 800; color: #034694; text-transform: uppercase; }
-        .wrapper { display: flex; margin-top: 60px; }
-        /* ================= SIDEBAR CHUẨN ĐỒNG BỘ GIAO DIỆN ================= */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* 1. SIDEBAR TRÁI */
         .sidebar {
-            width: 250px;
-            min-height: calc(100vh - 60px);
-            background-color: #081729;
-            padding: 18px 12px 60px 12px;
+            width: var(--sidebar-width);
+            background: #ffffff;
+            border-right: 1px solid var(--border-color);
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
             position: fixed;
-            top: 60px;
+            top: 0;
             bottom: 0;
             left: 0;
+            z-index: 100;
+            padding: 24px 16px;
             overflow-y: auto;
-            z-index: 999;
         }
 
-        /* Tinh chỉnh thanh cuộn Sidebar mượt mà, đồng bộ kích thước */
-        .sidebar::-webkit-scrollbar {
-            width: 5px;
-        }
-        .sidebar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
-        }
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px 24px 8px;
+            text-decoration: none;
+            color: #0f172a;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 12px;
         }
 
-        .admin-menu-label {
-            font-size: 11px;
+        .sidebar-brand i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        .sidebar-brand-text h2 {
+            font-size: 13.5px;
             font-weight: 800;
-            color: #475569;
-            letter-spacing: 1.2px;
-            margin: 0 0 14px 10px;
-            text-transform: uppercase;
+            line-height: 1.25;
+            letter-spacing: -0.2px;
+            color: #0f172a;
         }
 
-        .tree-list {
+        .sidebar-brand-text span {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .sidebar-menu {
             list-style: none;
-            padding: 0;
-            margin: 0;
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
-        
-        .tree-parent-item a, .tree-parent-link, .tree-parent-label {
+
+        .menu-item-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+
+        .menu-item-main:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .menu-group {
+            margin-top: 10px;
+        }
+
+        .menu-group-label {
             display: flex;
             align-items: center;
             gap: 10px;
-            height: 38px;
-            padding: 0 12px;
-            font-size: 13.5px;
-            font-weight: 700;
-            text-decoration: none;
-            border-radius: 8px;
-            color: #ffffff;
-            user-select: none;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            cursor: pointer;
-        }
-        .tree-parent-item a:hover, .tree-parent-link:hover {
-            background-color: rgba(255, 255, 255, 0.06);
-            color: #ffffff;
+            padding: 8px 12px;
+            font-size: 12.5px;
+            font-weight: 800;
+            color: #0f172a;
         }
 
-        .color-dashboard { color: #f59e0b; }
-        .color-dataset   { color: #00a8ff; }
-        .color-history   { color: #10b981; }
-        .color-ml        { color: #ff4757; }
-        .color-users     { color: #c084fc; }
-        .color-settings  { color: #94a3b8; }
+        .menu-group-label i {
+            color: var(--primary);
+            font-size: 14px;
+        }
 
-        .tree-branch {
+        .menu-sub-list {
             list-style: none;
-            padding-left: 14px;
-            margin: 4px 0 6px 20px;
-            border-left: 1.5px solid rgba(255, 255, 255, 0.12);
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
+            padding-left: 20px;
+            margin-bottom: 6px;
+            border-left: 1.5px solid #e2e8f0;
+            margin-left: 18px;
         }
-        
-        .tree-sub-link {
+
+        .menu-sub-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .menu-sub-link:hover, .menu-sub-link.active-sub {
+            color: var(--primary);
+            background: #f0f9ff;
+            font-weight: 700;
+            transform: translateX(3px);
+        }
+
+        .sidebar-logout {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .btn-logout {
             display: flex;
             align-items: center;
             gap: 10px;
-            height: 38px;
-            padding: 0 12px;
-            color: #94a3b8;
-            font-size: 13px;
-            font-weight: 500;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
             transition: all 0.2s ease;
-            white-space: nowrap;
-            box-sizing: border-box;
+        }
+
+        .btn-logout:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fecaca;
+        }
+
+        /* 2. MAIN CONTAINER */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .top-navbar {
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .toggle-menu-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #475569;
             cursor: pointer;
         }
-        .tree-sub-link:hover {
+
+        .nav-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .user-chip-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
             color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.06);
-        }
-
-        .menu-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
+            font-weight: 800;
             font-size: 14px;
-            flex-shrink: 0;
-            text-align: center;
-        }
-
-        .tree-parent-item a i, .tree-parent-link i, .tree-parent-label i {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
+        }
+
+        .user-chip-info h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+
+        .user-chip-info span {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .content-body {
+            padding: 24px 32px 50px 32px;
+            max-width: 1560px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .banner-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 18px 24px;
+            margin-bottom: 20px;
+        }
+
+        .banner-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .banner-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: #e0f2fe;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .banner-titles h1 {
+            font-size: 19px;
+            font-weight: 800;
+        }
+
+        .banner-titles p {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .btn-recheck {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-size: 12.5px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-recheck:hover {
+            background: var(--primary-hover);
+        }
+
+        /* 4 Thẻ đầu trang */
+        .stats-grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card-box {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 18px 20px;
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             font-size: 15px;
-            flex-shrink: 0;
+        }
+
+        .icon-blue   { background: #e0f2fe; color: var(--primary); }
+        .icon-green  { background: #dcfce7; color: #16a34a; }
+        .icon-orange { background: #ffedd5; color: #ea580c; }
+        .icon-red    { background: #fee2e2; color: #dc2626; }
+
+        .stat-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .stat-val-row {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin: 4px 0 6px 0;
+        }
+
+        .stat-num {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .stat-badge-pct {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .stat-subtrend {
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .trend-green { color: #16a34a; }
+
+        /* 3 Cột Biểu Đồ & Vấn đề */
+        .middle-3-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 18px;
+            margin-bottom: 22px;
+        }
+
+        .box-panel {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .panel-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 13.5px;
+            font-weight: 800;
+            margin-bottom: 16px;
+        }
+
+        .panel-title-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title i {
+            color: var(--primary);
+        }
+
+        .donut-wrap {
+            position: relative;
+            width: 155px;
+            height: 155px;
+            margin: 0 auto;
+        }
+
+        .donut-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
         }
 
-        /* Nút Active chuẩn màu xanh - đồng bộ kích thước & hiệu ứng con trỏ */
-        .tree-sub-link.active-sub,
-        .tree-parent-link.active-sub,
-        .tree-parent-item a.active-sub,
-        .tree-parent-item.active > a,
-        .tree-parent-item.active-menu > a {
-            background-color: #0284c7 !important;
-            color: #ffffff !important;
-            font-weight: 700 !important;
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
-        }
-        .tree-sub-link.active-sub .menu-icon,
-        .tree-parent-link.active-sub i,
-        .tree-parent-item a.active-sub i,
-        .tree-parent-item.active > a i,
-        .tree-parent-item.active-menu > a i {
-            color: #ffffff !important;
+        .donut-center strong {
+            font-size: 18px;
+            font-weight: 800;
+            display: block;
         }
 
+        .donut-center span {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
 
-        /* Main Content */
-        .main-content {
-            margin-left: 250px; padding: 24px 32px 60px 32px;
-            flex: 1; width: calc(100% - 250px);
+        .legend-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+            font-size: 12px;
+        }
+
+        .legend-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        /* Danh sách tiến độ vấn đề */
+        .progress-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .progress-item-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .bar-bg {
+            width: 100%;
+            height: 8px;
+            background: #f1f5f9;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            background: var(--primary);
+        }
+
+        /* Bộ Lọc Thanh Tìm Kiếm */
+        .filter-action-bar {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 12px 18px;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .search-wrap {
+            position: relative;
+            flex: 1;
+            max-width: 380px;
+        }
+
+        .search-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 36px;
+            padding-left: 32px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-select {
+            height: 36px;
+            padding: 0 10px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 12px;
+            color: var(--text-dark);
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn-export {
+            background: var(--primary);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            height: 36px;
+            padding: 0 14px;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        /* Bảng Danh Sách */
+        .table-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 20px;
+        }
+
+        .table-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: #dc2626;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .clean-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+
+        .clean-table th {
+            text-align: left;
+            padding: 10px 8px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .clean-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            vertical-align: middle;
+        }
+
+        .clean-table tr:hover {
+            background: #f8fafc;
+        }
+
+        /* Badges trạng thái lỗi */
+        .badge-issue {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .badge-missing { background: #fee2e2; color: #b91c1c; }
+        .badge-format  { background: #ffedd5; color: #c2410c; }
+        .badge-outlier { background: #f3e8ff; color: #7e22ce; }
+        .badge-dup     { background: #e0f2fe; color: #0369a1; }
+
+        .btn-view-sm {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: #f0f9ff;
+            color: var(--primary);
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            font-size: 11.5px;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .btn-view-sm:hover {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        @media (max-width: 1200px) {
+            .stats-grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .middle-3-grid { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-wrapper { margin-left: 0; }
+            .stats-grid-4 { grid-template-columns: 1fr; }
+            .content-body { padding: 16px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="top-navbar">
-        <div class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</div>
-        <div class="d-flex align-items-center gap-3">
-            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
-            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
-        </div>
-    </div>
+    <!-- 1. SIDEBAR TRÁI ĐỒNG BỘ -->
+    <aside class="sidebar">
+        <a href="/admin" class="sidebar-brand">
+            <i class="fa-solid fa-building-columns"></i>
+            <div class="sidebar-brand-text">
+                <h2>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h2>
+                <span>Admin Panel</span>
+            </div>
+        </a>
 
-    <div class="wrapper">
-        <!-- SIDEBAR ĐỒNG BỘ CHUẨN MENU -->
-        <div class="sidebar">
-            <div class="admin-menu-label">ADMIN MENU</div>
-
-            <ul class="tree-list">
-                <!-- 1. Dashboard -->
-                <li class="tree-parent-item">
-                    <a href="/admin" class="tree-parent-link">
-                        <i class="fa-solid fa-house color-dashboard"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-
-                <!-- 2. Dataset -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-table-cells color-dataset"></i>
-                        <span style="color: #00a8ff;">Dataset</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin/dataset" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-file-lines"></i></span><span>Xem Dataset</span></a></li>
-                        <li><a href="/admin/dataset/check" class="tree-sub-link active-sub"><span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span><span>Kiểm tra Dataset</span></a></li>
-                        <li><a href="/admin/dataset/pending" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-inbox"></i></span><span>Hồ sơ chờ duyệt</span></a></li>
-                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-paintbrush"></i></span><span>Tiền xử lý dữ liệu</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 3. Lịch sử dự đoán -->
-                <li class="tree-parent-item">
-                    <a href="/admin/history" class="tree-parent-link">
-                        <i class="fa-solid fa-clock-rotate-left color-history"></i>
-                        <span>Lịch sử dự đoán</span>
-                    </a>
-                </li>
-
-                <!-- 4. Mô hình ML -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-robot color-ml"></i>
-                        <span style="color: #ff4757;">Mô hình ML</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
-                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
-                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
-                        <li><a href="/admin/ml/evaluate" class="tree-sub-link"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
-                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
-                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 5. Người dùng -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-users color-users"></i>
-                        <span style="color: #c084fc;">Người dùng</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-clipboard"></i></span><span>Danh sách</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-plus"></i></span><span>Thêm</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-pen"></i></span><span>Sửa</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-lock"></i></span><span>Khóa/Mở khóa</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-key"></i></span><span>Phân quyền</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 6. Cài đặt hệ thống -->
-                <li class="tree-parent-item">
-                    <a href="/admin/settings" class="tree-parent-link">
-                        <i class="fa-solid fa-gear color-settings"></i>
-                        <span>Cài đặt hệ thống</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1 class="page-heading mb-0">🔍 KIỂM TRA CHẤT LƯỢNG DATASET (DATA VALIDATION)</h1>
-                <a href="/admin/dataset/check" class="btn btn-sm btn-primary fw-bold px-3">
-                    <i class="fa-solid fa-arrows-rotate me-1"></i> Chạy lại kiểm tra
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/admin" class="menu-item-main">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
                 </a>
-            </div>
+            </li>
 
-            <div class="row g-3">
-                <!-- CỘT TRÁI: 4 KHỐI KIỂM TRA CHI TIẾT -->
-                <div class="col-lg-8">
-                    
-                    <!-- A. KIỂM TRA DỮ LIỆU THIẾU -->
-                    <div class="report-card">
-                        <div class="section-header">
-                            <i class="fa-solid fa-triangle-exclamation text-warning"></i> Mục I. Kiểm tra dữ liệu thiếu (Missing Values)
-                        </div>
-                        {% if report.has_missing %}
-                            <p class="text-danger fw-semibold mb-2" style="font-size: 13px;">
-                                ⚠ Phát hiện {{ report.missing_details|length }} thuộc tính có giá trị rỗng (NaN). Dữ liệu này bắt buộc cần được tiền xử lý trước khi nạp vào mô hình.
-                            </p>
-                            <table class="table table-sm table-bordered align-middle" style="font-size: 12.5px;">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Thuộc tính</th>
-                                        <th>Số lượng thiếu</th>
-                                        <th>Tỷ lệ khuyết (%)</th>
-                                        <th>Đánh giá</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for item in report.missing_details %}
-                                    <tr>
-                                        <td class="fw-bold">{{ item.column }}</td>
-                                        <td class="text-danger fw-bold">{{ item.count }}</td>
-                                        <td>{{ item.ratio }}%</td>
-                                        <td><span class="badge bg-warning text-dark">Cần Imputation</span></td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <div class="alert alert-success mb-0 py-2" style="font-size: 13px;">
-                                ✓ Tuyệt vời! Dataset hoàn chỉnh 100%, không có ô dữ liệu nào bị thiếu.
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- B. KIỂM TRA DỮ LIỆU TRÙNG -->
-                    <div class="report-card">
-                        <div class="section-header">
-                            <i class="fa-solid fa-clone text-info"></i> Mục II. Kiểm tra dữ liệu trùng lặp (Duplicates)
-                        </div>
-                        <div class="row g-2 mb-2" style="font-size: 13px;">
-                            <div class="col-md-4">
-                                <div class="border rounded p-2 bg-light">
-                                    <div class="text-muted">Tổng số bản ghi:</div>
-                                    <div class="fw-bold fs-6 text-dark">{{ report.total_rows }}</div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="border rounded p-2 bg-light">
-                                    <div class="text-muted">Bản ghi trùng lặp:</div>
-                                    <div class="fw-bold fs-6 {% if report.duplicates > 0 %}text-danger{% else %}text-success{% endif %}">
-                                        {{ report.duplicates }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="border rounded p-2 bg-light">
-                                    <div class="text-muted">Bản ghi hợp lệ:</div>
-                                    <div class="fw-bold fs-6 text-primary">{{ report.valid_rows }}</div>
-                                </div>
-                            </div>
-                        </div>
-                        {% if report.duplicates > 0 %}
-                            <div class="alert alert-danger py-2 mb-0" style="font-size: 12.5px;">
-                                ⚠ Phát hiện {{ report.duplicates }} bản ghi trùng hoàn toàn. Cần loại bỏ (Drop Duplicates) để tránh overfitting.
-                            </div>
-                        {% else %}
-                            <div class="text-success fw-bold" style="font-size: 12.5px;">
-                                ✓ Không phát hiện bản ghi trùng lặp. Độ tinh sạch bản ghi đạt 100%.
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- C. KIỂM TRA GIÁ TRỊ BẤT THƯỜNG (OUTLIERS) -->
-                    <div class="report-card">
-                        <div class="section-header">
-                            <i class="fa-solid fa-chart-line text-primary"></i> Mục III. Kiểm tra phân vị & Giá trị bất thường (Outliers)
-                        </div>
-                        <table class="table table-sm table-hover align-middle" style="font-size: 12px;">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Thuộc tính số</th>
-                                    <th>Min</th>
-                                    <th>Max</th>
-                                    <th>Mean (TB)</th>
-                                    <th>Số ca ngoại lai</th>
-                                    <th>Cảnh báo</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for out in report.outliers_report %}
-                                <tr>
-                                    <td class="fw-bold">{{ out.column }}</td>
-                                    <td>{{ out.min }}</td>
-                                    <td class="fw-bold text-danger">{{ out.max }}</td>
-                                    <td>{{ out.mean }}</td>
-                                    <td class="fw-bold">{{ out.outlier_count }}</td>
-                                    <td>
-                                        {% if out.has_suspicious %}
-                                            <span class="badge bg-warning text-dark">Trạng thái đáng nghi (Outlier)</span>
-                                        {% else %}
-                                            <span class="badge bg-success">Chuẩn hóa tốt</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- D. PHÂN LOẠI KIỂU DỮ LIỆU ĐẦU VÀO -->
-                    <div class="report-card">
-                        <div class="section-header">
-                            <i class="fa-solid fa-tags text-secondary"></i> Mục IV. Phân loại cấu trúc thuộc tính ML
-                        </div>
-                        <div class="row g-2" style="font-size: 12.5px;">
-                            <div class="col-md-4">
-                                <div class="p-2 border rounded bg-light">
-                                    <div class="fw-bold text-primary mb-1">Numerical (Số học):</div>
-                                    <ul class="mb-0 ps-3">
-                                        {% for col in report.dtypes_categorized.Numerical %}
-                                            <li>{{ col }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-2 border rounded bg-light">
-                                    <div class="fw-bold text-secondary mb-1">Categorical (Phân loại):</div>
-                                    <ul class="mb-0 ps-3">
-                                        {% for col in report.dtypes_categorized.Categorical %}
-                                            <li>{{ col }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="p-2 border rounded bg-light">
-                                    <div class="fw-bold text-danger mb-1">Target Variable (Đích):</div>
-                                    <ul class="mb-0 ps-3">
-                                        {% for col in report.dtypes_categorized.Target %}
-                                            <li class="fw-bold">{{ col }}</li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+            <!-- Nhóm 1: Dataset -->
+            <li class="menu-group">
+                <div class="menu-group-label">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Dataset</span>
                 </div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/dataset" class="menu-sub-link">&gt; Xem dữ liệu</a></li>
+                    <li><a href="/admin/dataset/check" class="menu-sub-link active-sub">&gt; Kiểm tra dữ liệu</a></li>
+                </ul>
+            </li>
 
-                <!-- CỘT PHẢI: KẾT QUẢ TỔNG THỂ & PHÂN BỐ TARGET -->
-                <div class="col-lg-4">
-                    
-                    <!-- BẢNG TỔNG KẾT KIỂM ĐỊNH DATASET -->
-                    <div class="summary-box mb-4">
-                        <h5 class="fw-bold mb-3 text-uppercase" style="font-size: 15px; letter-spacing: 0.5px;">
-                            <i class="fa-solid fa-clipboard-check text-success me-2"></i>KẾT QUẢ KIỂM TRA DATASET
-                        </h5>
-
-                        <div class="summary-status-item">
-                            <span>Kiểm tra tổng quan:</span>
-                            <span class="badge bg-success">✓ Hoàn tất</span>
-                        </div>
-                        <div class="summary-status-item">
-                            <span>Dữ liệu khuyết thiếu:</span>
-                            <span class="badge bg-{{ report.overall_status.missing_badge }}">{{ report.overall_status.missing_status }}</span>
-                        </div>
-                        <div class="summary-status-item">
-                            <span>Dữ liệu trùng lặp:</span>
-                            <span class="badge bg-{{ report.overall_status.duplicate_badge }}">{{ report.overall_status.duplicate_status }}</span>
-                        </div>
-                        <div class="summary-status-item">
-                            <span>Giá trị bất thường:</span>
-                            <span class="badge bg-warning text-dark">{{ report.overall_status.outlier_status }}</span>
-                        </div>
-                        <div class="summary-status-item">
-                            <span>Biến mục tiêu:</span>
-                            <span class="badge bg-info text-dark">{{ report.overall_status.target_status }}</span>
-                        </div>
-
-                        <div class="mt-4 pt-2">
-                            <a href="#" class="btn btn-warning w-100 fw-bold py-2 shadow-sm">
-                                <i class="fa-solid fa-wand-magic-sparkles me-1"></i> TIẾN HÀNH TIỀN XỬ LÝ
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- BIỂU ĐỒ PHÂN BỐ BIẾN MỤC TIÊU LOAN_STATUS -->
-                    <div class="report-card">
-                        <div class="section-header">
-                            <i class="fa-solid fa-chart-pie text-success"></i> Mục V. Phân bố biến mục tiêu (Loan_Status)
-                        </div>
-                        <div style="height: 220px; position: relative;">
-                            <canvas id="targetCheckChart"></canvas>
-                        </div>
-                        <div class="d-flex justify-content-around mt-3 text-center" style="font-size: 12.5px;">
-                            <div>
-                                <span class="fw-bold text-success">Approved (Y):</span>
-                                <div class="fs-6 fw-bold">{{ report.target_distribution.Approved_Y }} ({{ report.target_distribution.Approved_Pct }}%)</div>
-                            </div>
-                            <div>
-                                <span class="fw-bold text-danger">Rejected (N):</span>
-                                <div class="fs-6 fw-bold">{{ report.target_distribution.Rejected_N }} ({{ report.target_distribution.Rejected_Pct }}%)</div>
-                            </div>
-                        </div>
-                    </div>
-
+            <!-- Nhóm 2: Tiền xử lý -->
+            <li class="menu-group">
+                <div class="menu-group-label">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Tiền xử lý</span>
                 </div>
-            </div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/dataset/preprocess" class="menu-sub-link">&gt; Xử lý dữ liệu</a></li>
+                    <li><a href="/admin/dataset/stats" class="menu-sub-link">&gt; Thông tin thống kê</a></li>
+                </ul>
+            </li>
+
+            <!-- Nhóm 3: Mô hình ML -->
+            <li class="menu-group">
+                <div class="menu-group-label">
+                    <i class="fa-solid fa-microchip"></i>
+                    <span>Mô hình Machine Learning</span>
+                </div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/ml/train" class="menu-sub-link">&gt; Huấn luyện mô hình</a></li>
+                    <li><a href="/admin/ml/history" class="menu-sub-link">&gt; Lịch sử huấn luyện</a></li>
+                    <li><a href="/admin/ml/evaluate" class="menu-sub-link">&gt; Đánh giá mô hình</a></li>
+                    <li><a href="/admin/ml/compare" class="menu-sub-link">&gt; So sánh mô hình</a></li>
+                    <li><a href="/admin/ml/active" class="menu-sub-link">&gt; Mô hình đang sử dụng</a></li>
+                </ul>
+            </li>
+
+            <!-- Nhóm 4: Cài đặt -->
+            <li class="menu-group">
+                <div class="menu-group-label">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Cài đặt</span>
+                </div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/settings" class="menu-sub-link">&gt; Cấu hình hệ thống</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="sidebar-logout">
+            <a href="/logout" class="btn-logout">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Đăng xuất</span>
+            </a>
         </div>
+    </aside>
+
+    <!-- 2. KHU VỰC NỘI DUNG CHÍNH (MAIN WRAPPER) -->
+    <div class="main-wrapper">
+        <header class="top-navbar">
+            <button class="toggle-menu-btn"><i class="fa-solid fa-bars"></i></button>
+
+            <div class="nav-actions-right">
+                <div class="user-chip">
+                    <div class="user-chip-avatar">A</div>
+                    <div class="user-chip-info">
+                        <h4>Admin</h4>
+                        <span>Quản trị viên</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+            
+            <!-- Banner Tiêu Đề -->
+            <section class="banner-header">
+                <div class="banner-left">
+                    <div class="banner-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="banner-titles">
+                        <h1>Kiểm tra dữ liệu</h1>
+                        <p>Phân tích chất lượng dữ liệu thực tế, phát hiện các lỗi, giá trị thiếu, trùng lặp và bất thường để đảm bảo dữ liệu sẵn sàng cho quá trình huấn luyện mô hình.</p>
+                    </div>
+                </div>
+                <a href="/admin/dataset/check" class="btn-recheck">
+                    <i class="fa-solid fa-rotate-right"></i> Kiểm tra lại dữ liệu
+                </a>
+            </section>
+
+            <!-- 4 Thẻ Thống Kê Đầu Trang Động -->
+            <section class="stats-grid-4">
+                <div class="stat-card-box">
+                    <div class="stat-header">
+                        <span class="stat-title">Tổng số bản ghi</span>
+                        <div class="stat-icon icon-blue"><i class="fa-regular fa-file-lines"></i></div>
+                    </div>
+                    <div class="stat-val-row">
+                        <span class="stat-num">{{ "{:,}".format(total_records) }}</span>
+                    </div>
+                    <div class="stat-subtrend trend-green"><i class="fa-solid fa-arrow-up"></i> Từ tập tin train.csv</div>
+                </div>
+
+                <div class="stat-card-box">
+                    <div class="stat-header">
+                        <span class="stat-title">Bản ghi hợp lệ</span>
+                        <div class="stat-icon icon-green"><i class="fa-solid fa-check"></i></div>
+                    </div>
+                    <div class="stat-val-row">
+                        <span class="stat-num">{{ "{:,}".format(valid_records) }}</span>
+                        <span class="stat-badge-pct">{{ valid_pct }}%</span>
+                    </div>
+                    <div class="stat-subtrend trend-green"><i class="fa-solid fa-arrow-up"></i> Sẵn sàng huấn luyện</div>
+                </div>
+
+                <div class="stat-card-box">
+                    <div class="stat-header">
+                        <span class="stat-title">Bản ghi có vấn đề</span>
+                        <div class="stat-icon icon-orange"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    </div>
+                    <div class="stat-val-row">
+                        <span class="stat-num">{{ total_issues }}</span>
+                        <span class="stat-badge-pct">{{ issue_pct }}%</span>
+                    </div>
+                    <div class="stat-subtrend" style="color: #ea580c;"><i class="fa-solid fa-circle-exclamation"></i> Cần xử lý làm sạch</div>
+                </div>
+
+                <div class="stat-card-box">
+                    <div class="stat-header">
+                        <span class="stat-title">Giá trị thiếu</span>
+                        <div class="stat-icon icon-red"><i class="fa-solid fa-xmark"></i></div>
+                    </div>
+                    <div class="stat-val-row">
+                        <span class="stat-num">{{ missing_count }}</span>
+                        <span class="stat-badge-pct">{{ missing_pct }}%</span>
+                    </div>
+                    <div class="stat-subtrend" style="color: #dc2626;"><i class="fa-solid fa-arrow-down"></i> Tự động nội suy (Imputation)</div>
+                </div>
+            </section>
+
+            <!-- Hàng 3 Biểu Đồ & Vấn Đề Thường Gặp -->
+            <section class="middle-3-grid">
+                
+                <!-- 1. Biểu đồ Donut: Tổng quan chất lượng -->
+                <div class="box-panel">
+                    <div class="panel-title">
+                        <div class="panel-title-left"><i class="fa-solid fa-chart-pie"></i><span>Tổng quan chất lượng dữ liệu</span></div>
+                    </div>
+                    <div class="donut-wrap">
+                        <canvas id="qualityDonut"></canvas>
+                        <div class="donut-center">
+                            <strong>{{ "{:,}".format(total_records) }}</strong>
+                            <span>bản ghi</span>
+                        </div>
+                    </div>
+                    <ul class="legend-list">
+                        <li class="legend-row">
+                            <span><span class="dot" style="background: #10b981;"></span>Hợp lệ</span>
+                            <strong>{{ valid_records }} <small style="color: #94a3b8;">{{ valid_pct }}%</small></strong>
+                        </li>
+                        <li class="legend-row">
+                            <span><span class="dot" style="background: #f59e0b;"></span>Có lỗi / Bất thường</span>
+                            <strong>{{ format_error_count + outlier_count + duplicate_count }}</strong>
+                        </li>
+                        <li class="legend-row">
+                            <span><span class="dot" style="background: #ef4444;"></span>Thiếu dữ liệu</span>
+                            <strong>{{ missing_count }}</strong>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- 2. Danh sách thanh tiến độ: Các vấn đề thường gặp -->
+                <div class="box-panel">
+                    <div class="panel-title">
+                        <div class="panel-title-left"><i class="fa-solid fa-chart-column"></i><span>Các vấn đề thường gặp</span></div>
+                    </div>
+                    <div class="progress-list">
+                        <div>
+                            <div class="progress-item-label">
+                                <span>Giá trị thiếu</span>
+                                <strong>{{ missing_count }} ({{ missing_pct }}%)</strong>
+                            </div>
+                            <div class="bar-bg"><div class="bar-fill" style="width: {{ [missing_pct * 3, 100]|min }}%; background: #0284c7;"></div></div>
+                        </div>
+                        <div>
+                            <div class="progress-item-label">
+                                <span>Dữ liệu trùng lặp</span>
+                                <strong>{{ duplicate_count }} ({{ "%.1f"|format(duplicate_count / total_records * 100) if total_records > 0 else 0 }}%)</strong>
+                            </div>
+                            <div class="bar-bg"><div class="bar-fill" style="width: {{ [(duplicate_count / total_records * 200)|round, 100]|min if total_records > 0 else 0 }}%; background: #0ea5e9;"></div></div>
+                        </div>
+                        <div>
+                            <div class="progress-item-label">
+                                <span>Sai định dạng</span>
+                                <strong>{{ format_error_count }} ({{ "%.1f"|format(format_error_count / total_records * 100) if total_records > 0 else 0 }}%)</strong>
+                            </div>
+                            <div class="bar-bg"><div class="bar-fill" style="width: {{ [(format_error_count / total_records * 200)|round, 100]|min if total_records > 0 else 0 }}%; background: #38bdf8;"></div></div>
+                        </div>
+                        <div>
+                            <div class="progress-item-label">
+                                <span>Giá trị bất thường</span>
+                                <strong>{{ outlier_count }} ({{ "%.1f"|format(outlier_count / total_records * 100) if total_records > 0 else 0 }}%)</strong>
+                            </div>
+                            <div class="bar-bg"><div class="bar-fill" style="width: {{ [(outlier_count / total_records * 200)|round, 100]|min if total_records > 0 else 0 }}%; background: #7dd3fc;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Biểu đồ Donut: Phân bố theo thuộc tính động -->
+                <div class="box-panel">
+                    <div class="panel-title">
+                        <div class="panel-title-left"><i class="fa-solid fa-circle-half-stroke"></i><span>Phân bố theo thuộc tính</span></div>
+                        <form method="GET" action="/admin/dataset/check">
+                            <select name="feature" class="filter-select" onchange="this.form.submit()">
+                                {% for col in categorical_columns %}
+                                <option value="{{ col }}" {% if col == selected_feature %}selected{% endif %}>{{ col }}</option>
+                                {% endfor %}
+                            </select>
+                        </form>
+                    </div>
+                    <div class="donut-wrap">
+                        <canvas id="featureDonut"></canvas>
+                        <div class="donut-center">
+                            <strong>{{ "{:,}".format(total_records) }}</strong>
+                            <span>bản ghi</span>
+                        </div>
+                    </div>
+                    <ul class="legend-list">
+                        {% for label in feature_labels %}
+                        <li class="legend-row">
+                            <span><span class="dot" style="background: {% if loop.index == 1 %}#0284c7{% elif loop.index == 2 %}#ec4899{% else %}#f59e0b{% endif %};"></span>{{ label }}</span>
+                            <strong>{{ feature_values[loop.index0] }} <small style="color: #94a3b8;">({{ "%.1f"|format(feature_values[loop.index0] / total_records * 100) if total_records > 0 else 0 }}%)</small></strong>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+            </section>
+
+            <!-- Toolbar Tìm Kiếm & Lọc Bảng -->
+            <section class="filter-action-bar">
+                <div class="search-wrap">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="issueSearchInput" onkeyup="filterIssuesTable()" class="search-input" placeholder="Tìm kiếm theo mã hồ sơ, tên, hoặc giá trị...">
+                </div>
+
+                <div class="filter-group">
+                    <select id="issueTypeFilter" onchange="filterIssuesTable()" class="filter-select">
+                        <option value="all">Tất cả vấn đề</option>
+                        <option value="Giá trị thiếu">Giá trị thiếu</option>
+                        <option value="Sai định dạng">Sai định dạng</option>
+                        <option value="Giá trị bất thường">Giá trị bất thường</option>
+                        <option value="Dữ liệu trùng lặp">Dữ liệu trùng lặp</option>
+                    </select>
+
+                    <a href="{{ url_for('static', filename='train.csv') }}" download class="btn-export">
+                        <i class="fa-solid fa-download"></i> Xuất báo cáo
+                    </a>
+                </div>
+            </section>
+
+            <!-- Bảng Danh Sách Bản Ghi Có Vấn Đề Thực Tế -->
+            <section class="table-card">
+                <div class="table-title">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span>Danh sách các bản ghi có vấn đề (Tổng cộng: {{ total_issues }} bản ghi)</span>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="clean-table" id="issuesTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 30px;"><input type="checkbox"></th>
+                                <th>STT</th>
+                                <th>MÃ HỒ SƠ</th>
+                                <th>THÔNG TIN CHÍNH</th>
+                                <th>VẤN ĐỀ PHÁT HIỆN</th>
+                                <th>THUỘC TÍNH</th>
+                                <th>GIÁ TRỊ</th>
+                                <th>THỜI GIAN KIỂM TRA</th>
+                                <th>THAO TÁC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in issue_records %}
+                            <tr class="issue-row" data-type="{{ rec.issue_type }}">
+                                <td><input type="checkbox"></td>
+                                <td>{{ rec.stt }}</td>
+                                <td><strong>#{{ rec.app_id }}</strong></td>
+                                <td>{{ rec.main_info }}</td>
+                                <td><span class="badge-issue {{ rec.badge_class }}">{{ rec.issue_type }}</span></td>
+                                <td>{{ rec.column_name }}</td>
+                                <td><strong>{{ rec.invalid_val }}</strong></td>
+                                <td>{{ rec.check_time }}</td>
+                                <td>
+                                    <a href="/admin/dataset" class="btn-view-sm">
+                                        <i class="fa-regular fa-eye"></i> Xem chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="9" style="text-align: center; color: #16a34a; padding: 28px; font-weight: 700;">
+                                    <i class="fa-solid fa-circle-check me-2"></i>Dữ liệu hoàn hảo! Không phát hiện bản ghi lỗi nào.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
     </div>
 
-    <!-- SCRIPT RENDER DOUGHNUT BIẾN MỤC TIÊU -->
-    <script>
-        const ctxTarget = document.getElementById('targetCheckChart').getContext('2d');
-        new Chart(ctxTarget, {
-            type: 'doughnut',
-            data: {
-                labels: ['Approved (Y)', 'Rejected (N)'],
-                datasets: [{
-                    data: [
-                        {{ report.target_distribution.Approved_Y | default(422) }},
-                        {{ report.target_distribution.Rejected_N | default(192) }}
-                    ],
-                    backgroundColor: ['#10b981', '#ef4444'],
-                    borderWidth: 2,
-                    cutout: '65%'
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
-        });
-    </script>
-    <!-- Script đồng bộ thao tác click trên Admin Menu: Mỗi khi click chỉ hiển thị 1 con trỏ/active duy nhất -->
+    <!-- JAVASCRIPT ĐỒNG BỘ CHART.JS VÀ TÌM KIẾM BẢNG THỜI GIAN THỰC -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const sidebar = document.querySelector('.sidebar');
-            if (!sidebar) return;
-
-            const allNavLinks = sidebar.querySelectorAll('.tree-sub-link, .tree-parent-link');
-
-            // 1. Tự động kiểm tra URL hiện tại và đồng bộ duy nhất 1 mục active
-            const currentPath = window.location.pathname;
-            let exactMatch = null;
-            allNavLinks.forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && href === currentPath) {
-                    exactMatch = link;
-                }
+            // 1. Biểu đồ Chất lượng
+            new Chart(document.getElementById('qualityDonut').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Hợp lệ', 'Có lỗi', 'Thiếu dữ liệu'],
+                    datasets: [{
+                        data: {{ donut_quality | tojson }},
+                        backgroundColor: ['#10b981', '#f59e0b', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: { responsive: true, cutout: '76%', plugins: { legend: { display: false } } }
             });
 
-            if (exactMatch) {
-                allNavLinks.forEach(l => l.classList.remove('active-sub'));
-                exactMatch.classList.add('active-sub');
-            }
-
-            // 2. Thao tác click: Mỗi khi click chỉ hiển thị 1 con trỏ / active tới chức năng đó
-            allNavLinks.forEach(link => {
-                link.addEventListener('click', function () {
-                    allNavLinks.forEach(l => l.classList.remove('active-sub'));
-                    this.classList.add('active-sub');
-                });
+            // 2. Biểu đồ Phân bố thuộc tính
+            new Chart(document.getElementById('featureDonut').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: {{ feature_labels | tojson }},
+                    datasets: [{
+                        data: {{ feature_values | tojson }},
+                        backgroundColor: ['#0284c7', '#ec4899', '#f59e0b', '#10b981', '#8b5cf6'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: { responsive: true, cutout: '76%', plugins: { legend: { display: false } } }
             });
         });
+
+        // Lọc bảng theo từ khóa và loại lỗi
+        function filterIssuesTable() {
+            const query = document.getElementById('issueSearchInput').value.toLowerCase();
+            const issueType = document.getElementById('issueTypeFilter').value;
+            const rows = document.querySelectorAll('.issue-row');
+
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const type = row.getAttribute('data-type');
+                const matchQuery = !query || text.includes(query);
+                const matchType = (issueType === 'all') || (type === issueType);
+
+                row.style.display = (matchQuery && matchType) ? '' : 'none';
+            });
+        }
     </script>
 </body>
 </html>

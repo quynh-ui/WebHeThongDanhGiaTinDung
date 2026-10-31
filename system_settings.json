@@ -1,0 +1,13 @@
+{
+  "system_name": "Hệ thống dự đoán tín dụng",
+  "system_desc": "Hệ thống hỗ trợ dự đoán khả năng được chấp thuận khoản vay",
+  "contact_email": "support@credit.vn",
+  "language": "vi",
+  "timezone": "GMT+7",
+  "require_strong_pwd": true,
+  "session_timeout": 60,
+  "notify_training": true,
+  "notify_dataset": false,
+  "notify_model_change": true,
+  "notify_system_error": true
+}

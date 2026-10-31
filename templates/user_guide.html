@@ -4,975 +4,545 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hướng Dẫn Sử Dụng - Hệ Thống Dự Đoán Tín Dụng</title>
-    <!-- Google Fonts & Font Awesome Icons -->
+    <!-- Fonts & Icons -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         :root {
+            --sidebar-width: 250px;
             --bg-page: #f8fafc;
-            --card-bg: #ffffff;
-            --primary-blue: #0284c7;
-            --primary-hover: #0369a1;
-            --border-color: #e2e8f0;
+            --bg-card: #ffffff;
             --text-dark: #0f172a;
             --text-muted: #64748b;
-            --radius-card: 18px;
-            --radius-input: 12px;
-            --shadow-subtle: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+            --border-color: #e2e8f0;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --radius-card: 16px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-page); color: var(--text-dark); min-height: 100vh; display: flex; }
 
-        body {
-            min-height: 100vh;
-            margin: 0;
-            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #334155;
-            
-            /* Màu nền phối Gradient theo ảnh: Xanh nhạt -> Trắng ấm -> Cam nhạt */
-            background-color: #f7fafc;
-            background-image: 
-                radial-gradient(at 0% 0%, rgba(224, 242, 254, 0.75) 0px, transparent 55%),
-                radial-gradient(at 100% 100%, rgba(254, 243, 199, 0.45) 0px, transparent 50%),
-                radial-gradient(at 0% 60%, rgba(255, 237, 213, 0.35) 0px, transparent 50%),
-                /* Họa tiết mạng nhện công nghệ mờ */
-                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cpath d='M0 100L100 0L200 100L100 200Z M200 100L300 0L400 100L300 200Z M100 200L200 100L300 200L200 300Z M0 300L100 200L200 300L100 400Z M200 300L300 200L400 300L300 400Z' fill='none' stroke='%2394a3b8' stroke-width='0.45' stroke-opacity='0.18'/%3E%3C/svg%3E");
-            background-repeat: no-repeat, no-repeat, no-repeat, repeat;
-            background-attachment: fixed;
+        /* 1. SIDEBAR TRÁI ĐỒNG BỘ */
+        .sidebar {
+            width: var(--sidebar-width); background: #ffffff; border-right: 1px solid var(--border-color);
+            color: #1e293b; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0;
+            z-index: 100; padding: 24px 16px;
         }
-
-        /* 1. TOP NAVBAR ĐỒNG BỘ */
-        .top-navbar {
-            height: 70px;
-            background-color: #ffffff;
-            border-bottom: 1px solid var(--border-color);
-            padding: 0 40px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+        .sidebar-brand {
+            display: flex; align-items: center; gap: 12px; padding: 0 8px 24px 8px; text-decoration: none;
+            color: #0f172a; border-bottom: 1px solid #f1f5f9; margin-bottom: 16px;
         }
-
-        .nav-left {
-            display: flex;
-            align-items: center;
-            gap: 36px;
+        .sidebar-brand i { font-size: 26px; color: var(--primary); }
+        .sidebar-brand-text h2 { font-size: 13.5px; font-weight: 800; line-height: 1.25; color: #0f172a; }
+        .sidebar-brand-text span { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .menu-link {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; color: #475569; text-decoration: none; transition: all 0.2s;
         }
-
-        .brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
+        .menu-link i { font-size: 16px; width: 20px; }
+        .menu-link:hover { color: var(--primary); background: #f0f9ff; }
+        .menu-link.active { color: #ffffff; background: var(--primary); font-weight: 700; }
+        .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
+        .secure-card {
+            background: #f0f9ff; border: 1px solid #e0f2fe; border-radius: 12px; padding: 14px; text-align: center;
         }
-
-        .brand-logo i {
-            font-size: 24px;
-            color: #0f172a;
+        .secure-card i { font-size: 20px; color: var(--primary); margin-bottom: 6px; display: inline-block; }
+        .secure-card p { font-size: 11.5px; font-weight: 600; color: #0369a1; line-height: 1.4; }
+        .btn-logout {
+            display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8fafc;
+            border: 1px solid var(--border-color); color: #64748b; text-decoration: none; border-radius: 10px;
+            font-size: 13px; font-weight: 600; transition: all 0.2s;
         }
-
-        .brand-text-wrap h1 {
-            font-size: 13.5px;
-            font-weight: 800;
-            color: #0f172a;
-            line-height: 1.2;
-        }
-
-        .brand-text-wrap span {
-            font-size: 10.5px;
-            font-weight: 700;
-            color: var(--text-muted);
-        }
-
-        .nav-menu {
-            display: flex;
-            align-items: center;
-            list-style: none;
-            gap: 8px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            border-radius: 12px;
-            text-decoration: none;
-            font-size: 13.5px;
-            font-weight: 600;
-            color: #475569;
-            transition: all 0.2s ease;
-        }
-
-        .nav-link:hover {
-            color: var(--primary-blue);
-            background-color: #f1f5f9;
-        }
-
-        .nav-link.active {
-            background-color: #e0f2fe;
-            color: var(--primary-blue);
-            font-weight: 700;
-        }
-
-        .avatar-circle {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background-color: #fed7aa;
-            color: #9a3412;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 15px;
-        }
+        .btn-logout:hover { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
 
         /* 2. MAIN CONTAINER */
-        .main-container {
-            max-width: 1080px;
-            margin: 0 auto;
-            padding: 36px 20px 80px 20px;
+        .main-wrapper { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .top-navbar {
+            height: 64px; background: #ffffff; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: flex-end; padding: 0 32px;
+            position: sticky; top: 0; z-index: 90;
+        }
+        .nav-right-actions { display: flex; align-items: center; gap: 20px; }
+        .btn-bell { position: relative; background: none; border: none; font-size: 17px; color: #64748b; cursor: pointer; }
+        .bell-badge {
+            position: absolute; top: -4px; right: -6px; background: #ef4444; color: #fff;
+            font-size: 10px; font-weight: 800; width: 15px; height: 15px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-profile-chip { display: flex; align-items: center; gap: 10px; }
+        .user-avatar-circle {
+            width: 34px; height: 34px; border-radius: 50%; background: #93c5fd; color: #1e3a8a;
+            font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center;
+        }
+        .user-name-text { font-size: 13px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 6px; }
+
+        .content-body { padding: 24px 32px 50px 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+        /* 3. BANNER TIÊU ĐỀ TRANG */
+        .guide-banner {
+            background: #e0f2fe; border: 1px solid #bae6fd; border-radius: var(--radius-card);
+            padding: 24px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;
+            position: relative; overflow: hidden;
+        }
+        .banner-left-wrap { display: flex; align-items: center; gap: 18px; z-index: 2; }
+        .banner-book-icon {
+            width: 52px; height: 52px; border-radius: 14px; background: #0284c7; color: #ffffff;
+            display: flex; align-items: center; justify-content: center; font-size: 24px;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25); flex-shrink: 0;
+        }
+        .banner-text-titles h1 { font-size: 20px; font-weight: 800; color: #0369a1; }
+        .banner-text-titles p { font-size: 13px; color: #0284c7; margin-top: 4px; font-weight: 500; }
+        .banner-slogan-right {
+            font-size: 14.5px; font-weight: 700; color: #0284c7; font-style: italic; z-index: 2;
         }
 
-        .guide-header {
-            text-align: center;
-            max-width: 720px;
-            margin: 0 auto 36px auto;
+        /* 4. THANH ĐIỀU HƯỚNG TABS */
+        .guide-tabs-bar {
+            display: flex; align-items: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap;
         }
-
-        .guide-header h2 {
-            font-size: 28px;
-            font-weight: 800;
-            color: var(--text-dark);
-            margin-bottom: 10px;
-        }
-
-        .guide-header p {
-            font-size: 14.5px;
-            color: var(--text-muted);
-            line-height: 1.6;
-        }
-
-        /* THANH TÌM KIẾM HƯỚNG DẪN */
-        .guide-search-wrapper {
-            position: relative;
-            max-width: 600px;
-            margin: 24px auto 0 auto;
-        }
-
-        .guide-search-input {
-            width: 100%;
-            height: 50px;
-            padding: 12px 20px 12px 48px;
-            border-radius: 25px;
-            border: 1.5px solid var(--border-color);
-            background: #ffffff;
-            font-size: 14px;
-            outline: none;
-            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
-            transition: all 0.2s;
-        }
-
-        .guide-search-input:focus {
-            border-color: var(--primary-blue);
-            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.12);
-        }
-
-        .guide-search-icon {
-            position: absolute;
-            left: 18px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 16px;
-        }
-
-        /* NHÃN LỌC CHỦ ĐỀ NHANH */
-        .topic-filter-tabs {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 30px;
-        }
-
         .tab-btn {
-            padding: 8px 16px;
-            border-radius: 20px;
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            color: #475569;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
+            height: 40px; padding: 0 20px; border-radius: 10px; font-size: 13px; font-weight: 700;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border-color);
+            background: #ffffff; color: #475569; transition: all 0.2s;
+        }
+        .tab-btn:hover { background: #f0f9ff; color: var(--primary); }
+        .tab-btn.active {
+            background: var(--primary); color: #ffffff; border-color: var(--primary);
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.2);
+        }
+
+        /* 5. LƯỚI 6 KHỐI NỘI DUNG */
+        .guide-grid-2col {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
+        }
+
+        .guide-box-card {
+            background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-card);
+            padding: 22px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02); display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
+        }
+
+        .box-header-title {
+            display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 800;
+            color: var(--text-dark); margin-bottom: 14px;
+        }
+        .num-circle-badge {
+            width: 22px; height: 22px; border-radius: 50%; background: var(--primary); color: #ffffff;
+            font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+
+        /* Khối 1: Hệ thống này dùng để làm gì? */
+        .box-desc-text {
+            font-size: 12.5px; color: var(--text-muted); line-height: 1.6; max-width: 72%;
+        }
+        .watermark-illus-check {
+            position: absolute; right: 16px; bottom: 12px; width: 68px; height: auto; opacity: 0.95; pointer-events: none;
+        }
+
+        /* Khối 2: Làm thế nào để dự đoán khoản vay? */
+        .steps-bullet-list {
+            list-style: none; display: flex; flex-direction: column; gap: 12px; max-width: 72%;
+        }
+        .step-bullet-item { display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #334155; }
+        .step-sm-num {
+            width: 18px; height: 18px; border-radius: 50%; background: #0284c7; color: #ffffff;
+            font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .watermark-illus-laptop {
+            position: absolute; right: 16px; bottom: 12px; width: 80px; height: auto; opacity: 0.95; pointer-events: none;
+        }
+
+        /* Khối 3: Các trường thông tin có ý nghĩa gì? */
+        .field-nav-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+        .field-nav-item {
+            display: flex; align-items: center; justify-content: space-between; padding: 10px 14px;
+            background: #f8fafc; border: 1px solid var(--border-color); border-radius: 10px;
+            font-size: 12.5px; font-weight: 600; color: #334155; text-decoration: none; transition: all 0.2s; cursor: pointer;
+        }
+        .field-nav-item:hover { background: #f0f9ff; border-color: #bae6fd; color: var(--primary); }
+        .field-left-wrap { display: flex; align-items: center; gap: 10px; }
+        .field-left-wrap i { font-size: 14px; width: 18px; }
+        .field-nav-item i.fa-chevron-right { font-size: 11px; color: #94a3b8; }
+
+        /* Khối 4: Y và N có nghĩa là gì? */
+        .decision-cards-2col {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;
+        }
+        .decision-mini-card {
+            padding: 14px 12px; border-radius: 12px; display: flex; align-items: flex-start; gap: 10px;
+        }
+        .card-y { background: #f0fdf4; border: 1px solid #bbf7d0; }
+        .card-n { background: #fef2f2; border: 1px solid #fecaca; }
+
+        .decision-mini-card i { font-size: 18px; margin-top: 2px; }
+        .card-y i { color: #16a34a; }
+        .card-n i { color: #dc2626; }
+
+        .decision-meta strong { font-size: 12.5px; font-weight: 800; display: block; }
+        .card-y .decision-meta strong { color: #15803d; }
+        .card-n .decision-meta strong { color: #b91c1c; }
+        .decision-meta p { font-size: 11px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+
+        .disclaimer-note-bar {
+            display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #0369a1;
+            background: #f0f9ff; padding: 8px 12px; border-radius: 8px;
+        }
+
+        /* Khối 5: Câu hỏi thường gặp (FAQ) */
+        .faq-accordion-list { display: flex; flex-direction: column; gap: 8px; }
+        .faq-item {
+            border: 1px solid var(--border-color); border-radius: 10px; overflow: hidden; background: #ffffff;
+        }
+        .faq-header {
+            padding: 11px 14px; font-size: 12.5px; font-weight: 700; color: #334155;
+            display: flex; align-items: center; justify-content: space-between; cursor: pointer;
             transition: all 0.2s;
         }
+        .faq-header:hover { background: #f8fafc; color: var(--primary); }
+        .faq-header i { font-size: 11px; color: #94a3b8; transition: transform 0.2s; }
+        .faq-item.open .faq-header i { transform: rotate(180deg); }
+        .faq-body {
+            display: none; padding: 10px 14px; font-size: 12px; color: var(--text-muted);
+            border-top: 1px solid #f1f5f9; background: #f8fafc; line-height: 1.5;
+        }
+        .faq-item.open .faq-body { display: block; }
 
-        .tab-btn:hover, .tab-btn.active {
-            background: var(--primary-blue);
-            color: #ffffff;
-            border-color: var(--primary-blue);
+        /* Khối 6: Thông tin liên hệ và hỗ trợ */
+        .contact-list-box {
+            list-style: none; display: flex; flex-direction: column; gap: 12px; font-size: 12.5px; max-width: 65%;
+        }
+        .contact-list-box li { display: flex; align-items: flex-start; gap: 10px; color: #334155; }
+        .contact-list-box li i { color: var(--primary); font-size: 14px; margin-top: 3px; }
+        .contact-list-box li strong { color: var(--text-dark); display: block; }
+        
+        .agent-callcenter-illus {
+            position: absolute; right: 14px; bottom: 10px; width: 110px; height: auto; opacity: 0.95; pointer-events: none;
         }
 
-        /* DANH SÁCH KHỐI HƯỚNG DẪN (ACCORDION CARD) */
-        .guide-accordion-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
+        @media (max-width: 1024px) {
+            .guide-grid-2col { grid-template-columns: 1fr; }
+            .box-desc-text, .steps-bullet-list, .contact-list-box { max-width: 100%; }
+            .watermark-illus-check, .watermark-illus-laptop, .agent-callcenter-illus { display: none; }
         }
-
-        .guide-card {
-            background: #ffffff;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-card);
-            box-shadow: var(--shadow-subtle);
-            overflow: hidden;
-            transition: all 0.2s ease;
-        }
-
-        .guide-card-header {
-            padding: 20px 26px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            user-select: none;
-            background: #ffffff;
-        }
-
-        .guide-card-header:hover {
-            background: #f8fafc;
-        }
-
-        .header-title-wrap {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .header-badge-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        .badge-blue   { background: #e0f2fe; color: #0284c7; }
-        .badge-purple { background: #f3e8ff; color: #9333ea; }
-        .badge-amber  { background: #fef3c7; color: #d97706; }
-        .badge-green  { background: #dcfce7; color: #16a34a; }
-        .badge-rose   { background: #ffe4e6; color: #e11d48; }
-
-        .header-title-wrap h3 {
-            font-size: 16px;
-            font-weight: 800;
-            color: #0f172a;
-        }
-
-        .header-title-wrap p {
-            font-size: 12.5px;
-            color: var(--text-muted);
-            margin-top: 3px;
-        }
-
-        .toggle-arrow {
-            font-size: 14px;
-            color: #94a3b8;
-            transition: transform 0.3s ease;
-        }
-
-        .guide-card.open .toggle-arrow {
-            transform: rotate(180deg);
-            color: var(--primary-blue);
-        }
-
-        /* NỘI DUNG CHI TIẾT */
-        .guide-card-body {
-            padding: 0 26px 26px 26px;
-            display: none;
-            border-top: 1px dashed var(--border-color);
-            padding-top: 20px;
-        }
-
-        .guide-card.open .guide-card-body {
-            display: block;
-        }
-
-        .guide-step-list {
-            list-style: none;
-            margin: 14px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .guide-step-item {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            font-size: 13.5px;
-            line-height: 1.5;
-            color: #334155;
-        }
-
-        .step-num {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #e0f2fe;
-            color: var(--primary-blue);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: 800;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        /* BẢNG GIẢI THÍCH THUỘC TÍNH (2.5.3 - B) */
-        .guide-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13.5px;
-            margin: 16px 0;
-        }
-
-        .guide-table th {
-            background: #f8fafc;
-            text-align: left;
-            padding: 12px 16px;
-            font-weight: 800;
-            color: #475569;
-            border-bottom: 1.5px solid var(--border-color);
-            font-size: 12.5px;
-        }
-
-        .guide-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #f1f5f9;
-            color: #1e293b;
-            line-height: 1.5;
-        }
-
-        .guide-table tr:hover {
-            background: #fcfdfe;
-        }
-
-        /* HỘP LƯU Ý PHÁP LÝ / CẢNH BÁO */
-        .alert-callout {
-            border-radius: 12px;
-            padding: 14px 18px;
-            font-size: 13px;
-            line-height: 1.5;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin: 16px 0;
-        }
-
-        .alert-callout.warning {
-            background: #fffbeb;
-            border: 1px solid #fde68a;
-            color: #92400e;
-        }
-
-        .alert-callout.info {
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            color: #1e40af;
-        }
-
-        /* NÚT ĐIỀU HƯỚNG TRỰC TIẾP (2.5.2 - Bước 6) */
-        .guide-quick-nav {
-            margin-top: 16px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .btn-shortcut {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 9px 16px;
-            border-radius: 10px;
-            background: var(--primary-blue);
-            color: #ffffff;
-            font-size: 13px;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-
-        .btn-shortcut:hover {
-            background: var(--primary-hover);
-        }
-
-        /* KHỐI KHI KHÔNG TÌM THẤY TỪ KHÓA (2.5.2 - Bước 8) */
-        .not-found-box {
-            display: none;
-            text-align: center;
-            padding: 48px 20px;
-            background: #ffffff;
-            border-radius: var(--radius-card);
-            border: 1.5px dashed var(--border-color);
-        }
-
-        .not-found-box i {
-            font-size: 42px;
-            color: #94a3b8;
-            margin-bottom: 14px;
-        }
-        /* DROPDOWN USER TRÊN TOP NAVBAR */
-.nav-right {
-    display: flex;
-    align-items: center;
-}
-
-.user-dropdown-wrapper {
-    position: relative;
-    user-select: none;
-}
-
-.user-profile-trigger {
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    padding: 6px 10px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.user-profile-trigger:hover {
-    background-color: #f1f5f9;
-}
-
-.avatar-circle {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    background-color: #fed7aa;
-    color: #9a3412;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 14.5px;
-}
-
-.user-name-text {
-    font-size: 14px;
-    font-weight: 700;
-    color: #334155;
-}
-
-.dropdown-arrow-icon {
-    font-size: 11px;
-    color: #94a3b8;
-    margin-left: 2px;
-    transition: transform 0.2s ease;
-}
-
-.user-dropdown-wrapper.open .dropdown-arrow-icon {
-    transform: rotate(180deg);
-}
-
-/* KHUNG MENU XỔ XUỐNG THEO ẢNH MẪU */
-.user-menu-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    width: 195px;
-    background: #ffffff;
-    border: 1px solid #e2e8f0;
-    border-radius: 14px;
-    box-shadow: 0 10px 25px -4px rgba(15, 23, 42, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
-    padding: 6px;
-    list-style: none;
-    display: none;
-    z-index: 2000;
-}
-
-.user-menu-dropdown.show {
-    display: block;
-    animation: menuFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes menuFadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.user-menu-dropdown li a {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 14px;
-    font-size: 13.5px;
-    font-weight: 600;
-    color: #334155;
-    text-decoration: none;
-    border-radius: 8px;
-    transition: all 0.15s ease;
-}
-
-.user-menu-dropdown li a i {
-    font-size: 15px;
-    color: #64748b;
-    width: 18px;
-    text-align: center;
-}
-
-.user-menu-dropdown li a:hover {
-    background-color: #f8fafc;
-    color: #0284c7;
-}
-
-.user-menu-dropdown li a:hover i {
-    color: #0284c7;
-}
-
-/* ĐƯỜNG KẺ PHÂN CÁCH */
-.menu-divider {
-    height: 1px;
-    background-color: #f1f5f9;
-    margin: 4px 6px;
-}
-
-/* MỤC ĐĂNG XUẤT MÀU ĐỎ NỔI BẬT THEO ẢNH */
-.user-menu-dropdown li a.menu-logout-item {
-    color: #ef4444;
-}
-
-.user-menu-dropdown li a.menu-logout-item i {
-    color: #ef4444;
-}
-
-.user-menu-dropdown li a.menu-logout-item:hover {
-    background-color: #fee2e2;
-    color: #dc2626;
-}
-
-.user-menu-dropdown li a.menu-logout-item:hover i {
-    color: #dc2626;
-}
     </style>
 </head>
 <body>
 
-    <!-- 1. TOP NAVBAR -->
-    <header class="top-navbar">
-        <div class="nav-left">
-            <a href="/user" class="brand-logo">
-                <i class="fa-solid fa-building-columns"></i>
-                <div class="brand-text-wrap">
-                    <h1>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h1>
-                    <span>USER PORTAL</span>
-                </div>
-            </a>
-
-            <ul class="nav-menu">
-                <li><a href="/user" class="nav-link"><i class="fa-solid fa-house"></i> Trang chủ</a></li>
-                <li><a href="/predict" class="nav-link"><i class="fa-solid fa-arrows-rotate"></i> Dự đoán</a></li>
-                <li><a href="/history" class="nav-link"><i class="fa-solid fa-clock-rotate-left"></i> Lịch sử</a></li>
-                <li><a href="/profile" class="nav-link"><i class="fa-regular fa-folder-open"></i> Hồ sơ</a></li>
-                <li><a href="/guide" class="nav-link active"><i class="fa-regular fa-circle-question"></i> Hướng dẫn</a></li>
-            </ul>
-        </div>
-
-        <div class="nav-right">
-    <div class="user-dropdown-wrapper" id="userDropdownWrapper">
-        <div class="user-profile-trigger" onclick="toggleUserDropdown(event)">
-            <div class="avatar-circle">
-                {{ (user_fullname or current_user.username or 'U')[0] | upper }}
+    <!-- 1. SIDEBAR TRÁI ĐỒNG BỘ -->
+    <aside class="sidebar">
+        <a href="/user" class="sidebar-brand">
+            <i class="fa-solid fa-building-columns"></i>
+            <div class="sidebar-brand-text">
+                <h2>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h2>
+                <span>Loan Prediction System</span>
             </div>
-            <span class="user-name-text">
-                {{ user_fullname or current_user.username }}
-            </span>
-            <i class="fa-solid fa-chevron-down dropdown-arrow-icon"></i>
-        </div>
+        </a>
 
-        <!-- MENU XỔ XUỐNG ĐỒNG BỘ CHUẨN THEO ẢNH -->
-        <ul class="user-menu-dropdown" id="userMenuDropdown">
-            <li>
-                <a href="/profile">
-                    <i class="fa-regular fa-id-card"></i>
-                    <span>Thông tin cá nhân</span>
-                </a>
-            </li>
-            <li>
-                <a href="/guide">
-                    <i class="fa-regular fa-circle-question"></i>
-                    <span>Trợ giúp & HDSD</span>
-                </a>
-            </li>
-            <div class="menu-divider"></div>
-            <li>
-                <a href="/logout" class="menu-logout-item">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                    <span>Đăng xuất</span>
-                </a>
-            </li>
+        <ul class="sidebar-menu">
+            <li><a href="/user" class="menu-link"><i class="fa-solid fa-house"></i><span>Trang chủ</span></a></li>
+            <li><a href="/predict" class="menu-link"><i class="fa-solid fa-calculator"></i><span>Dự đoán khoản vay</span></a></li>
+            <li><a href="/history" class="menu-link"><i class="fa-solid fa-clock-rotate-left"></i><span>Lịch sử dự đoán</span></a></li>
+            <li><a href="/profile" class="menu-link"><i class="fa-regular fa-user"></i><span>Hồ sơ cá nhân</span></a></li>
+            <li><a href="/guide" class="menu-link active"><i class="fa-regular fa-circle-question"></i><span>Hướng dẫn</span></a></li>
         </ul>
-    </div>
-</div>
-    </header>
+
+        <div class="sidebar-footer">
+            <div class="secure-card">
+                <i class="fa-solid fa-shield-halved"></i>
+                <p>Dữ liệu của bạn<br>được bảo mật tuyệt đối</p>
+            </div>
+            <a href="/logout" class="btn-logout">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
 
     <!-- 2. MAIN CONTAINER -->
-    <main class="main-container">
-        
-        <!-- Header & Tìm kiếm hướng dẫn (2.5.2 - Bước 5) -->
-        <div class="guide-header">
-            <h2>Trung tâm Hướng dẫn sử dụng</h2>
-            <p>Tài liệu chuẩn hóa quy trình thẩm định, giải thích các chỉ số tín dụng và hỗ trợ bạn đọc hiểu kết quả dự đoán của mô hình Học máy.</p>
-            
-            <div class="guide-search-wrapper">
-                <i class="fa-solid fa-magnifying-glass guide-search-icon"></i>
-                <input type="text" id="guideSearchInput" class="guide-search-input" 
-                       placeholder="Tìm kiếm chủ đề, thuộc tính (thu nhập, lịch sử CIC, Y/N...)" onkeyup="filterGuideTopics()">
-            </div>
-        </div>
-
-        <!-- Các nút lọc chủ đề nhanh -->
-        <div class="topic-filter-tabs">
-            <button class="tab-btn active" onclick="filterByTag('all', this)">Tất cả chủ đề</button>
-            <button class="tab-btn" onclick="filterByTag('predict', this)">Dự đoán khoản vay</button>
-            <button class="tab-btn" onclick="filterByTag('attributes', this)">Giải thích thuộc tính</button>
-            <button class="tab-btn" onclick="filterByTag('results', this)">Đọc hiểu kết quả</button>
-            <button class="tab-btn" onclick="filterByTag('profile', this)">Quản lý hồ sơ & Lịch sử</button>
-        </div>
-
-        <!-- DANH SÁCH CÁC CHỦ ĐỀ HƯỚNG DẪN CHI TIẾT (2.5.1 & 2.5.3) -->
-        <div class="guide-accordion-list" id="guideAccordionList">
-
-            <!-- 1. Giới thiệu hệ thống -->
-            <div class="guide-card" data-tags="all intro">
-                <div class="guide-card-header" onclick="toggleCard(this)">
-                    <div class="header-title-wrap">
-                        <div class="header-badge-icon badge-blue"><i class="fa-solid fa-brain"></i></div>
-                        <div>
-                            <h3>1. Giới thiệu hệ thống dự đoán tín dụng</h3>
-                            <p>Mục đích, công nghệ và giá trị mang lại cho người dùng.</p>
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-chevron-down toggle-arrow"></i>
+    <div class="main-wrapper">
+        <header class="top-navbar">
+            <div class="nav-right-actions">
+                <button class="btn-bell" title="Thông báo">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="bell-badge">1</span>
+                </button>
+                <div class="user-profile-chip">
+                    <div class="user-avatar-circle">N</div>
+                    <span class="user-name-text">
+                        {{ user_fullname }} <i class="fa-solid fa-angle-down" style="font-size: 11px; color: #94a3b8;"></i>
+                    </span>
                 </div>
-                <div class="guide-card-body">
-                    <p style="font-size: 13.5px; line-height: 1.6; color: #334155;">
-                        Hệ thống Dự Đoán Tín Dụng là nền tảng ứng dụng mô hình <strong>Học máy (Machine Learning)</strong> nhằm tự động hóa quy trình phân tích và đánh giá rủi ro đối với các khoản vay vốn cá nhân. Hệ thống giúp người vay nhanh chóng ước tính xác suất được duyệt trước khi nộp hồ sơ chính thức tại ngân hàng.
+            </div>
+        </header>
+
+        <main class="content-body">
+
+            <!-- 3. BANNER TIÊU ĐỀ TRANG -->
+            <section class="guide-banner">
+                <div class="banner-left-wrap">
+                    <div class="banner-book-icon">
+                        <i class="fa-solid fa-book-open"></i>
+                    </div>
+                    <div class="banner-text-titles">
+                        <h1>Hướng dẫn sử dụng</h1>
+                        <p>Tìm hiểu cách sử dụng hệ thống một cách dễ dàng và hiệu quả nhất!</p>
+                    </div>
+                </div>
+
+                <div class="banner-slogan-right">
+                    Chúng tôi luôn sẵn sàng hỗ trợ bạn!
+                </div>
+            </section>
+
+            <!-- 4. THANH ĐIỀU HƯỚNG TABS -->
+            <div class="guide-tabs-bar">
+                <button type="button" class="tab-btn active" onclick="filterGuideTab('all')">
+                    <i class="fa-solid fa-book"></i> Tổng quan
+                </button>
+                <button type="button" class="tab-btn" onclick="filterGuideTab('steps')">
+                    <i class="fa-solid fa-list-check"></i> Hướng dẫn chi tiết
+                </button>
+                <button type="button" class="tab-btn" onclick="filterGuideTab('results')">
+                    <i class="fa-solid fa-circle-question"></i> Giải thích kết quả
+                </button>
+                <button type="button" class="tab-btn" onclick="filterGuideTab('faq')">
+                    <i class="fa-regular fa-circle-question"></i> Câu hỏi thường gặp
+                </button>
+            </div>
+
+            <!-- 5. LƯỚI 6 KHỐI HƯỚNG DẪN CHÍNH -->
+            <div class="guide-grid-2col">
+                
+                <!-- KHỐI 1: Hệ thống này dùng để làm gì? -->
+                <section class="guide-box-card" id="card-overview">
+                    <div class="box-header-title">
+                        <span class="num-circle-badge">1</span>
+                        <span>Hệ thống này dùng để làm gì?</span>
+                    </div>
+                    <p class="box-desc-text">
+                        Hệ thống dự đoán tín dụng giúp bạn kiểm tra khả năng được chấp thuận khoản vay dựa trên thông tin bạn cung cấp, bằng công nghệ <strong>Machine Learning</strong> hiện đại.
                     </p>
-                    <div class="alert-callout info">
-                        <i class="fa-solid fa-circle-info" style="font-size: 18px; margin-top: 2px;"></i>
-                        <div>
-                            <strong>Quy trình vận hành:</strong> Dữ liệu hồ sơ sau khi người dùng nhập sẽ được chuẩn hóa qua Pipeline tiền xử lý và chuyển vào mô hình phân loại để đưa ra dự đoán nhãn phê duyệt (Y/N) cùng độ tin cậy tương ứng.
-                        </div>
+                    <div class="watermark-illus-check">
+                        <i class="fa-regular fa-clipboard" style="font-size: 58px; color: #38bdf8;"></i>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- 2. Hướng dẫn dự đoán khoản vay (2.5.3 - A) -->
-            <div class="guide-card open" data-tags="all predict">
-                <div class="guide-card-header" onclick="toggleCard(this)">
-                    <div class="header-title-wrap">
-                        <div class="header-badge-icon badge-purple"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
-                        <div>
-                            <h3>2. Hướng dẫn quy trình Dự đoán khoản vay</h3>
-                            <p>Trình tự 7 bước nhập liệu và gửi thẩm định tự động.</p>
-                        </div>
+                <!-- KHỐI 2: Làm thế nào để dự đoán khoản vay? -->
+                <section class="guide-box-card" id="card-steps">
+                    <div class="box-header-title">
+                        <span class="num-circle-badge">2</span>
+                        <span>Làm thế nào để dự đoán khoản vay?</span>
                     </div>
-                    <i class="fa-solid fa-chevron-down toggle-arrow"></i>
-                </div>
-                <div class="guide-card-body">
-                    <p style="font-size: 13.5px; color: var(--text-muted); margin-bottom: 8px;">Người dùng thực hiện theo trình tự chuẩn gồm các bước sau:</p>
-                    <ul class="guide-step-list">
-                        <li class="guide-step-item"><span class="step-num">1</span><span>Chọn menu <strong>Dự đoán</strong> trên thanh điều hướng đầu trang.</span></li>
-                        <li class="guide-step-item"><span class="step-num">2</span><span>Tại <strong>Khối A</strong>: Nhập thông tin nhân thân (Giới tính, Hôn nhân, Số người phụ thuộc, Trình độ học vấn, Độ tuổi từ 18–60 và mô hình kinh doanh nếu có).</span></li>
-                        <li class="guide-step-item"><span class="step-num">3</span><span>Tại <strong>Khối B</strong>: Khai báo trung thực thu nhập hàng tháng của người vay, người đồng vay, số tiền vay mong muốn và chọn kỳ hạn vay (từ 6 đến 360 tháng).</span></li>
-                        <li class="guide-step-item"><span class="step-num">4</span><span>Lựa chọn chính xác tình trạng <strong>Lịch sử tín dụng CIC</strong> (Đạt yêu cầu hoặc Không đạt yêu cầu).</span></li>
-                        <li class="guide-step-item"><span class="step-num">5</span><span>Tại <strong>Khối C</strong>: Chọn khu vực tài sản bảo đảm (Thành thị, Bán thành thị hoặc Nông thôn).</span></li>
-                        <li class="guide-step-item"><span class="step-num">6</span><span>Nhấn nút <strong>Dự đoán</strong>. Hệ thống sẽ tự động vô hiệu hóa nút để tránh gửi lặp và chuyển dữ liệu qua mô hình AI.</span></li>
-                        <li class="guide-step-item"><span class="step-num">7</span><span>Biểu mẫu sẽ tự động ẩn đi, trả về bảng phân tích kết quả dự đoán (Đồng hồ % duyệt, phân tích rủi ro, yếu tố ảnh hưởng).</span></li>
+                    <ul class="steps-bullet-list">
+                        <li class="step-bullet-item">
+                            <span class="step-sm-num">1</span>
+                            <span>Nhập thông tin cá nhân và tài chính vào biểu mẫu.</span>
+                        </li>
+                        <li class="step-bullet-item">
+                            <span class="step-sm-num">2</span>
+                            <span>Nhấn nút 'Dự đoán ngay'.</span>
+                        </li>
+                        <li class="step-bullet-item">
+                            <span class="step-sm-num">3</span>
+                            <span>Xem kết quả dự đoán và tham khảo giải thích.</span>
+                        </li>
                     </ul>
-                    <div class="guide-quick-nav">
-                        <a href="/predict" class="btn-shortcut"><i class="fa-solid fa-arrow-up-right-from-square"></i> Mở chức năng Dự đoán ngay</a>
+                    <div class="watermark-illus-laptop">
+                        <i class="fa-solid fa-laptop-code" style="font-size: 58px; color: #38bdf8;"></i>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- 3. Giải thích các thuộc tính đầu vào (2.5.3 - B) -->
-            <div class="guide-card" data-tags="all attributes">
-                <div class="guide-card-header" onclick="toggleCard(this)">
-                    <div class="header-title-wrap">
-                        <div class="header-badge-icon badge-amber"><i class="fa-solid fa-table-list"></i></div>
-                        <div>
-                            <h3>3. Bảng giải thích chi tiết các thuộc tính đầu vào</h3>
-                            <p>Ý nghĩa và định dạng dữ liệu chuẩn của các biến số.</p>
-                        </div>
+                <!-- KHỐI 3: Các trường thông tin có ý nghĩa gì? -->
+                <section class="guide-box-card" id="card-fields">
+                    <div class="box-header-title">
+                        <span class="num-circle-badge">3</span>
+                        <span>Các trường thông tin có ý nghĩa gì?</span>
                     </div>
-                    <i class="fa-solid fa-chevron-down toggle-arrow"></i>
-                </div>
-                <div class="guide-card-body">
-                    <table class="guide-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 25%;">Thuộc tính</th>
-                                <th style="width: 25%;">Định dạng / Lựa chọn</th>
-                                <th>Nội dung hướng dẫn & Đơn vị quy chuẩn</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><strong>Giới tính (Gender)</strong></td>
-                                <td>Nam (Male) / Nữ (Female)</td>
-                                <td>Chọn giới tính theo giấy tờ định danh pháp lý.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Tình trạng hôn nhân</strong></td>
-                                <td>Đã kết hôn / Độc thân</td>
-                                <td>Tình trạng gia đình ảnh hưởng đến chỉ số ổn định tài chính.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Số người phụ thuộc</strong></td>
-                                <td>0, 1, 2, 3+ người</td>
-                                <td>Số người sống phụ thuộc vào nguồn thu nhập của người vay.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Trình độ học vấn</strong></td>
-                                <td>Đại học, THPT, THCS, Chưa tốt nghiệp</td>
-                                <td>Hệ thống tự động chuẩn hóa cấp học sang nhãn huấn luyện tương thích.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Tự kinh doanh</strong></td>
-                                <td>Có / Không</td>
-                                <td>Nếu chọn Có, vui lòng điền thêm mô hình kinh doanh (Cửa hàng, F&B...).</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Thu nhập người vay</strong></td>
-                                <td>Số thực không âm (> 0)</td>
-                                <td>Thu nhập ròng cố định hàng tháng. <strong>Đơn vị: Triệu VNĐ</strong>.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Thu nhập người đồng vay</strong></td>
-                                <td>Số thực không âm (&ge; 0)</td>
-                                <td>Thu nhập của người bảo lãnh hoặc vợ/chồng cùng trả nợ (nhập 0 nếu không có).</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Số tiền vay</strong></td>
-                                <td>Số thực (> 0)</td>
-                                <td>Hạn mức khoản vay đề nghị giải ngân. <strong>Đơn vị: Triệu VNĐ</strong>.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Thời hạn vay</strong></td>
-                                <td>6, 12, 36, 60, ... 360 tháng</td>
-                                <td>Thời gian đăng ký hoàn trả vốn tính theo <strong>Tháng</strong>.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Lịch sử tín dụng CIC</strong></td>
-                                <td>1 (Đạt chuẩn) / 0 (Nợ quá hạn)</td>
-                                <td>Chỉ số quan trọng nhất: Lịch sử hoàn trả tại Trung tâm Thông tin Tín dụng Quốc gia.</td>
-                            </tr>
-                            <tr>
-                                <td><strong>Khu vực tài sản</strong></td>
-                                <td>Thành thị, Bán thành thị, Nông thôn</td>
-                                <td>Địa bàn tọa lạc của tài sản bảo đảm (Bất động sản/Tài sản thế chấp).</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                    <ul class="field-nav-list">
+                        <li class="field-nav-item" onclick="alert('Thông tin cá nhân bao gồm: Giới tính, Tình trạng hôn nhân, Số người phụ thuộc, Học vấn và Nghề nghiệp.')">
+                            <div class="field-left-wrap">
+                                <i class="fa-regular fa-user" style="color: #0284c7;"></i>
+                                <span>Thông tin cá nhân</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="field-nav-item" onclick="alert('Thông tin tài chính bao gồm: Thu nhập của bạn hàng tháng, Thu nhập người đồng vay (nếu có), Số tiền vay và Kỳ hạn trả góp.')">
+                            <div class="field-left-wrap">
+                                <i class="fa-solid fa-coins" style="color: #eab308;"></i>
+                                <span>Thông tin tài chính</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="field-nav-item" onclick="alert('Lịch sử tín dụng phản ánh việc bạn có từng hoàn thành đúng hạn các nghĩa vụ vay vốn trước đây theo dữ liệu hệ thống hay không.')">
+                            <div class="field-left-wrap">
+                                <i class="fa-regular fa-circle-check" style="color: #16a34a;"></i>
+                                <span>Lịch sử tín dụng</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                        <li class="field-nav-item" onclick="alert('Khu vực sinh sống gồm: Thành thị (Urban), Bán thành thị (Semiurban), và Nông thôn (Rural) nơi đặt tài sản bảo đảm.')">
+                            <div class="field-left-wrap">
+                                <i class="fa-solid fa-location-dot" style="color: #0284c7;"></i>
+                                <span>Khu vực sinh sống</span>
+                            </div>
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </li>
+                    </ul>
+                </section>
 
-            <!-- 4. Hướng dẫn đọc kết quả (2.5.3 - C) -->
-            <div class="guide-card" data-tags="all results">
-                <div class="guide-card-header" onclick="toggleCard(this)">
-                    <div class="header-title-wrap">
-                        <div class="header-badge-icon badge-green"><i class="fa-solid fa-chart-pie"></i></div>
-                        <div>
-                            <h3>4. Hướng dẫn đọc và phân tích kết quả dự đoán</h3>
-                            <p>Ý nghĩa nhãn Y/N, đồng hồ phần trăm và các khuyến nghị rủi ro.</p>
-                        </div>
+                <!-- KHỐI 4: Y và N có nghĩa là gì? -->
+                <section class="guide-box-card" id="card-results">
+                    <div class="box-header-title">
+                        <span class="num-circle-badge">4</span>
+                        <span>Y và N có nghĩa là gì?</span>
                     </div>
-                    <i class="fa-solid fa-chevron-down toggle-arrow"></i>
-                </div>
-                <div class="guide-card-body">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
-                        <div style="background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 16px;">
-                            <strong style="color: #166534; font-size: 15px;"><i class="fa-solid fa-circle-check"></i> Nhãn Y (Approved):</strong>
-                            <p style="font-size: 13px; color: #166534; margin-top: 6px; line-height: 1.5;">
-                                Hồ sơ mang các đặc trưng tương đồng với nhóm khách hàng được giải ngân trong tập dữ liệu huấn luyện. Điểm tín dụng ước tính &ge; 620/850.
-                            </p>
+
+                    <div class="decision-cards-2col">
+                        <div class="decision-mini-card card-y">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <div class="decision-meta">
+                                <strong>Y – Có khả năng được chấp thuận</strong>
+                                <p>Hồ sơ của bạn được mô hình dự đoán thuộc nhóm Y.</p>
+                            </div>
                         </div>
-                        <div style="background: #fef2f2; border: 1.5px solid #fca5a5; border-radius: 12px; padding: 16px;">
-                            <strong style="color: #991b1b; font-size: 15px;"><i class="fa-solid fa-circle-xmark"></i> Nhãn N (Rejected):</strong>
-                            <p style="font-size: 13px; color: #991b1b; margin-top: 6px; line-height: 1.5;">
-                                Hồ sơ tiềm ẩn rủi ro (thường do nợ xấu CIC hoặc tỷ lệ nợ/thu nhập vượt ngưỡng an toàn). Cần điều chỉnh giảm hạn mức vay hoặc kéo dài thời hạn.
-                            </p>
+
+                        <div class="decision-mini-card card-n">
+                            <i class="fa-solid fa-circle-xmark"></i>
+                            <div class="decision-meta">
+                                <strong>N – Chưa có khả năng được chấp thuận</strong>
+                                <p>Hồ sơ của bạn được mô hình dự đoán thuộc nhóm N.</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="alert-callout warning">
-                        <i class="fa-solid fa-triangle-exclamation" style="font-size: 20px;"></i>
-                        <div>
-                            <strong>Tuyên bố từ chối trách nhiệm pháp lý:</strong><br>
-                            Kết quả thẩm định của hệ thống hoàn toàn dựa trên xác suất thống kê từ mô hình Học máy và chỉ mang giá trị tham khảo. Kết quả này <strong>không đồng nghĩa</strong> với văn bản phê duyệt hay cam kết giải ngân chính thức từ các tổ chức tín dụng.
-                        </div>
+                    <div class="disclaimer-note-bar">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span><strong>Lưu ý:</strong> Kết quả chỉ mang tính tham khảo, không phải quyết định chính thức từ ngân hàng.</span>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <!-- 5. Hướng dẫn quản lý hồ sơ và lịch sử (2.5.3 - D) -->
-            <div class="guide-card" data-tags="all profile">
-                <div class="guide-card-header" onclick="toggleCard(this)">
-                    <div class="header-title-wrap">
-                        <div class="header-badge-icon badge-rose"><i class="fa-solid fa-clock-rotate-left"></i></div>
-                        <div>
-                            <h3>5. Hướng dẫn tra cứu Lịch sử và Quản lý Hồ sơ</h3>
-                            <p>Cách phân biệt giữa Lịch sử dự đoán và Quản lý vòng đời hồ sơ.</p>
+                <!-- KHỐI 5: Câu hỏi thường gặp (FAQ) -->
+                <section class="guide-box-card" id="card-faq">
+                    <div class="box-header-title">
+                        <span class="num-circle-badge">5</span>
+                        <span>Câu hỏi thường gặp (FAQ)</span>
+                    </div>
+
+                    <div class="faq-accordion-list">
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-header">
+                                <span>Kết quả Y có nghĩa là ngân hàng chắc chắn cho vay không?</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-body">
+                                Không. Kết quả trên hệ thống được tạo bởi mô hình Machine Learning mang tính tham khảo kỹ thuật, quyết định giải ngân phụ thuộc vào quy trình thẩm định thực tế của ngân hàng.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-header">
+                                <span>Tại sao tôi nhận được kết quả N?</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-body">
+                                Có thể do khoản vay vượt quá năng lực tích lũy hàng tháng, kỳ hạn trả quá ngắn hoặc chưa có lịch sử tín dụng đạt chuẩn trên hệ thống.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-header">
+                                <span>Tôi có thể dự đoán lại không?</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-body">
+                                Hoàn toàn được. Bạn có thể điều chỉnh lại số tiền vay, kỳ hạn hoặc bổ sung người đồng vay để nhận dự đoán mới bất kỳ lúc nào.
+                            </div>
+                        </div>
+
+                        <div class="faq-item" onclick="toggleFaq(this)">
+                            <div class="faq-header">
+                                <span>Thông tin của tôi có được bảo mật không?</span>
+                                <i class="fa-solid fa-chevron-down"></i>
+                            </div>
+                            <div class="faq-body">
+                                Toàn bộ dữ liệu của bạn được lưu trữ bảo mật trong cơ sở dữ liệu riêng biệt và chỉ phục vụ việc chấm điểm khoản vay.
+                            </div>
                         </div>
                     </div>
-                    <i class="fa-solid fa-chevron-down toggle-arrow"></i>
-                </div>
-                <div class="guide-card-body">
-                    <ul class="guide-step-list">
-                        <li class="guide-step-item">
-                            <span class="step-num"><i class="fa-solid fa-clock"></i></span>
+                </section>
+
+                <!-- KHỐI 6: Thông tin liên hệ và hỗ trợ -->
+                <section class="guide-box-card" id="card-contact">
+                    <div class="box-header-title">
+                        <span class="num-circle-badge">6</span>
+                        <span>Thông tin liên hệ và hỗ trợ</span>
+                    </div>
+
+                    <ul class="contact-list-box">
+                        <li>
+                            <i class="fa-regular fa-envelope"></i>
                             <div>
-                                <strong>Chức năng Lịch sử dự đoán:</strong> Lưu trữ bất biến các phiên chạy mô hình. Tại đây người dùng có thể lọc theo trạng thái Y/N, khoảng thời gian (7 ngày, tuần này, tháng này) và bấm <em>"Xem chi tiết hồ sơ"</em> để mở cửa sổ tra cứu.
+                                <span>Email hỗ trợ:</span>
+                                <strong>dtc235200634@nganhang.vn</strong>
                             </div>
                         </li>
-                        <li class="guide-step-item">
-                            <span class="step-num"><i class="fa-regular fa-folder-open"></i></span>
+                        <li>
+                            <i class="fa-solid fa-phone"></i>
                             <div>
-                                <strong>Chức năng Hồ sơ khoản vay:</strong> Theo dõi tiến trình xử lý nghiệp vụ gồm 5 trạng thái (<em>Draft, Submitted, Pending, Processed, Returned</em>). Đặc biệt, hồ sơ nào đã được Admin phê duyệt chính thức sẽ có nhãn riêng <strong>Admin đã duyệt</strong>.
+                                <span>Số điện thoại:</span>
+                                <strong>0971 311 683</strong>
+                            </div>
+                        </li>
+                        <li>
+                            <i class="fa-regular fa-clock"></i>
+                            <div>
+                                <span>Thời gian hỗ trợ:</span>
+                                <strong>8h00 – 17h00 (Thứ 2 – Thứ 6)</strong>
                             </div>
                         </li>
                     </ul>
-                    <div class="guide-quick-nav">
-                        <a href="/history" class="btn-shortcut"><i class="fa-solid fa-clock-rotate-left"></i> Xem lịch sử của bạn</a>
-                        <a href="/profile" class="btn-shortcut" style="background: #0f172a;"><i class="fa-regular fa-folder-open"></i> Quản lý hồ sơ</a>
+
+                    <div class="agent-callcenter-illus">
+                        <i class="fa-solid fa-headset" style="font-size: 64px; color: #bae6fd;"></i>
                     </div>
-                </div>
+                </section>
+
             </div>
 
-            <!-- 6. Hướng dẫn xử lý lỗi thường gặp -->
-            <div class="guide-card" data-tags="all errors">
-                <div class="guide-card-header" onclick="toggleCard(this)">
-                    <div class="header-title-wrap">
-                        <div class="header-badge-icon badge-amber"><i class="fa-solid fa-screwdriver-wrench"></i></div>
-                        <div>
-                            <h3>6. Hướng dẫn xử lý các lỗi thường gặp</h3>
-                            <p>Cách khắc phục các thông báo cảnh báo nhập liệu hoặc kết nối.</p>
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-chevron-down toggle-arrow"></i>
-                </div>
-                <div class="guide-card-body">
-                    <div style="font-size: 13.5px; line-height: 1.6; color: #334155;">
-                        <p><strong>• Lỗi "Thu nhập và số tiền vay phải lớn hơn 0":</strong> Kiểm tra các ô thu nhập và hạn mức vay, đảm bảo không nhập ký tự chữ cái, số âm hoặc để trống.</p>
-                        <p style="margin-top: 8px;"><strong>• Lỗi "Độ tuổi không nằm trong khung quy định":</strong> Hệ thống chỉ hỗ trợ thẩm định cho đối tượng công dân trong độ tuổi lao động từ 18 đến 60 tuổi.</p>
-                        <p style="margin-top: 8px;"><strong>• Lỗi không chuyển được trang hoặc đứng im:</strong> Kiểm tra lại kết nối mạng hoặc thử tải lại trình duyệt (nhấn F5).</p>
-                    </div>
-                </div>
-            </div>
+        </main>
+    </div>
 
-        </div>
-
-        <!-- Khối hiển thị khi tìm kiếm không ra kết quả (2.5.2 - Bước 8) -->
-        <div class="not-found-box" id="notFoundBox">
-            <i class="fa-regular fa-folder-open"></i>
-            <h4 style="font-size: 16px; font-weight: 700; color: #334155;">Không tìm thấy chủ đề hướng dẫn phù hợp</h4>
-            <p style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Vui lòng kiểm tra lại từ khóa tìm kiếm hoặc bấm nút "Tất cả chủ đề" bên trên.</p>
-        </div>
-
-    </main>
-
-    <!-- JAVASCRIPT XỬ LÝ TÌM KIẾM, LỌC VÀ ACCORDION -->
+    <!-- JAVASCRIPT HỖ TRỢ TAB VÀ FAQ ACCORDION -->
     <script>
-        // Bật / tắt Accordion Card
-        function toggleCard(headerElement) {
-            const card = headerElement.parentElement;
-            card.classList.toggle('open');
+        function toggleFaq(element) {
+            element.classList.toggle('open');
         }
 
-        // Lọc chủ đề theo từ khóa tìm kiếm (2.5.2 - Bước 5 & 8)
-        function filterGuideTopics() {
-            const input = document.getElementById('guideSearchInput').value.toLowerCase().trim();
-            const cards = document.querySelectorAll('.guide-card');
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                const text = card.innerText.toLowerCase();
-                if (text.includes(input)) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            const notFound = document.getElementById('notFoundBox');
-            if (visibleCount === 0) {
-                notFound.style.display = 'block';
-            } else {
-                notFound.style.display = 'none';
-            }
-        }
-
-        // Lọc theo nút Tab thẻ chủ đề nhanh
-        function filterByTag(tag, btnElement) {
+        function filterGuideTab(tabKey) {
+            // Đổi trạng thái nút bấm
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            btnElement.classList.add('active');
+            event.currentTarget.classList.add('active');
 
-            const cards = document.querySelectorAll('.guide-card');
-            let visibleCount = 0;
-
-            cards.forEach(card => {
-                const tags = card.getAttribute('data-tags') || '';
-                if (tag === 'all' || tags.includes(tag)) {
-                    card.style.display = 'block';
-                    visibleCount++;
-                } else {
-                    card.style.display = 'none';
-                }
-            });
-
-            document.getElementById('notFoundBox').style.display = visibleCount === 0 ? 'block' : 'none';
-        }
-    </script>
-    <script>
-        function toggleUserDropdown(event) {
-            event.stopPropagation();
-            const dropdown = document.getElementById('userMenuDropdown');
-            dropdown.classList.toggle('show');
-        }
-
-        // Bấm ra ngoài khoảng trống sẽ tự đóng menu lại
-        window.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('userMenuDropdown');
-            if (dropdown && dropdown.classList.contains('show')) {
-                dropdown.classList.remove('show');
+            const allCards = document.querySelectorAll('.guide-box-card');
+            if (tabKey === 'all') {
+                allCards.forEach(c => c.style.display = 'flex');
+            } else if (tabKey === 'steps') {
+                allCards.forEach(c => c.style.display = 'none');
+                document.getElementById('card-overview').style.display = 'flex';
+                document.getElementById('card-steps').style.display = 'flex';
+                document.getElementById('card-fields').style.display = 'flex';
+            } else if (tabKey === 'results') {
+                allCards.forEach(c => c.style.display = 'none');
+                document.getElementById('card-results').style.display = 'flex';
+            } else if (tabKey === 'faq') {
+                allCards.forEach(c => c.style.display = 'none');
+                document.getElementById('card-faq').style.display = 'flex';
+                document.getElementById('card-contact').style.display = 'flex';
             }
-        });
+        }
     </script>
 </body>
 </html>

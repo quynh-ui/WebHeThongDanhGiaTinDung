@@ -1,0 +1,30 @@
+[
+  {
+    "time": "31/10/2026 09:11",
+    "model": "Logistic Regression",
+    "action": "Kích hoạt",
+    "admin": "admin",
+    "version": "ML v18"
+  },
+  {
+    "time": "31/10/2026 08:31",
+    "model": "Logistic Regression",
+    "action": "Kích hoạt",
+    "admin": "admin",
+    "version": "ML v17"
+  },
+  {
+    "time": "30/10/2026 22:19",
+    "model": "Logistic Regression",
+    "action": "Kích hoạt",
+    "admin": "admin",
+    "version": "ML v16"
+  },
+  {
+    "time": "30/10/2026 21:24",
+    "model": "Logistic Regression",
+    "action": "Kích hoạt",
+    "admin": "admin",
+    "version": "ML v15"
+  }
+]

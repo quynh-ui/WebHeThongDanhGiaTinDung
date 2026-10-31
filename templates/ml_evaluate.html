@@ -3,506 +3,541 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đánh Giá Mô Hình ML - Smart Credit Scoring</title>
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Đánh Giá Mô Hình - Hệ Thống Dự Đoán Tín Dụng</title>
+    <!-- Fonts, Font Awesome & Chart.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f8fafc; color: #1e293b; }
-
-        .top-navbar {
-            background-color: #ffffff; height: 60px; padding: 0 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        :root {
+            --sidebar-width: 260px;
+            --bg-page: #f1f5fa;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --radius-card: 16px;
         }
-        .system-title { font-size: 16px; font-weight: 800; color: #034694; text-transform: uppercase; }
 
-        .wrapper { display: flex; margin-top: 60px; }
-        /* ================= SIDEBAR CHUẨN ĐỒNG BỘ GIAO DIỆN ================= */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-page); color: var(--text-dark); min-height: 100vh; display: flex; }
+
+        /* 1. SIDEBAR TRÁI */
         .sidebar {
-            width: 250px;
-            min-height: calc(100vh - 60px);
-            background-color: #081729;
-            padding: 18px 12px 60px 12px;
-            position: fixed;
-            top: 60px;
-            bottom: 0;
-            left: 0;
-            overflow-y: auto;
-            z-index: 999;
+            width: var(--sidebar-width); background: #ffffff; border-right: 1px solid var(--border-color);
+            color: #1e293b; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0;
+            z-index: 100; padding: 24px 16px; overflow-y: auto;
+        }
+        .sidebar-brand {
+            display: flex; align-items: center; gap: 12px; padding: 0 8px 24px 8px; text-decoration: none;
+            color: #0f172a; border-bottom: 1px solid #f1f5f9; margin-bottom: 12px;
+        }
+        .sidebar-brand i { font-size: 28px; color: var(--primary); }
+        .sidebar-brand-text h2 { font-size: 13.5px; font-weight: 800; line-height: 1.25; color: #0f172a; }
+        .sidebar-brand-text span { font-size: 11px; color: var(--text-muted); font-weight: 700; }
+
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+        .menu-item-main {
+            display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-radius: 12px;
+            text-decoration: none; font-size: 13.5px; font-weight: 600; color: #475569; transition: all 0.2s;
+        }
+        .menu-item-main:hover { background: #f1f5f9; color: var(--primary); }
+        .menu-group { margin-top: 10px; }
+        .menu-group-label {
+            display: flex; align-items: center; gap: 10px; padding: 8px 12px; font-size: 12.5px;
+            font-weight: 800; color: #0f172a;
+        }
+        .menu-group-label i { color: var(--primary); font-size: 14px; }
+        .menu-sub-list {
+            list-style: none; display: flex; flex-direction: column; gap: 2px;
+            padding-left: 20px; margin-bottom: 6px; border-left: 1.5px solid #e2e8f0; margin-left: 18px;
+        }
+        .menu-sub-link {
+            display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 8px;
+            font-size: 12.5px; font-weight: 600; color: #64748b; text-decoration: none; transition: all 0.15s;
+        }
+        .menu-sub-link:hover, .menu-sub-link.active-sub {
+            color: var(--primary); background: #f0f9ff; font-weight: 700; transform: translateX(3px);
+        }
+        .sidebar-logout { margin-top: auto; padding-top: 16px; border-top: 1px solid #f1f5f9; }
+        .btn-logout {
+            display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8fafc;
+            border: 1px solid #e2e8f0; color: #64748b; text-decoration: none; border-radius: 10px;
+            font-size: 13px; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
+
+        /* 2. MAIN CONTAINER */
+        .main-wrapper { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .top-navbar {
+            height: 64px; background: #ffffff; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 32px;
+            position: sticky; top: 0; z-index: 90;
+        }
+        .navbar-title { font-size: 14px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .user-chip { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .user-chip-avatar {
+            width: 36px; height: 36px; border-radius: 50%; background: var(--primary);
+            color: #fff; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center;
+        }
+        .user-chip-info h4 { font-size: 13px; font-weight: 700; color: var(--text-dark); line-height: 1.2; }
+        .user-chip-info span { font-size: 11px; color: var(--text-muted); }
+
+        .content-body { padding: 24px 32px 50px 32px; max-width: 1560px; margin: 0 auto; width: 100%; }
+
+        /* Banner tiêu đề chuẩn đồng bộ */
+        .welcome-row {
+            display: flex; align-items: center; justify-content: space-between;
+            background: #fff; border: 1px solid var(--border-color); border-radius: var(--radius-card);
+            padding: 18px 24px; margin-bottom: 20px;
+        }
+        .welcome-left { display: flex; align-items: center; gap: 14px; }
+        .welcome-icon-circle {
+            width: 44px; height: 44px; border-radius: 12px; background: #e0f2fe;
+            color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 20px;
+        }
+        .welcome-titles h1 { font-size: 19px; font-weight: 800; }
+        .welcome-titles p { font-size: 12.5px; color: var(--text-muted); margin-top: 2px; }
+
+        /* 4 Thẻ thống kê chuẩn */
+        .stats-4-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+        .stat-card-box {
+            background: #fff; border: 1px solid var(--border-color); border-radius: var(--radius-card);
+            padding: 18px 20px; display: flex; align-items: center; gap: 16px;
+        }
+        .stat-icon {
+            width: 44px; height: 44px; border-radius: 12px; display: flex;
+            align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;
+        }
+        .icon-blue   { background: #e0f2fe; color: var(--primary); }
+        .icon-green  { background: #dcfce7; color: #16a34a; }
+        .icon-yellow { background: #ffedd5; color: #ea580c; }
+        .icon-purple { background: #f3e8ff; color: #9333ea; }
+        .stat-meta span { font-size: 12px; color: var(--text-muted); font-weight: 600; }
+        .stat-meta h3 { font-size: 24px; font-weight: 800; color: var(--text-dark); margin: 2px 0; }
+        .stat-sub { font-size: 11px; color: var(--text-muted); }
+
+        /* Toolbar lọc & chọn mô hình */
+        .filter-toolbar-box {
+            background: #fff; border: 1px solid var(--border-color); border-radius: var(--radius-card);
+            padding: 14px 20px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between;
+            gap: 12px; flex-wrap: wrap;
+        }
+        .toolbar-left-group { display: flex; align-items: center; gap: 12px; flex: 1; flex-wrap: wrap; }
+        .select-filter-ctrl {
+            height: 38px; padding: 0 14px; background: #f8fafc; border: 1px solid var(--border-color);
+            border-radius: 8px; font-size: 13px; font-weight: 700; color: var(--text-dark); outline: none; cursor: pointer; min-width: 280px;
+        }
+        .btn-export-csv {
+            height: 38px; padding: 0 16px; border-radius: 8px; font-size: 12px; font-weight: 700;
+            background: #f0f9ff; color: var(--primary); border: 1px solid #bae6fd; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
         }
 
-        /* Tinh chỉnh thanh cuộn Sidebar mượt mà, đồng bộ kích thước */
-        .sidebar::-webkit-scrollbar {
-            width: 5px;
+        /* Lưới 2 cột nội dung chính */
+        .eval-grid-2col {
+            display: grid; grid-template-columns: 1.15fr 1fr; gap: 20px; margin-bottom: 20px;
         }
-        .sidebar::-webkit-scrollbar-track {
-            background: transparent;
+        .panel-card {
+            background: #fff; border: 1px solid var(--border-color); border-radius: var(--radius-card); padding: 22px;
         }
-        .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
+        .panel-heading {
+            font-size: 14px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;
+            margin-bottom: 16px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;
         }
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
+        .panel-heading i { color: var(--primary); }
 
-        .admin-menu-label {
-            font-size: 11px;
-            font-weight: 800;
-            color: #475569;
-            letter-spacing: 1.2px;
-            margin: 0 0 14px 10px;
-            text-transform: uppercase;
+        /* Ma trận nhầm lẫn */
+        .matrix-table-wrap {
+            border: 1px solid var(--border-color); border-radius: 12px; overflow: hidden; margin-top: 10px;
         }
+        .matrix-table { width: 100%; border-collapse: collapse; text-align: center; font-size: 13px; }
+        .matrix-table th { background: #f8fafc; padding: 12px; color: var(--text-muted); font-weight: 700; border-bottom: 1px solid var(--border-color); }
+        .matrix-table td { padding: 14px; border-bottom: 1px solid var(--border-color); font-weight: 700; }
+        .td-lbl { background: #f8fafc; color: var(--text-muted); text-align: left; padding-left: 18px !important; width: 160px; }
+        .c-tn, .c-tp { background: #f0fdf4; color: #16a34a; font-size: 17px; }
+        .c-fp, .c-fn { background: #fef2f2; color: #dc2626; font-size: 17px; }
 
-        .tree-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+        /* Bảng Báo cáo phân loại */
+        .clean-table { width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: center; }
+        .clean-table th {
+            padding: 10px 8px; color: var(--text-muted); font-size: 11px;
+            font-weight: 700; border-bottom: 1px solid #f1f5f9; background: #f8fafc;
         }
-        
-        .tree-parent-item a, .tree-parent-link, .tree-parent-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            height: 38px;
-            padding: 0 12px;
-            font-size: 13.5px;
-            font-weight: 700;
-            text-decoration: none;
-            border-radius: 8px;
-            color: #ffffff;
-            user-select: none;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            cursor: pointer;
-        }
-        .tree-parent-item a:hover, .tree-parent-link:hover {
-            background-color: rgba(255, 255, 255, 0.06);
-            color: #ffffff;
-        }
+        .clean-table td { padding: 11px 8px; border-bottom: 1px solid #f1f5f9; }
+        .clean-table tfoot td { font-weight: 800; background: #f8fafc; }
 
-        .color-dashboard { color: #f59e0b; }
-        .color-dataset   { color: #00a8ff; }
-        .color-history   { color: #10b981; }
-        .color-ml        { color: #ff4757; }
-        .color-users     { color: #c084fc; }
-        .color-settings  { color: #94a3b8; }
+        /* Biểu đồ */
+        .charts-2-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
 
-        .tree-branch {
-            list-style: none;
-            padding-left: 14px;
-            margin: 4px 0 6px 20px;
-            border-left: 1.5px solid rgba(255, 255, 255, 0.12);
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-        
-        .tree-sub-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            height: 38px;
-            padding: 0 12px;
-            color: #94a3b8;
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            box-sizing: border-box;
-            cursor: pointer;
-        }
-        .tree-sub-link:hover {
-            color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.06);
-        }
+        /* Khối Nhận xét */
+        .remarks-list { list-style: none; display: flex; flex-direction: column; gap: 8px; font-size: 13px; color: #334155; }
+        .remarks-list li { position: relative; padding-left: 20px; line-height: 1.5; }
+        .remarks-list li::before { content: "•"; position: absolute; left: 6px; color: var(--primary); font-weight: 800; font-size: 16px; }
 
-        .menu-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            font-size: 14px;
-            flex-shrink: 0;
-            text-align: center;
+        @media (max-width: 1024px) {
+            .stats-4-grid { grid-template-columns: repeat(2, 1fr); }
+            .eval-grid-2col { grid-template-columns: 1fr; }
+            .charts-2-grid { grid-template-columns: 1fr; }
         }
-
-        .tree-parent-item a i, .tree-parent-link i, .tree-parent-label i {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            font-size: 15px;
-            flex-shrink: 0;
-            text-align: center;
-        }
-
-        /* Nút Active chuẩn màu xanh - đồng bộ kích thước & hiệu ứng con trỏ */
-        .tree-sub-link.active-sub,
-        .tree-parent-link.active-sub,
-        .tree-parent-item a.active-sub,
-        .tree-parent-item.active > a,
-        .tree-parent-item.active-menu > a {
-            background-color: #0284c7 !important;
-            color: #ffffff !important;
-            font-weight: 700 !important;
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
-        }
-        .tree-sub-link.active-sub .menu-icon,
-        .tree-parent-link.active-sub i,
-        .tree-parent-item a.active-sub i,
-        .tree-parent-item.active > a i,
-        .tree-parent-item.active-menu > a i {
-            color: #ffffff !important;
-        }
-
-
-        /* Main Content */
-        .main-content {
-            margin-left: 250px; padding: 24px 32px 60px 32px;
-            flex: 1; width: calc(100% - 250px);
-        }
-        .page-heading { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-transform: uppercase; }
-        .page-subheading { font-size: 13px; color: #64748b; margin-bottom: 22px; }
-
-        /* THẺ CARD CHỈ SỐ */
-        .metric-card {
-            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
-            padding: 18px 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); height: 100%;
-        }
-        .metric-title { font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
-        .metric-value { font-size: 26px; font-weight: 800; line-height: 1.1; }
-        .metric-desc { font-size: 11.5px; color: #94a3b8; margin-top: 6px; }
-
-        /* MA TRẬN NHẦM LẪN */
-        .cm-table { width: 100%; border-collapse: separate; border-spacing: 6px; text-align: center; }
-        .cm-cell {
-            padding: 16px 12px; border-radius: 10px; font-weight: 700; transition: transform 0.2s;
-        }
-        .cm-cell:hover { transform: scale(1.02); }
-        .cm-tp { background-color: #dcfce7; border: 1.5px solid #86efac; color: #166534; }
-        .cm-tn { background-color: #e0f2fe; border: 1.5px solid #7dd3fc; color: #075985; }
-        .cm-fp { background-color: #fee2e2; border: 1.5px solid #fca5a5; color: #991b1b; }
-        .cm-fn { background-color: #fef3c7; border: 1.5px solid #fde68a; color: #92400e; }
     </style>
 </head>
 <body>
 
-    <!-- TOPBAR -->
-    <div class="top-navbar">
-        <span class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</span>
-        <div class="d-flex align-items-center gap-3">
-            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
-            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
+    <!-- 1. SIDEBAR TRÁI ĐỒNG BỘ -->
+    <aside class="sidebar">
+        <a href="/admin" class="sidebar-brand">
+            <i class="fa-solid fa-building-columns"></i>
+            <div class="sidebar-brand-text">
+                <h2>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h2>
+                <span>Admin Panel</span>
+            </div>
+        </a>
+
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/admin" class="menu-item-main">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="menu-group">
+                <div class="menu-group-label"><i class="fa-solid fa-database"></i><span>Dataset</span></div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/dataset" class="menu-sub-link">&gt; Xem dữ liệu</a></li>
+                    <li><a href="/admin/dataset/check" class="menu-sub-link">&gt; Kiểm tra dữ liệu</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-group">
+                <div class="menu-group-label"><i class="fa-solid fa-filter"></i><span>Tiền xử lý</span></div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/dataset/preprocess" class="menu-sub-link">&gt; Xử lý dữ liệu</a></li>
+                    <li><a href="/admin/dataset/stats" class="menu-sub-link">&gt; Thông tin thống kê</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-group">
+                <div class="menu-group-label"><i class="fa-solid fa-microchip"></i><span>Mô hình Machine Learning</span></div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/ml/train" class="menu-sub-link">&gt; Huấn luyện mô hình</a></li>
+                    <li><a href="/admin/ml/history" class="menu-sub-link">&gt; Lịch sử huấn luyện</a></li>
+                    <li><a href="/admin/ml/evaluate" class="menu-sub-link active-sub">&gt; Đánh giá mô hình</a></li>
+                    <li><a href="/admin/ml/compare" class="menu-sub-link">&gt; So sánh mô hình</a></li>
+                    <li><a href="/admin/ml/active" class="menu-sub-link">&gt; Mô hình đang sử dụng</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-group">
+                <div class="menu-group-label"><i class="fa-solid fa-gear"></i><span>Cài đặt</span></div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/settings" class="menu-sub-link">&gt; Cấu hình hệ thống</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="sidebar-logout">
+            <a href="/logout" class="btn-logout">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Đăng xuất</span>
+            </a>
         </div>
+    </aside>
+
+    <!-- 2. MAIN CONTAINER -->
+    <div class="main-wrapper">
+        <header class="top-navbar">
+            <div class="navbar-title">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>TRUNG TÂM ĐÁNH GIÁ CHẤT LƯỢNG MÔ HÌNH HỌC MÁY</span>
+            </div>
+            <div class="user-chip">
+                <div class="user-chip-avatar">A</div>
+                <div class="user-chip-info">
+                    <h4>Admin</h4>
+                    <span>Quản trị viên</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+            
+            <!-- Banner tiêu đề -->
+            <div class="welcome-row">
+                <div class="welcome-left">
+                    <div class="welcome-icon-circle"><i class="fa-solid fa-chart-pie"></i></div>
+                    <div class="welcome-titles">
+                        <h1>Đánh giá hiệu năng mô hình</h1>
+                        <p>Kiểm tra độ chính xác, phân tích ma trận nhầm lẫn và đánh giá chi tiết theo từng lớp trên tập kiểm tra độc lập (124 mẫu Test - 20%).</p>
+                    </div>
+                </div>
+                <div style="font-size: 12.5px; font-weight: 600; color: var(--text-muted); background: #f8fafc; padding: 6px 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                    <i class="fa-regular fa-calendar me-1"></i>Hệ thống thời gian thực
+                </div>
+            </div>
+
+            <!-- 4 Thẻ chỉ số hiệu năng đầu trang -->
+            <section class="stats-4-grid">
+                <div class="stat-card-box">
+                    <div class="stat-icon icon-blue"><i class="fa-solid fa-bullseye"></i></div>
+                    <div class="stat-meta">
+                        <span>Accuracy (Độ chính xác)</span>
+                        <h3>{{ "%.2f"|format(acc) }}%</h3>
+                        <span class="stat-sub">Tỷ lệ phân loại đúng tổng thể</span>
+                    </div>
+                </div>
+
+                <div class="stat-card-box">
+                    <div class="stat-icon icon-green"><i class="fa-solid fa-award"></i></div>
+                    <div class="stat-meta">
+                        <span>F1-Score (Cân bằng)</span>
+                        <h3>{{ "%.2f"|format(f1) }}%</h3>
+                        <span class="stat-sub">Hài hòa giữa Precision & Recall</span>
+                    </div>
+                </div>
+
+                <div class="stat-card-box">
+                    <div class="stat-icon icon-yellow"><i class="fa-solid fa-crosshairs"></i></div>
+                    <div class="stat-meta">
+                        <span>Precision (Độ chuẩn xác)</span>
+                        <h3>{{ "%.2f"|format(prec) }}%</h3>
+                        <span class="stat-sub">Độ tin cậy khi duyệt Y</span>
+                    </div>
+                </div>
+
+                <div class="stat-card-box">
+                    <div class="stat-icon icon-purple"><i class="fa-solid fa-magnifying-glass-chart"></i></div>
+                    <div class="stat-meta">
+                        <span>Recall (Độ nhạy)</span>
+                        <h3>{{ "%.2f"|format(rec) }}%</h3>
+                        <span class="stat-sub">Khả năng nhận diện khách tốt</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Toolbar Chọn Mô hình cần Đánh giá -->
+            <div class="filter-toolbar-box">
+                <form method="GET" action="/admin/ml/evaluate" class="toolbar-left-group" id="evalSelectForm">
+                    <span style="font-size: 12.5px; font-weight: 700; color: var(--text-muted);">Chọn mô hình kiểm tra:</span>
+                    <select name="version" class="select-filter-ctrl" onchange="document.getElementById('evalSelectForm').submit()">
+                        {% for m in valid_models %}
+                        <option value="{{ m.version }}" {% if m.version == selected_model.version %}selected{% endif %}>
+                            {{ m.algorithm or m.name }} – {{ m.train_code }} ({{ m.version }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <span style="font-size: 12px; color: var(--text-muted); margin-left: 10px;">
+                        Tập Test 124 mẫu (20%) • Ngày huấn luyện: {{ selected_model.trained_at or '30/10/2026' }}
+                    </span>
+                </form>
+
+                <button type="button" class="btn-export-csv" onclick="exportEvaluationReport()" style="cursor: pointer; border: none;">
+    <i class="fa-solid fa-download"></i> Xuất kết quả kiểm định
+</button>
+            </div>
+
+            <!-- Khối 2 Cột: Ma trận nhầm lẫn & Báo cáo phân loại -->
+            <section class="eval-grid-2col">
+                
+                <!-- Cột Trái: Ma trận nhầm lẫn -->
+                <div class="panel-card">
+                    <div class="panel-heading">
+                        <i class="fa-solid fa-table-cells"></i>
+                        <span>Ma trận nhầm lẫn (Confusion Matrix - 124 mẫu Test)</span>
+                    </div>
+                    <div class="matrix-table-wrap">
+                        <table class="matrix-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; padding-left: 18px;">Thực tế \ Dự đoán</th>
+                                    <th>N (Từ chối)</th>
+                                    <th>Y (Chấp thuận)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="td-lbl">N (Từ chối)</td>
+                                    <td class="c-tn" title="True Negative">{{ cm.tn }} (TN)</td>
+                                    <td class="c-fp" title="False Positive">{{ cm.fp }} (FP)</td>
+                                </tr>
+                                <tr>
+                                    <td class="td-lbl">Y (Chấp thuận)</td>
+                                    <td class="c-fn" title="False Negative">{{ cm.fn }} (FN)</td>
+                                    <td class="c-tp" title="True Positive">{{ cm.tp }} (TP)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style="font-size: 11.5px; color: var(--text-muted); margin-top: 12px; line-height: 1.5;">
+                        • <strong>TN ({{ cm.tn }})</strong>: Dự đoán từ chối đúng • <strong>TP ({{ cm.tp }})</strong>: Dự đoán duyệt đúng.<br>
+                        • <strong>FP ({{ cm.fp }})</strong>: Rủi ro nợ xấu nhầm duyệt • <strong>FN ({{ cm.fn }})</strong>: Bỏ sót khách hàng tốt.
+                    </div>
+                </div>
+
+                <!-- Cột Phải: Báo cáo phân loại chi tiết -->
+                <div class="panel-card">
+                    <div class="panel-heading">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>Báo cáo phân loại chi tiết (Classification Report)</span>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table class="clean-table">
+                            <thead>
+                                <tr>
+                                    <th style="text-align: left; padding-left: 12px;">Lớp nhãn</th>
+                                    <th>Precision</th>
+                                    <th>Recall</th>
+                                    <th>F1-Score</th>
+                                    <th>Support (Mẫu)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in report_rows %}
+                                <tr>
+                                    <td style="text-align: left; padding-left: 12px; font-weight: 700; color: {% if 'Y' in row.class_label %}#16a34a{% else %}#dc2626{% endif %};">
+                                        {{ row.class_label }}
+                                    </td>
+                                    <td>{{ "%.2f"|format(row.precision) }}</td>
+                                    <td>{{ "%.2f"|format(row.recall) }}</td>
+                                    <td><strong>{{ "%.2f"|format(row.f1) }}</strong></td>
+                                    <td>{{ row.support }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td style="text-align: left; padding-left: 12px;">Macro Avg</td>
+                                    <td>{{ "%.2f"|format(macro_avg.precision) }}</td>
+                                    <td>{{ "%.2f"|format(macro_avg.recall) }}</td>
+                                    <td>{{ "%.2f"|format(macro_avg.f1) }}</td>
+                                    <td>{{ macro_avg.support }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Khối 2 Biểu Đồ Trực Quan -->
+            <section class="charts-2-grid">
+                <div class="panel-card">
+                    <div class="panel-heading">
+                        <i class="fa-solid fa-chart-column"></i>
+                        <span>Đối chiếu 4 chỉ số thực nghiệm của mô hình</span>
+                    </div>
+                    <div style="height: 240px; width: 100%;">
+                        <canvas id="evalMetricsBarChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="panel-heading">
+                        <i class="fa-solid fa-bezier-curve"></i>
+                        <span>Đường cong ROC và diện tích dưới đường cong (AUC = {{ "%.2f"|format(auc_score) }})</span>
+                    </div>
+                    <div style="height: 240px; width: 100%;">
+                        <canvas id="evalRocCurveChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Khối Nhận xét & Đánh giá chuyên sâu -->
+            <section class="panel-card">
+                <div class="panel-heading">
+                    <i class="fa-regular fa-comment-dots"></i>
+                    <span>Nhận xét và kết luận nghiệp vụ ngân hàng</span>
+                </div>
+                <ul class="remarks-list">
+                    {% for r in remarks %}
+                    <li>{{ r }}</li>
+                    {% endfor %}
+                </ul>
+            </section>
+
+        </main>
     </div>
 
-    <div class="wrapper">
-        <!-- SIDEBAR ĐỒNG BỘ CHUẨN MENU -->
-        <div class="sidebar">
-            <div class="admin-menu-label">ADMIN MENU</div>
-
-            <ul class="tree-list">
-                <!-- 1. Dashboard -->
-                <li class="tree-parent-item">
-                    <a href="/admin" class="tree-parent-link">
-                        <i class="fa-solid fa-house color-dashboard"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-
-                <!-- 2. Dataset -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-table-cells color-dataset"></i>
-                        <span style="color: #00a8ff;">Dataset</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin/dataset" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-file-lines"></i></span><span>Xem Dataset</span></a></li>
-                        <li><a href="/admin/dataset/check" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span><span>Kiểm tra Dataset</span></a></li>
-                        <li><a href="/admin/dataset/pending" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-inbox"></i></span><span>Hồ sơ chờ duyệt</span></a></li>
-                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-paintbrush"></i></span><span>Tiền xử lý dữ liệu</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 3. Lịch sử dự đoán -->
-                <li class="tree-parent-item">
-                    <a href="/admin/history" class="tree-parent-link">
-                        <i class="fa-solid fa-clock-rotate-left color-history"></i>
-                        <span>Lịch sử dự đoán</span>
-                    </a>
-                </li>
-
-                <!-- 4. Mô hình ML -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-robot color-ml"></i>
-                        <span style="color: #ff4757;">Mô hình ML</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
-                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
-                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
-                        <li><a href="/admin/ml/evaluate" class="tree-sub-link active-sub"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
-                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
-                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 5. Người dùng -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-users color-users"></i>
-                        <span style="color: #c084fc;">Người dùng</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-clipboard"></i></span><span>Danh sách</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-plus"></i></span><span>Thêm</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-pen"></i></span><span>Sửa</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-lock"></i></span><span>Khóa/Mở khóa</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-key"></i></span><span>Phân quyền</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 6. Cài đặt hệ thống -->
-                <li class="tree-parent-item">
-                    <a href="/admin/settings" class="tree-parent-link">
-                        <i class="fa-solid fa-gear color-settings"></i>
-                        <span>Cài đặt hệ thống</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <h1 class="page-heading">📊 ĐÁNH GIÁ CHẤT LƯỢNG MÔ HÌNH HỌC MÁY</h1>
-            <p class="page-subheading">Phân tích chuyên sâu hiệu năng dự đoán, ma trận nhầm lẫn và kiểm định rủi ro phân loại tín dụng</p>
-
-            {% if not eval_data %}
-                <div class="card p-5 text-center border-0 shadow-sm rounded-4">
-                    <i class="fa-solid fa-box-open text-muted fs-1 mb-3"></i>
-                    <h5 class="fw-bold text-secondary">Chưa có mô hình nào được huấn luyện</h5>
-                    <p class="text-muted" style="font-size: 13.5px;">Vui lòng tiến hành huấn luyện mô hình trước khi thực hiện đánh giá chất lượng.</p>
-                    <div class="mt-2">
-                        <a href="/admin/ml/train" class="btn btn-primary fw-bold px-4">
-                            <i class="fa-solid fa-gear me-1"></i> Đến trang Huấn luyện mô hình
-                        </a>
-                    </div>
-                </div>
-            {% else %}
-
-                <!-- THANH CHỌN MÔ HÌNH & PHIÊN BẢN -->
-                <div class="card p-3 mb-4 border-0 shadow-sm rounded-3">
-                    <form method="GET" action="/admin/ml/evaluate" class="row g-3 align-items-center">
-                        <div class="col-md-5">
-                            <label class="form-label fw-bold text-secondary mb-1" style="font-size: 12.5px;">Chọn phiên bản mô hình cần đánh giá:</label>
-                            <select name="version" class="form-select form-select-sm" onchange="this.form.submit()">
-                                {% for m in valid_models %}
-                                <option value="{{ m.version }}" {% if m.version == eval_data.version %}selected{% endif %}>
-                                    {{ m.version }} — {{ m.name }} (Accuracy: {{ m.accuracy }}%) {% if m.status == 'Đang sử dụng' %}⭐ [Đang dùng]{% endif %}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="p-2 border rounded bg-light mt-md-4" style="font-size: 12px;">
-                                <span>Dataset: <strong>{{ eval_data.dataset_name }}</strong></span> | 
-                                <span>Tập Test: <strong class="text-primary">{{ eval_data.test_size }}</strong></span>
-                            </div>
-                        </div>
-                        <div class="col-md-3 text-end mt-md-4">
-                            {% if eval_data.status != 'Đang sử dụng' %}
-                            <form action="/admin/ml/activate/{{ eval_data.version }}" method="POST" class="d-inline" onsubmit="return confirm('Kích hoạt mô hình này làm mô hình dự đoán chính?');">
-                                <button type="submit" class="btn btn-sm btn-outline-success fw-bold">
-                                    <i class="fa-solid fa-star me-1"></i> Sử dụng mô hình này
-                                </button>
-                            </form>
-                            {% else %}
-                            <span class="badge bg-success py-2 px-3"><i class="fa-solid fa-circle-check me-1"></i>Đang phục vụ dự đoán</span>
-                            {% endif %}
-                        </div>
-                    </form>
-                </div>
-
-                <!-- 4 CHỈ SỐ CỐT LÕI -->
-                <div class="row g-3 mb-4">
-                    <div class="col-md-3">
-                        <div class="metric-card border-top border-4 border-primary">
-                            <div class="metric-title">Accuracy (Độ chính xác)</div>
-                            <div class="metric-value text-primary">{{ eval_data.accuracy }}%</div>
-                            <div class="metric-desc">Tỷ lệ dự đoán đúng trên tổng số {{ eval_data.total_test }} hồ sơ kiểm tra.</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="metric-card border-top border-4 border-info">
-                            <div class="metric-title">Precision (Độ chuẩn xác)</div>
-                            <div class="metric-value text-info">{{ eval_data.precision }}%</div>
-                            <div class="metric-desc">Tỷ lệ hồ sơ thực sự tốt trong các ca được hệ thống báo "Duyệt".</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="metric-card border-top border-4 border-warning">
-                            <div class="metric-title">Recall (Độ nhạy)</div>
-                            <div class="metric-value text-warning">{{ eval_data.recall }}%</div>
-                            <div class="metric-desc">Khả năng nhận diện hồ sơ đủ điều kiện vay, hạn chế từ chối oan.</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="metric-card border-top border-4 border-danger">
-                            <div class="metric-title">F1-Score</div>
-                            <div class="metric-value text-danger">{{ eval_data.f1_score }}%</div>
-                            <div class="metric-desc">Trung bình điều hòa giữa Precision và Recall khi dữ liệu mất cân bằng.</div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-4">
-                    <!-- MA TRẬN NHẦM LẪN (CONFUSION MATRIX) -->
-                    <div class="col-lg-6">
-                        <div class="card p-4 border-0 shadow-sm rounded-3 h-100">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold text-dark m-0" style="font-size: 15px;">
-                                    <i class="fa-solid fa-table-cells-large text-primary me-2"></i>MA TRẬN NHẦM LẪN (CONFUSION MATRIX)
-                                </h5>
-                                <span class="badge bg-light text-muted border">Lớp dương: Y (Duyệt)</span>
-                            </div>
-
-                            <p class="text-muted" style="font-size: 12.5px;">
-                                Bảng đối chiếu giữa kết quả thực tế và dự đoán của mô hình trên tập kiểm tra độc lập ({{ eval_data.total_test }} mẫu).
-                            </p>
-
-                            <table class="cm-table mt-2">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 25%;"></th>
-                                        <th class="text-muted" style="font-size: 12px;">DỰ ĐOÁN: Y (Duyệt)</th>
-                                        <th class="text-muted" style="font-size: 12px;">DỰ ĐOÁN: N (Từ chối)</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <th class="text-end pe-2 text-muted" style="font-size: 12px;">THỰC TẾ: Y</th>
-                                        <td class="cm-cell cm-tp">
-                                            <div style="font-size: 11px;">TP (True Positive)</div>
-                                            <div class="fs-4">{{ eval_data.tp }}</div>
-                                            <div style="font-size: 11px; font-weight: normal;">Duyệt đúng chuẩn</div>
-                                        </td>
-                                        <td class="cm-cell cm-fn">
-                                            <div style="font-size: 11px;">FN (False Negative)</div>
-                                            <div class="fs-4">{{ eval_data.fn }}</div>
-                                            <div style="font-size: 11px; font-weight: normal;">Từ chối nhầm khách tốt</div>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th class="text-end pe-2 text-muted" style="font-size: 12px;">THỰC TẾ: N</th>
-                                        <td class="cm-cell cm-fp">
-                                            <div style="font-size: 11px;">FP (False Positive)</div>
-                                            <div class="fs-4">{{ eval_data.fp }}</div>
-                                            <div style="font-size: 11px; font-weight: normal;">Duyệt nhầm nợ xấu ⚠</div>
-                                        </td>
-                                        <td class="cm-cell cm-tn">
-                                            <div style="font-size: 11px;">TN (True Negative)</div>
-                                            <div class="fs-4">{{ eval_data.tn }}</div>
-                                            <div style="font-size: 11px; font-weight: normal;">Từ chối nợ xấu đúng</div>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            <div class="row g-2 text-center mt-3" style="font-size: 11.5px;">
-                                <div class="col-6"><span class="badge bg-success-subtle text-success p-2 w-100">Dự đoán chuẩn xác: {{ eval_data.tp + eval_data.tn }} ca</span></div>
-                                <div class="col-6"><span class="badge bg-danger-subtle text-danger p-2 w-100">Dự đoán nhầm lẫn: {{ eval_data.fp + eval_data.fn }} ca</span></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- NHẬN XÉT ĐÁNH GIÁ CHUYÊN MÔN -->
-                    <div class="col-lg-6">
-                        <div class="card p-4 border-0 shadow-sm rounded-3 h-100">
-                            <h5 class="fw-bold text-dark mb-3" style="font-size: 15px;">
-                                <i class="fa-solid fa-clipboard-check text-success me-2"></i>NHẬN XÉT CHẤT LƯỢNG MÔ HÌNH
-                            </h5>
-
-                            <p class="text-muted" style="font-size: 12.5px;">
-                                Đánh giá tự động theo nguyên tắc thẩm định rủi ro tài chính ngân hàng:
-                            </p>
-
-                            <div class="d-flex flex-column gap-2 mb-4">
-                                {% for r in eval_data.remarks %}
-                                <div class="alert alert-{{ r.type }} d-flex align-items-center gap-3 py-2 px-3 mb-0" style="font-size: 13px;">
-                                    <i class="fa-solid {{ r.icon }} fs-5"></i>
-                                    <div>{{ r.text }}</div>
-                                </div>
-                                {% endfor %}
-                            </div>
-
-                            <div class="border-top pt-3 mt-auto">
-                                <div class="fw-bold text-secondary mb-2" style="font-size: 12px; text-transform: uppercase;">Điều hướng liên quan:</div>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <a href="/admin/ml/history" class="btn btn-sm btn-outline-secondary fw-semibold">
-                                        <i class="fa-solid fa-scroll me-1"></i> Xem lịch sử huấn luyện
-                                    </a>
-                                    <a href="/admin/ml/models" class="btn btn-sm btn-outline-primary fw-semibold">
-                                        <i class="fa-regular fa-clipboard me-1"></i> Danh sách mô hình
-                                    </a>
-                                    <a href="/admin/ml/train" class="btn btn-sm btn-outline-success fw-semibold">
-                                        <i class="fa-solid fa-gear me-1"></i> Huấn luyện phiên bản mới
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            {% endif %}
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Script đồng bộ thao tác click trên Admin Menu: Mỗi khi click chỉ hiển thị 1 con trỏ/active duy nhất -->
+    <!-- KHỞI TẠO BIỂU ĐỒ CHART.JS -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const sidebar = document.querySelector('.sidebar');
-            if (!sidebar) return;
-
-            const allNavLinks = sidebar.querySelectorAll('.tree-sub-link, .tree-parent-link');
-
-            // 1. Tự động kiểm tra URL hiện tại và đồng bộ duy nhất 1 mục active
-            const currentPath = window.location.pathname;
-            let exactMatch = null;
-            allNavLinks.forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && href === currentPath) {
-                    exactMatch = link;
+            // 1. Biểu đồ Cột 4 chỉ số
+            new Chart(document.getElementById('evalMetricsBarChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: ['Accuracy', 'Precision', 'Recall', 'F1-score'],
+                    datasets: [{
+                        data: [{{ acc }}, {{ prec }}, {{ rec }}, {{ f1 }}],
+                        backgroundColor: ['#0284c7', '#0ea5e9', '#10b981', '#8b5cf6'],
+                        borderRadius: 8,
+                        barThickness: 38
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { callback: v => v + '%' }, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    },
+                    plugins: { legend: { display: false } }
                 }
             });
 
-            if (exactMatch) {
-                allNavLinks.forEach(l => l.classList.remove('active-sub'));
-                exactMatch.classList.add('active-sub');
-            }
-
-            // 2. Thao tác click: Mỗi khi click chỉ hiển thị 1 con trỏ / active tới chức năng đó
-            allNavLinks.forEach(link => {
-                link.addEventListener('click', function () {
-                    allNavLinks.forEach(l => l.classList.remove('active-sub'));
-                    this.classList.add('active-sub');
-                });
+            // 2. Biểu đồ ROC Curve
+            new Chart(document.getElementById('evalRocCurveChart').getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: ['0.0', '0.2', '0.4', '0.6', '0.8', '1.0'],
+                    datasets: [
+                        {
+                            label: 'ROC Curve (AUC = {{ auc_score }})',
+                            data: [0.0, 0.65, 0.85, 0.94, 0.98, 1.0],
+                            borderColor: '#0284c7',
+                            backgroundColor: 'rgba(2, 132, 199, 0.1)',
+                            fill: true,
+                            tension: 0.35,
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Baseline ngẫu nhiên',
+                            data: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+                            borderColor: '#94a3b8',
+                            borderDash: [5, 5],
+                            fill: false,
+                            borderWidth: 1.5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: 'Tỷ lệ dương tính giả (FPR)', font: { size: 10 } } },
+                        y: { beginAtZero: true, max: 1.0, title: { display: true, text: 'Tỷ lệ dương tính thật (TPR)', font: { size: 10 } } }
+                    },
+                    plugins: { legend: { position: 'bottom' } }
+                }
             });
         });
     </script>
+    <!-- NÚT XUẤT KẾT QUẢ KIỂM ĐỊNH -->
+<button type="button" class="btn-export-eval" onclick="exportEvaluationReport()">
+    <i class="fa-solid fa-download"></i> Xuất kết quả kiểm định
+</button>
+
+<script>
+function exportEvaluationReport() {
+    // Lấy đúng phiên bản mô hình đang chọn ở ô select
+    const selectElem = document.querySelector('select[name="version"]');
+    const selectedVersion = selectElem ? selectElem.value : 'ML v1';
+    
+    // Điều hướng tải đúng file báo cáo kiểm định của mô hình đó
+    window.location.href = `/admin/ml/evaluate/export?version=${encodeURIComponent(selectedVersion)}`;
+}
+</script>
 </body>
 </html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết Quả Dự Đoán Khoản Vay - Hệ Thống Dự Đoán Tín Dụng</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --radius-card: 16px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { background-color: var(--bg-page); color: var(--text-dark); min-height: 100vh; display: flex; }
+
+        /* 1. SIDEBAR TRÁI */
+        .sidebar {
+            width: var(--sidebar-width); background: #ffffff; border-right: 1px solid var(--border-color);
+            color: #1e293b; display: flex; flex-direction: column; position: fixed; top: 0; bottom: 0; left: 0;
+            z-index: 100; padding: 24px 16px;
+        }
+        .sidebar-brand {
+            display: flex; align-items: center; gap: 12px; padding: 0 8px 24px 8px; text-decoration: none;
+            color: #0f172a; border-bottom: 1px solid #f1f5f9; margin-bottom: 16px;
+        }
+        .sidebar-brand i { font-size: 26px; color: var(--primary); }
+        .sidebar-brand-text h2 { font-size: 13.5px; font-weight: 800; line-height: 1.25; color: #0f172a; }
+        .sidebar-brand-text span { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+        .menu-link {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px;
+            font-size: 13px; font-weight: 600; color: #475569; text-decoration: none; transition: all 0.2s;
+        }
+        .menu-link i { font-size: 16px; width: 20px; }
+        .menu-link:hover { color: var(--primary); background: #f0f9ff; }
+        .menu-link.active { color: #ffffff; background: var(--primary); font-weight: 700; }
+        .sidebar-footer { margin-top: auto; display: flex; flex-direction: column; gap: 12px; }
+        .secure-card {
+            background: #f0f9ff; border: 1px solid #e0f2fe; border-radius: 12px; padding: 14px; text-align: center;
+        }
+        .secure-card i { font-size: 20px; color: var(--primary); margin-bottom: 6px; }
+        .secure-card p { font-size: 11.5px; font-weight: 600; color: #0369a1; line-height: 1.4; }
+        .btn-logout {
+            display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #f8fafc;
+            border: 1px solid var(--border-color); color: #64748b; text-decoration: none; border-radius: 10px;
+            font-size: 13px; font-weight: 600; transition: all 0.2s;
+        }
+        .btn-logout:hover { background: #fee2e2; color: #ef4444; border-color: #fecaca; }
+
+        /* 2. MAIN CONTAINER */
+        .main-wrapper { margin-left: var(--sidebar-width); flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .top-navbar {
+            height: 64px; background: #ffffff; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: flex-end; padding: 0 32px;
+            position: sticky; top: 0; z-index: 90;
+        }
+        .nav-right-actions { display: flex; align-items: center; gap: 20px; }
+        .btn-bell { position: relative; background: none; border: none; font-size: 17px; color: #64748b; cursor: pointer; }
+        .bell-badge {
+            position: absolute; top: -4px; right: -6px; background: #ef4444; color: #fff;
+            font-size: 10px; font-weight: 800; width: 15px; height: 15px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .user-profile-chip { display: flex; align-items: center; gap: 10px; }
+        .user-avatar-circle {
+            width: 34px; height: 34px; border-radius: 50%; background: #93c5fd; color: #1e3a8a;
+            font-weight: 800; font-size: 13px; display: flex; align-items: center; justify-content: center;
+        }
+        .user-name-text { font-size: 13px; font-weight: 700; color: var(--text-dark); display: flex; align-items: center; gap: 6px; }
+
+        .content-body { padding: 24px 32px 50px 32px; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+        /* 3. BANNER TIÊU ĐỀ TRANG */
+        .detail-banner {
+            background: #e0f2fe; border: 1px solid #bae6fd; border-radius: var(--radius-card);
+            padding: 24px 28px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between;
+            position: relative; overflow: hidden;
+        }
+        .banner-left-wrap { display: flex; align-items: center; gap: 18px; z-index: 2; }
+        .banner-check-circle {
+            width: 48px; height: 48px; border-radius: 50%; background: #10b981; color: #ffffff;
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+        }
+        .banner-titles h1 { font-size: 20px; font-weight: 800; color: #0369a1; }
+        .banner-titles p { font-size: 13px; color: #0284c7; margin-top: 4px; font-weight: 500; }
+        .banner-illus-icon { font-size: 50px; color: #38bdf8; opacity: 0.85; z-index: 2; }
+
+        /* 4. BỐ CỤC 2 CỘT CHÍNH */
+        .detail-main-grid {
+            display: grid; grid-template-columns: 1.35fr 0.85fr; gap: 24px; align-items: start;
+            margin-bottom: 24px;
+        }
+
+        .panel-card-box {
+            background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-card);
+            padding: 24px 26px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02); margin-bottom: 24px;
+        }
+
+        /* KHỐI A: KẾT QUẢ DỰ ĐOÁN */
+        .tag-pill-header {
+            display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px;
+            border-radius: 20px; font-size: 11.5px; font-weight: 700; margin-bottom: 18px;
+        }
+        .pill-green { background: #dcfce7; color: #15803d; }
+        .pill-red   { background: #fee2e2; color: #b91c1c; }
+
+        .result-primary-row {
+            display: flex; align-items: center; gap: 16px; margin-bottom: 24px;
+        }
+        .big-status-round {
+            width: 54px; height: 54px; border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 24px; color: #ffffff; flex-shrink: 0;
+        }
+        .bg-pass { background: #10b981; }
+        .bg-fail { background: #ef4444; }
+
+        .result-primary-row h2 {
+            font-size: 21px; font-weight: 800; line-height: 1.3;
+        }
+        .result-primary-row p { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+
+        .meta-metrics-3col {
+            display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; padding: 18px 0;
+            border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; margin-bottom: 16px;
+        }
+        .metric-col-item span {
+            font-size: 11.5px; color: var(--text-muted); display: flex; align-items: center; gap: 6px;
+        }
+        .metric-col-item strong {
+            display: block; font-size: 15px; font-weight: 800; color: var(--text-dark); margin-top: 4px;
+        }
+
+        .proba-progress-bar {
+            width: 100%; height: 6px; background: #e2e8f0; border-radius: 4px; overflow: hidden; margin-top: 6px;
+        }
+        .proba-progress-fill { height: 100%; border-radius: 4px; }
+
+        .disclaimer-alert-box {
+            background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 12px 14px;
+            display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: #1e40af; line-height: 1.5;
+        }
+        .disclaimer-alert-box i { font-size: 14px; color: var(--primary); margin-top: 2px; }
+
+        /* KHỐI C: THÔNG TIN HỒ SƠ ĐÃ NHẬP */
+        .panel-heading-row {
+            display: flex; align-items: center; gap: 8px; font-size: 14.5px; font-weight: 800;
+            color: var(--text-dark); margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px;
+        }
+        .panel-heading-row i { color: var(--primary); }
+
+        .app-summary-2col {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 12px 24px; font-size: 13px;
+        }
+        .summary-kv-row {
+            display: flex; justify-content: space-between; align-items: center; padding: 4px 0;
+        }
+        .summary-kv-row span { color: var(--text-muted); }
+        .summary-kv-row strong { color: var(--text-dark); font-weight: 700; text-align: right; }
+
+        /* KHỐI PHẢI B & D: VÌ SAO CÓ KẾT QUẢ & THÔNG TIN MÔ HÌNH */
+        .right-info-column { display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Khối B: Vì sao có kết quả này? */
+        .why-card {
+            background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-card);
+            padding: 22px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+        }
+        .why-card-title {
+            font-size: 14.5px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;
+            margin-bottom: 10px;
+        }
+        .why-card-title i { color: #eab308; }
+        .why-intro-desc { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px; }
+
+        .key-factors-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+        .factor-item {
+            display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #334155; font-weight: 600;
+        }
+        .factor-item i { font-size: 14px; }
+        .factor-item i.positive { color: #16a34a; }
+        .factor-item i.warning  { color: #d97706; }
+        .factor-item i.negative { color: #dc2626; }
+
+        /* Khối D: Thông tin mô hình đang sử dụng */
+        .model-card-box {
+            background: #ffffff; border: 1px solid var(--border-color); border-radius: var(--radius-card);
+            padding: 22px; box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+        }
+        .model-card-title {
+            font-size: 14.5px; font-weight: 800; color: var(--text-dark); display: flex; align-items: center; gap: 8px;
+            margin-bottom: 14px;
+        }
+        .model-card-title i { color: var(--primary); }
+        .active-dot-tag {
+            display: inline-flex; align-items: center; gap: 6px; background: #dcfce7; color: #15803d;
+            padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 14px;
+        }
+        .active-dot-tag::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #16a34a; }
+
+        .model-props-list { list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 12.5px; }
+        .model-props-item { display: flex; justify-content: space-between; color: var(--text-muted); }
+        .model-props-item strong { color: var(--text-dark); }
+
+        /* Khối lời cảm ơn & bảo mật */
+        .trust-banner-bottom {
+            background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--radius-card);
+            padding: 18px 22px; display: flex; align-items: center; justify-content: space-between;
+        }
+        .trust-banner-bottom p { font-size: 13px; font-weight: 700; color: #1e40af; font-style: italic; }
+        .trust-shield-icon { font-size: 38px; color: #3b82f6; opacity: 0.9; }
+
+        /* 5. CỤM NÚT HÀNH ĐỘNG DƯỚI CÙNG */
+        .bottom-action-buttons {
+            display: flex; align-items: center; gap: 14px; margin-top: 8px;
+        }
+        .btn-action-back {
+            height: 42px; padding: 0 20px; border-radius: 10px; border: 1px solid var(--border-color);
+            background: #ffffff; color: #334155; font-size: 13px; font-weight: 700; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;
+        }
+        .btn-action-back:hover { background: #f1f5f9; }
+        .btn-action-new {
+            height: 42px; padding: 0 24px; border-radius: 10px; border: none; background: var(--primary);
+            color: #ffffff; font-size: 13px; font-weight: 700; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+        }
+        .btn-action-new:hover { background: var(--primary-hover); }
+
+        @media (max-width: 1024px) {
+            .detail-main-grid { grid-template-columns: 1fr; }
+            .app-summary-2col { grid-template-columns: 1fr; }
+            .meta-metrics-3col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. SIDEBAR TRÁI ĐỒNG BỘ -->
+    <aside class="sidebar">
+        <a href="/user" class="sidebar-brand">
+            <i class="fa-solid fa-building-columns"></i>
+            <div class="sidebar-brand-text">
+                <h2>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h2>
+                <span>Loan Prediction System</span>
+            </div>
+        </a>
+
+        <ul class="sidebar-menu">
+            <li><a href="/user" class="menu-link"><i class="fa-solid fa-house"></i><span>Trang chủ</span></a></li>
+            <li><a href="/predict" class="menu-link"><i class="fa-solid fa-calculator"></i><span>Dự đoán khoản vay</span></a></li>
+            <li><a href="/history" class="menu-link"><i class="fa-solid fa-clock-rotate-left"></i><span>Lịch sử dự đoán</span></a></li>
+            <li><a href="/profile" class="menu-link"><i class="fa-regular fa-user"></i><span>Hồ sơ cá nhân</span></a></li>
+            <li><a href="/guide" class="menu-link"><i class="fa-regular fa-circle-question"></i><span>Hướng dẫn</span></a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="secure-card">
+                <i class="fa-solid fa-shield-halved"></i>
+                <p>Dữ liệu của bạn<br>được bảo mật tuyệt đối</p>
+            </div>
+            <a href="/logout" class="btn-logout">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN CONTAINER -->
+    <div class="main-wrapper">
+        <header class="top-navbar">
+            <div class="nav-right-actions">
+                <button class="btn-bell" title="Thông báo">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="bell-badge">1</span>
+                </button>
+                <div class="user-profile-chip">
+                    <div class="user-avatar-circle">N</div>
+                    <span class="user-name-text">
+                        {{ user_fullname }} <i class="fa-solid fa-angle-down" style="font-size: 11px; color: #94a3b8;"></i>
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+
+            <!-- 3. BANNER TIÊU ĐỀ TRANG -->
+            <section class="detail-banner">
+                <div class="banner-left-wrap">
+                    <div class="banner-check-circle">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div class="banner-titles">
+                        <h1>Kết quả dự đoán khoản vay</h1>
+                        <p>Dưới đây là kết quả phân tích từ mô hình Machine Learning của hệ thống.</p>
+                    </div>
+                </div>
+
+                <div class="banner-illus-icon">
+                    <i class="fa-regular fa-clipboard"></i>
+                </div>
+            </section>
+
+            <!-- 4. KHỐI NỘI DUNG 2 CỘT -->
+            <div class="detail-main-grid">
+                
+                <!-- CỘT TRÁI: KẾT QUẢ DỰ ĐOÁN & THÔNG TIN HỒ SƠ ĐÃ NHẬP -->
+                <div class="left-content-column">
+                    
+                    <!-- KHỐI A: KẾT QUẢ DỰ ĐOÁN -->
+                    <section class="panel-card-box">
+                        <span class="tag-pill-header {% if is_approved %}pill-green{% else %}pill-red{% endif %}">
+                            <i class="fa-solid fa-circle" style="font-size: 6px;"></i> Kết quả dự đoán
+                        </span>
+
+                        <div class="result-primary-row">
+                            <div class="big-status-round {% if is_approved %}bg-pass{% else %}bg-fail{% endif %}">
+                                <i class="fa-solid {% if is_approved %}fa-check{% else %}fa-xmark{% endif %}"></i>
+                            </div>
+                            <div>
+                                <h2 style="color: {% if is_approved %}#15803d{% else %}#b91c1c{% endif %};">
+                                    {% if is_approved %}Có khả năng được chấp thuận (Y){% else %}Chưa có khả năng được chấp thuận (N){% endif %}
+                                </h2>
+                                <p>Theo kết quả phân loại của mô hình, hồ sơ của bạn thuộc nhóm {% if is_approved %}Y{% else %}N{% endif %}.</p>
+                            </div>
+                        </div>
+
+                        <!-- 3 cột chỉ số: Mã hồ sơ, Thời gian, Xác suất -->
+                        <div class="meta-metrics-3col">
+                            <div class="metric-col-item">
+                                <span><i class="fa-regular fa-file-lines"></i> Mã hồ sơ</span>
+                                <strong>#{{ app_record.app_id }}</strong>
+                            </div>
+
+                            <div class="metric-col-item">
+                                <span><i class="fa-regular fa-calendar"></i> Thời gian dự đoán</span>
+                                <strong>{{ app_record.created_at.strftime('%d/%m/%Y %H:%M') if app_record.created_at else '--' }}</strong>
+                            </div>
+
+                            <div class="metric-col-item">
+                                <span><i class="fa-solid fa-bullseye"></i> Xác suất dự đoán</span>
+                                <strong style="color: {% if is_approved %}#16a34a{% else %}#ef4444{% endif %};">{{ prob_val }}%</strong>
+                                <div class="proba-progress-bar">
+                                    <div class="proba-progress-fill" style="width: {{ prob_val }}%; background: {% if is_approved %}#16a34a{% else %}#ef4444{% endif %};"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Khung lưu ý -->
+                        <div class="disclaimer-alert-box">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <div>
+                                <strong>Lưu ý:</strong> Kết quả chỉ mang tính tham khảo, không phải quyết định phê duyệt chính thức của ngân hàng.
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- KHỐI C: THÔNG TIN HỒ SƠ ĐÃ NHẬP -->
+                    <section class="panel-card-box">
+                        <div class="panel-heading-row">
+                            <i class="fa-solid fa-clipboard-list"></i>
+                            <span>Thông tin hồ sơ đã nhập</span>
+                        </div>
+
+                        <div class="app-summary-2col">
+                            <!-- Nhóm cột trái -->
+                            <div>
+                                <div class="summary-kv-row">
+                                    <span>Giới tính</span>
+                                    <strong>{{ 'Nam' if app_record.gender == 'Male' else 'Nữ' }}</strong>
+                                </div>
+                                <div class="summary-kv-row">
+                                    <span>Tình trạng hôn nhân</span>
+                                    <strong>{{ 'Đã kết hôn' if app_record.married == 'Yes' else 'Chưa kết hôn' }}</strong>
+                                </div>
+                                <div class="summary-kv-row">
+                                    <span>Số người phụ thuộc</span>
+                                    <strong>{{ app_record.dependents or '0' }}</strong>
+                                </div>
+                                <div class="summary-kv-row">
+                                    <span>Trình độ học vấn</span>
+                                    <strong>{{ 'Tốt nghiệp đại học' if app_record.education in ['Graduate', 'Đại học'] else 'Chưa tốt nghiệp đại học' }}</strong>
+                                </div>
+                            </div>
+
+                            <!-- Nhóm cột phải -->
+                            <div>
+                                <div class="summary-kv-row">
+                                    <span>Thu nhập người vay</span>
+                                    <strong>
+                                        {% set inc = app_record.income * 1000000 if app_record.income < 10000 else app_record.income %}
+                                        {{ "{:,.0f}".format(inc).replace(',', '.') }} VNĐ/tháng
+                                    </strong>
+                                </div>
+                                <div class="summary-kv-row">
+                                    <span>Thu nhập người đồng vay</span>
+                                    <strong>
+                                        {% set coapp = (app_record.coapplicant_income or 0) * 1000000 if (app_record.coapplicant_income or 0) < 10000 else (app_record.coapplicant_income or 0) %}
+                                        {{ "{:,.0f}".format(coapp).replace(',', '.') }} VNĐ/tháng
+                                    </strong>
+                                </div>
+                                <div class="summary-kv-row">
+                                    <span>Số tiền muốn vay</span>
+                                    <strong>
+                                        {% set amt = app_record.amount * 1000000 if app_record.amount < 10000 else app_record.amount %}
+                                        {{ "{:,.0f}".format(amt).replace(',', '.') }} VNĐ
+                                    </strong>
+                                </div>
+                                <div class="summary-kv-row">
+                                    <span>Thời hạn vay</span>
+                                    <strong>{{ app_record.loan_term | int if app_record.loan_term else 36 }} tháng</strong>
+                                </div>
+                                <div class="summary-kv-row">
+                                    <span>Lịch sử tín dụng</span>
+                                    <strong>{{ 'Có (1)' if app_record.credit_history == 1 else 'Không (0)' }}</strong>
+                                </div>
+                                <div class="summary-kv-row">
+                                    <span>Khu vực sinh sống</span>
+                                    <strong>
+                                        {% if app_record.property_area == 'Urban' %}Thành thị (Urban)
+                                        {% elif app_record.property_area == 'Rural' %}Nông thôn (Rural)
+                                        {% else %}Bán thành thị (Semiurban){% endif %}
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- CỤM 2 NÚT HÀNH ĐỘNG DƯỚI CÙNG -->
+                    <div class="bottom-action-buttons">
+                        <a href="/history" class="btn-action-back">
+                            <i class="fa-solid fa-arrow-left"></i> Quay lại lịch sử
+                        </a>
+                        <a href="/predict" class="btn-action-new">
+                            <i class="fa-solid fa-rotate"></i> Dự đoán hồ sơ mới
+                        </a>
+                    </div>
+
+                </div>
+
+                <!-- CỘT PHẢI: GIẢI THÍCH KẾT QUẢ & THÔNG TIN MÔ HÌNH -->
+                <aside class="right-info-column">
+                    
+                    <!-- KHỐI B: VÌ SAO CÓ KẾT QUẢ NÀY? -->
+                    <div class="why-card">
+                        <div class="why-card-title">
+                            <i class="fa-regular fa-lightbulb"></i>
+                            <span>Vì sao có kết quả này?</span>
+                        </div>
+                        <p class="why-intro-desc">
+                            Mô hình đã phân tích các thông tin bạn cung cấp như thu nhập, lịch sử tín dụng, số tiền vay... để đưa ra dự đoán.
+                        </p>
+
+                        <div style="font-size: 13px; font-weight: 700; color: var(--text-dark); margin-bottom: 10px;">
+                            Những yếu tố quan trọng:
+                        </div>
+                        <ul class="key-factors-list">
+                            {% for factor in factors %}
+                            <li class="factor-item">
+                                <i class="fa-solid fa-circle-check {{ factor.type }}"></i>
+                                <span>{{ factor.name }}: {{ factor.impact }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- KHỐI D: THÔNG TIN MÔ HÌNH ĐANG SỬ DỤNG -->
+                    <div class="model-card-box">
+                        <div class="model-card-title">
+                            <i class="fa-solid fa-robot"></i>
+                            <span>Thông tin mô hình đang sử dụng</span>
+                        </div>
+
+                        <span class="active-dot-tag">Đang hoạt động</span>
+
+                        <ul class="model-props-list">
+                            <li class="model-props-item">
+                                <span>Phiên bản mô hình:</span>
+                                <strong>{{ model_version }}</strong>
+                            </li>
+                            <li class="model-props-item">
+                                <span>Ngày cập nhật:</span>
+                                <strong>{{ trained_date }}</strong>
+                            </li>
+                            <li class="model-props-item">
+                                <span>Công nghệ:</span>
+                                <strong>Machine Learning</strong>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- LỜI CẢM ƠN & BẢO MẬT -->
+                    <div class="trust-banner-bottom">
+                        <p>Cảm ơn bạn đã tin tưởng hệ thống của chúng tôi!</p>
+                        <i class="fa-solid fa-shield-halved trust-shield-icon"></i>
+                    </div>
+
+                </aside>
+
+            </div>
+
+        </main>
+    </div>
+
+</body>
+</html>

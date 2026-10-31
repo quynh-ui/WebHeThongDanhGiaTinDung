@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang Chủ - Hệ Thống Dự Đoán Tín Dụng</title>
+    <!-- Google Fonts & Font Awesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --sidebar-width: 250px;
+            --bg-page: #f8fafc;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --radius-card: 16px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* 1. SIDEBAR TRÁI */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #ffffff;
+            border-right: 1px solid var(--border-color);
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 16px;
+        }
+
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px 24px 8px;
+            text-decoration: none;
+            color: #0f172a;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 16px;
+        }
+
+        .sidebar-brand i {
+            font-size: 26px;
+            color: var(--primary);
+        }
+
+        .sidebar-brand-text h2 {
+            font-size: 13.5px;
+            font-weight: 800;
+            line-height: 1.25;
+            color: #0f172a;
+        }
+
+        .sidebar-brand-text span {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .menu-link i {
+            font-size: 16px;
+            width: 20px;
+        }
+
+        .menu-link:hover {
+            color: var(--primary);
+            background: #f0f9ff;
+        }
+
+        .menu-link.active {
+            color: #ffffff;
+            background: var(--primary);
+            font-weight: 700;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .secure-card {
+            background: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-radius: 12px;
+            padding: 14px;
+            text-align: center;
+        }
+
+        .secure-card i {
+            font-size: 20px;
+            color: var(--primary);
+            margin-bottom: 6px;
+            display: inline-block;
+        }
+
+        .secure-card p {
+            font-size: 11.5px;
+            font-weight: 600;
+            color: #0369a1;
+            line-height: 1.4;
+        }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            color: #64748b;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fecaca;
+        }
+
+        /* 2. MAIN CONTAINER */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .top-navbar {
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .nav-right-actions {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-bell {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 17px;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .bell-badge {
+            position: absolute;
+            top: -4px;
+            right: -6px;
+            background: #ef4444;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 800;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-profile-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .user-avatar-circle {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: #93c5fd;
+            color: #1e3a8a;
+            font-weight: 800;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-name-text {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .content-body {
+            padding: 24px 32px 40px 32px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* 3. BANNER CHÀO MỪNG */
+        .welcome-banner {
+            background: #e0f2fe;
+            border: 1px solid #bae6fd;
+            border-radius: var(--radius-card);
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-left-content {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            z-index: 2;
+        }
+
+        .waving-hand-icon {
+            font-size: 34px;
+        }
+
+        .welcome-titles h1 {
+            font-size: 19px;
+            font-weight: 800;
+            color: #0369a1;
+            line-height: 1.3;
+        }
+
+        .welcome-titles p {
+            font-size: 13px;
+            color: #0284c7;
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        .btn-predict-now {
+            background: var(--primary);
+            color: #ffffff;
+            padding: 10px 22px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 2;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.25);
+            white-space: nowrap;
+        }
+
+        .btn-predict-now:hover {
+            background: var(--primary-hover);
+        }
+
+        /* 4. BỐN THẺ THỐNG KÊ TỔNG QUAN */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card-item {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 18px 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+        }
+
+        .stat-icon-wrap {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .icon-blue-bg   { background: #e0f2fe; color: #0284c7; }
+        .icon-green-bg  { background: #dcfce7; color: #16a34a; }
+        .icon-orange-bg { background: #ffedd5; color: #ea580c; }
+        .icon-purple-bg { background: #f3e8ff; color: #9333ea; }
+
+        .stat-meta-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .stat-large-val {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin: 2px 0;
+        }
+
+        .stat-sub-note {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* 5. KHỐI 2 CỘT: KẾT QUẢ GẦN NHẤT & LƯU Ý */
+        .eval-row-2col {
+            display: grid;
+            grid-template-columns: 1.25fr 0.85fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .panel-box-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 22px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+        }
+
+        .panel-header-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .panel-header-title h3 {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .model-version-badge {
+            background: #f0f9ff;
+            color: var(--primary);
+            border: 1px solid #bae6fd;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+
+        .recent-status-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .status-round-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .round-green { background: #22c55e; color: #ffffff; }
+        .round-red   { background: #ef4444; color: #ffffff; }
+
+        .status-summary-text h4 {
+            font-size: 15px;
+            font-weight: 800;
+            color: #15803d;
+            margin-bottom: 2px;
+        }
+
+        .status-summary-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .recent-details-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            align-items: flex-end;
+            padding-top: 12px;
+            border-top: 1px solid #f1f5f9;
+            margin-bottom: 16px;
+        }
+
+        .recent-meta-left span {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        .recent-meta-left strong {
+            display: block;
+            font-size: 14px;
+            color: var(--text-dark);
+            margin: 3px 0 4px 0;
+        }
+
+        .recent-meta-left small {
+            font-size: 11.5px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .recent-meta-right {
+            text-align: right;
+        }
+
+        .recent-meta-right span {
+            font-size: 11.5px;
+            color: var(--text-muted);
+        }
+
+        .recent-meta-right strong {
+            display: block;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin: 2px 0 4px 0;
+        }
+
+        .progress-line-bg {
+            width: 100%;
+            height: 7px;
+            background: #e2e8f0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-line-fill {
+            height: 100%;
+            background: #22c55e;
+            border-radius: 6px;
+        }
+
+        .btn-view-detail-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            padding: 10px;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-view-detail-card:hover {
+            background: var(--primary-hover);
+        }
+
+        /* KHUNG LƯU Ý PHÍA PHẢI */
+        .notice-right-box {
+            background: #f0f9ff;
+            border: 1px solid #e0f2fe;
+            border-radius: var(--radius-card);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notice-top-heading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            color: #0369a1;
+            margin-bottom: 12px;
+        }
+
+        .notice-body-desc {
+            font-size: 12.5px;
+            color: #334155;
+            line-height: 1.6;
+            max-width: 82%;
+            z-index: 2;
+        }
+
+        .watermark-shield {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 64px;
+            color: #bae6fd;
+            opacity: 0.6;
+        }
+
+        /* 6. BẢNG HỒ SƠ GẦN ĐÂY */
+        .recent-table-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 22px;
+            margin-bottom: 24px;
+        }
+
+        .table-top-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .table-top-actions h3 {
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .link-view-all {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+
+        .link-view-all:hover {
+            text-decoration: underline;
+        }
+
+        .user-data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+
+        .user-data-table th {
+            text-align: left;
+            padding: 10px 10px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .user-data-table td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-dark);
+            vertical-align: middle;
+        }
+
+        .user-data-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .pill-result-y {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #dcfce7;
+            color: #16a34a;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .pill-result-n {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 11px;
+            font-weight: 800;
+        }
+
+        .chip-completed-tag {
+            display: inline-block;
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .btn-view-row-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            padding: 4px 10px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-view-row-link:hover {
+            background: #e0f2fe;
+        }
+
+        /* 7. QUY TRÌNH 3 BƯỚC CHÂN TRANG */
+        .bottom-workflow-bar {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+
+        .workflow-steps-group {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .step-unit {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .step-num-circle {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #ffffff;
+            font-size: 11px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .step-arrow-divider {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .footer-help-links {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .footer-help-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .footer-help-links a:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 1024px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .eval-row-2col { grid-template-columns: 1fr; }
+            .bottom-workflow-bar { flex-direction: column; gap: 14px; align-items: flex-start; }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-wrapper { margin-left: 0; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. SIDEBAR TRÁI ĐỒNG BỘ -->
+    <aside class="sidebar">
+        <a href="/user" class="sidebar-brand">
+            <i class="fa-solid fa-building-columns"></i>
+            <div class="sidebar-brand-text">
+                <h2>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h2>
+                <span>Loan Prediction System</span>
+            </div>
+        </a>
+
+        <ul class="sidebar-menu">
+            <li><a href="/user" class="menu-link active"><i class="fa-solid fa-house"></i><span>Trang chủ</span></a></li>
+            <li><a href="/predict" class="menu-link"><i class="fa-solid fa-calculator"></i><span>Dự đoán khoản vay</span></a></li>
+            <li><a href="/history" class="menu-link"><i class="fa-solid fa-clock-rotate-left"></i><span>Lịch sử dự đoán</span></a></li>
+            <li><a href="/profile" class="menu-link"><i class="fa-regular fa-user"></i><span>Hồ sơ cá nhân</span></a></li>
+            <li><a href="/guide" class="menu-link"><i class="fa-regular fa-circle-question"></i><span>Hướng dẫn</span></a></li>
+        </ul>
+
+        <div class="sidebar-footer">
+            <div class="secure-card">
+                <i class="fa-solid fa-shield-halved"></i>
+                <p>Dữ liệu của bạn<br>được bảo mật tuyệt đối</p>
+            </div>
+
+            <a href="/logout" class="btn-logout">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN CONTAINER -->
+    <div class="main-wrapper">
+        <header class="top-navbar">
+            <div class="nav-right-actions">
+                <button class="btn-bell" title="Thông báo">
+                    <i class="fa-regular fa-bell"></i>
+                    <span class="bell-badge">1</span>
+                </button>
+
+                <div class="user-profile-chip">
+                    <div class="user-avatar-circle">N</div>
+                    <span class="user-name-text">
+                        {{ user_fullname }} <i class="fa-solid fa-angle-down" style="font-size: 11px; color: #94a3b8;"></i>
+                    </span>
+                </div>
+            </div>
+        </header>
+
+        <main class="content-body">
+
+            <!-- 3. BANNER CHÀO MỪNG -->
+            <section class="welcome-banner">
+                <div class="welcome-left-content">
+                    <span class="waving-hand-icon">👋</span>
+                    <div class="welcome-titles">
+                        <h1>Chào mừng bạn đến với hệ thống dự đoán tín dụng!</h1>
+                        <p>Hãy nhập thông tin để nhận kết quả dự đoán khả năng được chấp thuận khoản vay.</p>
+                    </div>
+                </div>
+
+                <a href="/predict" class="btn-predict-now">
+                    <span>Bắt đầu dự đoán</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </section>
+
+            <!-- 4. BỐN THẺ THỐNG KÊ TỔNG QUAN -->
+            <section class="stats-grid">
+                <div class="stat-card-item">
+                    <div class="stat-icon-wrap icon-blue-bg">
+                        <i class="fa-regular fa-file-lines"></i>
+                    </div>
+                    <div class="stat-meta-info">
+                        <span class="stat-label-title">Tổng số lần dự đoán</span>
+                        <h3 class="stat-large-val">{{ stats.total_submitted }}</h3>
+                        <span class="stat-sub-note">Tất cả hồ sơ đã gửi</span>
+                    </div>
+                </div>
+
+                <div class="stat-card-item">
+                    <div class="stat-icon-wrap icon-green-bg">
+                        <i class="fa-regular fa-circle-check"></i>
+                    </div>
+                    <div class="stat-meta-info">
+                        <span class="stat-label-title">Đã có kết quả</span>
+                        <h3 class="stat-large-val">{{ stats.total_completed }}</h3>
+                        <span class="stat-sub-note">Hồ sơ đã được dự đoán</span>
+                    </div>
+                </div>
+
+                <div class="stat-card-item">
+                    <div class="stat-icon-wrap icon-orange-bg">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div class="stat-meta-info">
+                        <span class="stat-label-title">Đang xử lý</span>
+                        <h3 class="stat-large-val">{{ stats.total_pending }}</h3>
+                        <span class="stat-sub-note">Hồ sơ chưa có kết quả</span>
+                    </div>
+                </div>
+
+                <div class="stat-card-item">
+                    <div class="stat-icon-wrap icon-purple-bg">
+                        <i class="fa-solid fa-bullseye"></i>
+                    </div>
+                    <div class="stat-meta-info">
+                        <span class="stat-label-title">Tỷ lệ dự đoán Y</span>
+                        <h3 class="stat-large-val">{{ stats.positive_rate }}</h3>
+                        <span class="stat-sub-note">Tỷ lệ hồ sơ được phân loại Y</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. KHỐI 2 CỘT: KẾT QUẢ GẦN NHẤT & LƯU Ý -->
+            <section class="eval-row-2col">
+                
+                <!-- Cột trái: Kết quả dự đoán gần nhất -->
+                <div class="panel-box-card">
+                    <div class="panel-header-title">
+                        <h3><i class="fa-solid fa-chart-simple text-blue-500" style="color: #0284c7;"></i> Kết quả dự đoán gần nhất</h3>
+                        <span class="model-version-badge">{{ model_version_display }}</span>
+                    </div>
+
+                    {% if latest_prediction %}
+                        {% set is_approved = latest_prediction.status in ['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y'] %}
+                        <div class="recent-status-row">
+                            <div class="status-round-icon {% if is_approved %}round-green{% else %}round-red{% endif %}">
+                                <i class="fa-solid {% if is_approved %}fa-check{% else %}fa-xmark{% endif %}"></i>
+                            </div>
+                            <div class="status-summary-text">
+                                <h4 style="color: {% if is_approved %}#15803d{% else %}#b91c1c{% endif %};">
+                                    {% if is_approved %}Có khả năng được chấp thuận (Y){% else %}Chưa đạt điều kiện chấp thuận (N){% endif %}
+                                </h4>
+                                <p>Theo kết quả phân loại của hệ thống, hồ sơ của bạn thuộc nhóm {% if is_approved %}Y{% else %}N{% endif %}.</p>
+                            </div>
+                        </div>
+
+                        <div class="recent-details-2col">
+                            <div class="recent-meta-left">
+                                <span>Mã hồ sơ</span>
+                                <strong>#{{ latest_prediction.app_id }}</strong>
+                                <small><i class="fa-regular fa-calendar"></i> {{ latest_prediction.created_at.strftime('%d/%m/%Y %H:%M') if latest_prediction.created_at else '--' }}</small>
+                            </div>
+
+                            <div class="recent-meta-right">
+                                <span>Xác suất dự đoán lớp Y</span>
+                                <strong>{{ latest_proba }}%</strong>
+                                <div class="progress-line-bg">
+                                    <div class="progress-line-fill" style="width: {{ latest_proba }}%; {% if not is_approved %}background: #ef4444;{% endif %}"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <a href="/predict/result/{{ latest_prediction.app_id }}" class="btn-view-detail-card">
+                            <span>Xem chi tiết kết quả</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </a>
+                    {% else %}
+                        <div style="text-align: center; padding: 36px 0; color: var(--text-muted); font-size: 13px;">
+                            Bạn chưa có lượt dự đoán nào. Nhấn <strong>"Bắt đầu dự đoán"</strong> để thực hiện!
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Cột phải: Lưu ý về kết quả dự đoán -->
+                <div class="notice-right-box">
+                    <div class="notice-top-heading">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Lưu ý về kết quả dự đoán</span>
+                    </div>
+                    <p class="notice-body-desc">
+                        Kết quả chỉ mang tính tham khảo, không phải quyết định phê duyệt chính thức của ngân hàng.
+                    </p>
+                    <i class="fa-solid fa-shield-halved watermark-shield"></i>
+                </div>
+
+            </section>
+
+            <!-- 6. DANH SÁCH HỒ SƠ GẦN ĐÂY -->
+            <section class="recent-table-card">
+                <div class="table-top-actions">
+                    <h3><i class="fa-regular fa-clock" style="color: #0284c7;"></i> Danh sách hồ sơ gần đây</h3>
+                    <a href="/history" class="link-view-all">Xem tất cả &rarr;</a>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="user-data-table">
+                        <thead>
+                            <tr>
+                                <th>Mã hồ sơ</th>
+                                <th>Số tiền vay</th>
+                                <th>Thời hạn vay</th>
+                                <th>Ngày dự đoán</th>
+                                <th>Kết quả dự đoán</th>
+                                <th>Trạng thái</th>
+                                <th>Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in recent_applications %}
+                            {% set is_y = item.status in ['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y'] %}
+                            <tr>
+                                <td><strong>#{{ item.app_id }}</strong></td>
+                                <td>
+                                    <!-- Chuẩn hóa định dạng tiền tệ tiếng Việt: 500.000.000 VNĐ -->
+                                    {% if item.amount >= 1000000 %}
+                                        {{ "{:,.0f}".format(item.amount).replace(',', '.') }} VNĐ
+                                    {% else %}
+                                        {{ "{:,.0f}".format(item.amount * 1000000).replace(',', '.') }} VNĐ
+                                    {% endif %}
+                                </td>
+                                <td>{{ (item.loan_term | int) if item.loan_term else 360 }} tháng</td>
+                                <td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') if item.created_at else '--' }}</td>
+                                <td>
+                                    <span class="{% if is_y %}pill-result-y{% else %}pill-result-n{% endif %}">
+                                        {{ 'Y' if is_y else 'N' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="chip-completed-tag">Đã có kết quả</span>
+                                </td>
+                                <td>
+                                    <a href="/predict/result/{{ item.app_id }}" class="btn-view-row-link">
+                                        <i class="fa-regular fa-eye"></i> Xem chi tiết
+                                    </a>
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                                    Chưa có hồ sơ nào được tạo.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- 7. QUY TRÌNH 3 BƯỚC CHÂN TRANG -->
+            <footer class="bottom-workflow-bar">
+                <div class="workflow-steps-group">
+                    <div class="step-unit">
+                        <span class="step-num-circle">1</span>
+                        <span>Nhập thông tin về bản thân và tài chính</span>
+                    </div>
+                    <span class="step-arrow-divider">&rarr;</span>
+
+                    <div class="step-unit">
+                        <span class="step-num-circle">2</span>
+                        <span>Hệ thống phân tích bằng Machine Learning</span>
+                    </div>
+                    <span class="step-arrow-divider">&rarr;</span>
+
+                    <div class="step-unit">
+                        <span class="step-num-circle">3</span>
+                        <span>Nhận kết quả và xem lại lịch sử</span>
+                    </div>
+                </div>
+
+                <div class="footer-help-links">
+                    <a href="#"><i class="fa-solid fa-shield-halved"></i> Chính sách quyền riêng tư</a>
+                    <span>|</span>
+                    <a href="/guide"><i class="fa-regular fa-circle-question"></i> Trợ giúp</a>
+                </div>
+            </footer>
+
+        </main>
+    </div>
+
+</body>
+</html>

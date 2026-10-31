@@ -3,579 +3,1210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khám Phá & Xem Dataset - Loan Prediction</title>
-
-    <!-- Bootstrap 5 CSS & FontAwesome -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <title>Quản Lý Dataset - Hệ Thống Dự Đoán Tín Dụng</title>
+    <!-- Google Fonts, Font Awesome Icons & Chart.js -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: #f8fafc; color: #1e293b; overflow-x: hidden; }
-
-        .top-navbar {
-            background-color: #ffffff; height: 60px; padding: 0 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+        :root {
+            --sidebar-width: 260px;
+            --bg-page: #f1f5fa;
+            --bg-card: #ffffff;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --primary: #0284c7;
+            --primary-hover: #0369a1;
+            --radius-card: 16px;
+            --radius-btn: 10px;
         }
-        .system-title { font-size: 16px; font-weight: 800; color: #034694; text-transform: uppercase; }
 
-        .wrapper { display: flex; margin-top: 60px; }
-        /* ================= SIDEBAR CHUẨN ĐỒNG BỘ GIAO DIỆN ================= */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-page);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* 1. SIDEBAR TRÁI */
         .sidebar {
-            width: 250px;
-            min-height: calc(100vh - 60px);
-            background-color: #081729;
-            padding: 18px 12px 60px 12px;
+            width: var(--sidebar-width);
+            background: #ffffff;
+            border-right: 1px solid var(--border-color);
+            color: #1e293b;
+            display: flex;
+            flex-direction: column;
             position: fixed;
-            top: 60px;
+            top: 0;
             bottom: 0;
             left: 0;
+            z-index: 100;
+            padding: 24px 16px;
             overflow-y: auto;
-            z-index: 999;
         }
 
-        /* Tinh chỉnh thanh cuộn Sidebar mượt mà, đồng bộ kích thước */
-        .sidebar::-webkit-scrollbar {
-            width: 5px;
-        }
-        .sidebar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .sidebar::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 4px;
-        }
-        .sidebar::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.3);
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0 8px 24px 8px;
+            text-decoration: none;
+            color: #0f172a;
+            border-bottom: 1px solid #f1f5f9;
+            margin-bottom: 12px;
         }
 
-        .admin-menu-label {
-            font-size: 11px;
+        .sidebar-brand i {
+            font-size: 28px;
+            color: var(--primary);
+        }
+
+        .sidebar-brand-text h2 {
+            font-size: 13.5px;
             font-weight: 800;
-            color: #475569;
-            letter-spacing: 1.2px;
-            margin: 0 0 14px 10px;
-            text-transform: uppercase;
+            line-height: 1.25;
+            letter-spacing: -0.2px;
+            color: #0f172a;
         }
 
-        .tree-list {
+        .sidebar-brand-text span {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .sidebar-menu {
             list-style: none;
-            padding: 0;
-            margin: 0;
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
-        
-        .tree-parent-item a, .tree-parent-link, .tree-parent-label {
+
+        .menu-item-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+
+        .menu-item-main:hover {
+            background: #f1f5f9;
+            color: var(--primary);
+        }
+
+        .menu-group {
+            margin-top: 10px;
+        }
+
+        .menu-group-label {
             display: flex;
             align-items: center;
             gap: 10px;
-            height: 38px;
-            padding: 0 12px;
-            font-size: 13.5px;
-            font-weight: 700;
-            text-decoration: none;
-            border-radius: 8px;
-            color: #ffffff;
-            user-select: none;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            cursor: pointer;
-        }
-        .tree-parent-item a:hover, .tree-parent-link:hover {
-            background-color: rgba(255, 255, 255, 0.06);
-            color: #ffffff;
+            padding: 8px 12px;
+            font-size: 12.5px;
+            font-weight: 800;
+            color: #0f172a;
         }
 
-        .color-dashboard { color: #f59e0b; }
-        .color-dataset   { color: #00a8ff; }
-        .color-history   { color: #10b981; }
-        .color-ml        { color: #ff4757; }
-        .color-users     { color: #c084fc; }
-        .color-settings  { color: #94a3b8; }
+        .menu-group-label i {
+            color: var(--primary);
+            font-size: 14px;
+        }
 
-        .tree-branch {
+        .menu-sub-list {
             list-style: none;
-            padding-left: 14px;
-            margin: 4px 0 6px 20px;
-            border-left: 1.5px solid rgba(255, 255, 255, 0.12);
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 2px;
+            padding-left: 20px;
+            margin-bottom: 6px;
+            border-left: 1.5px solid #e2e8f0;
+            margin-left: 18px;
         }
-        
-        .tree-sub-link {
+
+        .menu-sub-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #64748b;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+
+        .menu-sub-link:hover, .menu-sub-link.active-sub {
+            color: var(--primary);
+            background: #f0f9ff;
+            font-weight: 700;
+        }
+
+        .sidebar-logout {
+            margin-top: auto;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .btn-logout {
             display: flex;
             align-items: center;
             gap: 10px;
-            height: 38px;
-            padding: 0 12px;
-            color: #94a3b8;
-            font-size: 13px;
-            font-weight: 500;
+            padding: 10px 14px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
             text-decoration: none;
-            border-radius: 8px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
             transition: all 0.2s ease;
-            white-space: nowrap;
-            box-sizing: border-box;
+        }
+
+        .btn-logout:hover {
+            background: #fee2e2;
+            color: #ef4444;
+            border-color: #fecaca;
+        }
+
+        /* 2. MAIN CONTAINER */
+        .main-wrapper {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .top-navbar {
+            height: 64px;
+            background: #ffffff;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+        }
+
+        .toggle-menu-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            color: #475569;
             cursor: pointer;
         }
-        .tree-sub-link:hover {
+
+        .nav-actions-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-bell-notify {
+            position: relative;
+            background: none;
+            border: none;
+            font-size: 17px;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .user-chip {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .user-chip-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
             color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.06);
-        }
-
-        .menu-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
+            font-weight: 800;
             font-size: 14px;
-            flex-shrink: 0;
-            text-align: center;
-        }
-
-        .tree-parent-item a i, .tree-parent-link i, .tree-parent-label i {
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            width: 20px;
-            height: 20px;
-            font-size: 15px;
+        }
+
+        .user-chip-info h4 {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-dark);
+            line-height: 1.2;
+        }
+
+        .user-chip-info span {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .content-body {
+            padding: 24px 32px 50px 32px;
+            max-width: 1560px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Banner Tiêu đề trang */
+        .welcome-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 20px 26px;
+            margin-bottom: 20px;
+        }
+
+        .welcome-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .welcome-shield-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+        }
+
+        .welcome-titles h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .welcome-titles p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .welcome-date {
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f8fafc;
+            padding: 6px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* 4 Thẻ thống kê động */
+        .stats-4-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+        }
+
+        .stat-icon-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
             flex-shrink: 0;
+        }
+
+        .icon-blue   { background: #e0f2fe; color: #0284c7; }
+        .icon-green  { background: #dcfce7; color: #16a34a; }
+        .icon-yellow { background: #fef3c7; color: #d97706; }
+        .icon-red    { background: #fee2e2; color: #dc2626; }
+
+        .stat-meta span {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .stat-meta h3 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin: 2px 0 4px 0;
+        }
+
+        .stat-trend {
+            font-size: 11.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .trend-up   { color: #16a34a; }
+        .trend-down { color: #dc2626; }
+
+        /* Toolbar Tìm kiếm & Lọc */
+        .dataset-toolbar {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex: 1;
+            min-width: 320px;
+        }
+
+        .search-box-wrap {
+            position: relative;
+            flex: 1;
+            max-width: 380px;
+        }
+
+        .search-box-wrap i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 13px;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 38px;
+            padding: 0 12px 0 34px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 12.5px;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .search-input:focus {
+            background: #ffffff;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+        }
+
+        .filter-select-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .select-filter {
+            height: 38px;
+            padding: 0 28px 0 12px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 12.5px;
+            color: var(--text-dark);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2364748b' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-tool {
+            height: 38px;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary-tool {
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        .btn-primary-tool:hover {
+            background: var(--primary-hover);
+        }
+
+        .btn-outline-tool {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--primary);
+        }
+
+        .btn-outline-tool:hover {
+            background: #f0f9ff;
+        }
+
+        .status-active-badge {
+            display: inline-block;
+            background: #dcfce7;
+            color: #15803d;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        /* 2 Cột: Bảng dữ liệu + Cột thông tin phụ */
+        .dataset-main-grid {
+            display: grid;
+            grid-template-columns: 1fr 340px;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .table-panel-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+        }
+
+        .panel-heading {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14.5px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+        }
+
+        .panel-heading i {
+            color: var(--primary);
+        }
+
+        .dataset-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+        }
+
+        .dataset-table th {
+            text-align: left;
+            padding: 10px 8px;
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .dataset-table td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #f1f5f9;
+            color: var(--text-dark);
+            vertical-align: middle;
+        }
+
+        .dataset-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .checkbox-custom {
+            cursor: pointer;
+            width: 14px;
+            height: 14px;
+        }
+
+        .pill-status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .pill-approved { background: #dcfce7; color: #15803d; }
+        .pill-rejected { background: #fee2e2; color: #b91c1c; }
+
+        .btn-view-link {
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-view-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Phân trang */
+        .table-footer-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 18px;
+            padding-top: 14px;
+            border-top: 1px solid #f1f5f9;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .pagination-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .page-num {
+            min-width: 28px;
+            height: 28px;
+            padding: 0 6px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-dark);
+            font-size: 12px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .page-num.active {
+            background: var(--primary);
+            color: #ffffff;
+            border-color: var(--primary);
+        }
+
+        .page-num:hover:not(.active) {
+            background: #f1f5f9;
+        }
+
+        /* CỘT PHẢI */
+        .right-info-column {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .info-card {
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-card);
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+        }
+
+        .info-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 14px;
+        }
+
+        .info-card-header i {
+            color: var(--primary);
+        }
+
+        .meta-kv-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 12.5px;
+        }
+
+        .meta-kv-item {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+        }
+
+        .meta-kv-item strong {
+            color: var(--text-dark);
+            font-weight: 700;
+        }
+
+        .chart-donut-wrap {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 10px auto;
+        }
+
+        .donut-center-stat {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             text-align: center;
+            pointer-events: none;
         }
 
-        /* Nút Active chuẩn màu xanh - đồng bộ kích thước & hiệu ứng con trỏ */
-        .tree-sub-link.active-sub,
-        .tree-parent-link.active-sub,
-        .tree-parent-item a.active-sub,
-        .tree-parent-item.active > a,
-        .tree-parent-item.active-menu > a {
-            background-color: #0284c7 !important;
-            color: #ffffff !important;
-            font-weight: 700 !important;
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
-        }
-        .tree-sub-link.active-sub .menu-icon,
-        .tree-parent-link.active-sub i,
-        .tree-parent-item a.active-sub i,
-        .tree-parent-item.active > a i,
-        .tree-parent-item.active-menu > a i {
-            color: #ffffff !important;
+        .donut-center-stat strong {
+            font-size: 16px;
+            font-weight: 800;
+            display: block;
+            color: var(--text-dark);
         }
 
-
-        /* Main Content */
-        .main-content {
-            margin-left: 250px; padding: 24px 32px 60px 32px;
-            flex: 1; width: calc(100% - 250px);
-        }
-        .page-heading { font-size: 19px; font-weight: 800; color: #0f172a; margin-bottom: 20px; text-transform: uppercase; }
-
-        /* Card Thông Tin Tổng Quan Dataset */
-        .overview-panel {
-            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
-            padding: 20px 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 24px;
-        }
-        .overview-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;
-        }
-        .overview-item {
-            padding: 12px 14px; background-color: #f8fafc; border-radius: 8px; border: 1px solid #f1f5f9;
-        }
-        .overview-item .lbl { font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 4px; }
-        .overview-item .val { font-size: 18px; font-weight: 800; color: #0f172a; }
-
-        /* Bảng Data Type Nhỏ Gọn */
-        .schema-panel {
-            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
-            padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 24px;
+        .donut-center-stat span {
+            font-size: 10px;
+            color: var(--text-muted);
         }
 
-        /* Bảng Dữ Liệu Lớn */
-        .table-panel {
-            background: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0;
-            padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-        }
-        .custom-data-table {
-            width: 100%; border-collapse: collapse; font-size: 12px;
-        }
-        .custom-data-table thead th {
-            background-color: #f1f5f9; color: #334155; font-weight: 700;
-            padding: 9px 10px; border-bottom: 2px solid #cbd5e1; white-space: nowrap;
-        }
-        .custom-data-table tbody td {
-            padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; white-space: nowrap;
-        }
-        .custom-data-table tbody tr:hover { background-color: #f8fafc; }
-
-        /* Highlight Giá trị khuyết thiếu NaN */
-        .val-nan {
-            background-color: #fee2e2; color: #dc2626; font-weight: 800;
-            padding: 2px 6px; border-radius: 4px; font-size: 11px;
-        }
-        .val-target-y {
-            background-color: #dcfce7; color: #15803d; font-weight: 700;
-            padding: 2px 8px; border-radius: 12px; font-size: 11px;
-        }
-        .val-target-n {
-            background-color: #fee2e2; color: #b91c1c; font-weight: 700;
-            padding: 2px 8px; border-radius: 12px; font-size: 11px;
+        .legend-kv-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 14px;
+            font-size: 12px;
         }
 
-        .filter-control {
-            border: 1px solid #cbd5e1; border-radius: 6px; font-size: 12px; padding: 6px 10px; outline: none;
+        .legend-kv-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .legend-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .quick-nav-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .quick-nav-item a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 12px;
+            border-radius: 8px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: #334155;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .quick-nav-item a:hover {
+            background: #f0f9ff;
+            color: var(--primary);
+        }
+
+        .quick-nav-item a div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-nav-item a i.icon-prefix {
+            color: var(--primary);
+            font-size: 13px;
+            width: 16px;
+        }
+
+        @media (max-width: 1200px) {
+            .dataset-main-grid { grid-template-columns: 1fr; }
+            .stats-4-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-wrapper { margin-left: 0; }
+            .stats-4-grid { grid-template-columns: 1fr; }
+            .dataset-toolbar { flex-direction: column; align-items: stretch; }
+            .toolbar-left { flex-direction: column; }
+            .search-box-wrap { max-width: 100%; }
         }
     </style>
 </head>
 <body>
 
-    <!-- TOP NAVBAR -->
-    <div class="top-navbar">
-        <div class="system-title">HỆ THỐNG DỰ ĐOÁN TÍN DỤNG THÔNG MINH</div>
-        <div class="d-flex align-items-center gap-3">
-            <span class="fw-bold fs-6"><i class="fa-solid fa-circle-user me-2"></i>ADMIN</span>
-            <a href="/logout" class="btn btn-sm btn-outline-danger fw-bold">Đăng xuất</a>
-        </div>
-    </div>
+    <!-- 1. SIDEBAR TRÁI -->
+    <aside class="sidebar">
+        <a href="/admin" class="sidebar-brand">
+            <i class="fa-solid fa-building-columns"></i>
+            <div class="sidebar-brand-text">
+                <h2>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h2>
+                <span>Admin Panel</span>
+            </div>
+        </a>
 
-    <div class="wrapper">
-        <!-- SIDEBAR ĐỒNG BỘ CHUẨN MENU -->
-        <div class="sidebar">
-            <div class="admin-menu-label">ADMIN MENU</div>
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/admin" class="menu-item-main">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
 
-            <ul class="tree-list">
-                <!-- 1. Dashboard -->
-                <li class="tree-parent-item">
-                    <a href="/admin" class="tree-parent-link">
-                        <i class="fa-solid fa-house color-dashboard"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
-
-                <!-- 2. Dataset -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-table-cells color-dataset"></i>
-                        <span style="color: #00a8ff;">Dataset</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin/dataset" class="tree-sub-link active-sub"><span class="menu-icon"><i class="fa-regular fa-file-lines"></i></span><span>Xem Dataset</span></a></li>
-                        <li><a href="/admin/dataset/check" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-magnifying-glass"></i></span><span>Kiểm tra Dataset</span></a></li>
-                        <li><a href="/admin/dataset/pending" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-inbox"></i></span><span>Hồ sơ chờ duyệt</span></a></li>
-                        <li><a href="/admin/dataset/preprocess" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-paintbrush"></i></span><span>Tiền xử lý dữ liệu</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 3. Lịch sử dự đoán -->
-                <li class="tree-parent-item">
-                    <a href="/admin/history" class="tree-parent-link">
-                        <i class="fa-solid fa-clock-rotate-left color-history"></i>
-                        <span>Lịch sử dự đoán</span>
-                    </a>
-                </li>
-
-                <!-- 4. Mô hình ML -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-robot color-ml"></i>
-                        <span style="color: #ff4757;">Mô hình ML</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin/ml/models" class="tree-sub-link"><span class="menu-icon">📋</span><span>Danh sách mô hình</span></a></li>
-                        <li><a href="/admin/ml/train" class="tree-sub-link"><span class="menu-icon">⚙️</span><span>Huấn luyện mô hình</span></a></li>
-                        <li><a href="/admin/ml/history" class="tree-sub-link"><span class="menu-icon">📜</span><span>Lịch sử huấn luyện</span></a></li>
-                        <li><a href="/admin/ml/evaluate" class="tree-sub-link"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
-                        <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
-                        <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 5. Người dùng -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-users color-users"></i>
-                        <span style="color: #c084fc;">Người dùng</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-clipboard"></i></span><span>Danh sách</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-plus"></i></span><span>Thêm</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-pen"></i></span><span>Sửa</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-lock"></i></span><span>Khóa/Mở khóa</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-key"></i></span><span>Phân quyền</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 6. Cài đặt hệ thống -->
-                <li class="tree-parent-item">
-                    <a href="/admin/settings" class="tree-parent-link">
-                        <i class="fa-solid fa-gear color-settings"></i>
-                        <span>Cài đặt hệ thống</span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-
-        <!-- MAIN CONTENT -->
-        <div class="main-content">
-            <h1 class="page-heading">📄 XEM & HIỂU TẬP DỮ LIỆU HUẤN LUYỆN (DATASET)</h1>
-
-            <!-- 1. THÔNG TIN TỔNG QUAN DATASET -->
-            <div class="overview-panel">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <div class="fw-bold fs-6 text-primary">
-                        <i class="fa-solid fa-database me-2"></i>{{ stats.dataset_name }} ({{ stats.filename }})
-                    </div>
-                    <span class="badge bg-success py-2 px-3"><i class="fa-solid fa-check me-1"></i>Đang sử dụng</span>
+            <li class="menu-group">
+                <div class="menu-group-label">
+                    <i class="fa-solid fa-database"></i>
+                    <span>Dataset</span>
                 </div>
-                
-                <div class="overview-grid">
-                    <div class="overview-item">
-                        <div class="lbl">Tổng số bản ghi (Dòng)</div>
-                        <div class="val text-primary" id="metaTotalRows">{{ stats.rows }}</div>
-                    </div>
-                    <div class="overview-item">
-                        <div class="lbl">Số thuộc tính (Cột)</div>
-                        <div class="val text-dark">{{ stats.cols }}</div>
-                    </div>
-                    <div class="overview-item">
-                        <div class="lbl">Biến mục tiêu (Target)</div>
-                        <div class="val text-danger">{{ stats.target_col }}</div>
-                    </div>
-                    <div class="overview-item">
-                        <div class="lbl">Tổng giá trị khuyết (NaN)</div>
-                        <div class="val text-warning">{{ stats.missing_total }}</div>
-                    </div>
-                    <div class="overview-item">
-                        <div class="lbl">Số dòng có dữ liệu thiếu</div>
-                        <div class="val text-danger">{{ stats.missing_rows }} dòng</div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/dataset" class="menu-sub-link active-sub">&gt; Xem dữ liệu</a></li>
+                    <li><a href="/admin/dataset/stats" class="menu-sub-link">&gt; Thông tin thống kê</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-group">
+                <div class="menu-group-label">
+                    <i class="fa-solid fa-filter"></i>
+                    <span>Tiền xử lý</span>
+                </div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/dataset/preprocess" class="menu-sub-link">&gt; Xử lý dữ liệu</a></li>
+                    <li><a href="/admin/dataset/check" class="menu-sub-link">&gt; Thông tin thống kê</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-group">
+                <div class="menu-group-label">
+                    <i class="fa-solid fa-microchip"></i>
+                    <span>Mô hình Machine Learning</span>
+                </div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/ml/train" class="menu-sub-link">&gt; Huấn luyện mô hình</a></li>
+                    <li><a href="/admin/ml/history" class="menu-sub-link">&gt; Lịch sử huấn luyện</a></li>
+                    <li><a href="/admin/ml/evaluate" class="menu-sub-link">&gt; Đánh giá mô hình</a></li>
+                    <li><a href="/admin/ml/compare" class="menu-sub-link">&gt; So sánh mô hình</a></li>
+                    <li><a href="/admin/ml/active" class="menu-sub-link">&gt; Mô hình đang sử dụng</a></li>
+                </ul>
+            </li>
+
+            <li class="menu-group">
+                <div class="menu-group-label">
+                    <i class="fa-solid fa-gear"></i>
+                    <span>Cài đặt</span>
+                </div>
+                <ul class="menu-sub-list">
+                    <li><a href="/admin/settings" class="menu-sub-link">&gt; Cấu hình hệ thống</a></li>
+                </ul>
+            </li>
+        </ul>
+
+        <div class="sidebar-logout">
+            <a href="/logout" class="btn-logout">
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                <span>Đăng xuất</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- 2. MAIN CONTAINER -->
+    <div class="main-wrapper">
+        <header class="top-navbar">
+            <button class="toggle-menu-btn"><i class="fa-solid fa-bars"></i></button>
+
+            <div class="nav-actions-right">
+                <button class="btn-bell-notify">
+                    <i class="fa-regular fa-bell"></i>
+                </button>
+
+                <div class="user-chip">
+                    <div class="user-chip-avatar">A</div>
+                    <div class="user-chip-info">
+                        <h4>Admin</h4>
+                        <span>Quản trị viên</span>
                     </div>
                 </div>
             </div>
+        </header>
 
-            <!-- 2. THUỘC TÍNH VÀ KIỂU DỮ LIỆU (DATA TYPES SCHEMA) -->
-            <div class="schema-panel">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <div class="fw-bold" style="font-size: 13.5px;"><i class="fa-solid fa-list-check me-2 text-info"></i>Bảng cấu trúc thuộc tính & Kiểu dữ liệu</div>
-                    <button class="btn btn-sm btn-light border py-0 px-2" style="font-size: 11px;" type="button" data-bs-toggle="collapse" data-bs-target="#schemaDetails">
-                        Thu gọn / Mở rộng
-                    </button>
+        <main class="content-body">
+            
+            <section class="welcome-row">
+                <div class="welcome-left">
+                    <div class="welcome-shield-icon">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div class="welcome-titles">
+                        <h1>Quản lý Dataset</h1>
+                        <p>Xem, kiểm tra và quản lý dữ liệu của hệ thống dựa trên kết quả thẩm định thực tế của mô hình.</p>
+                    </div>
                 </div>
-                <div class="collapse show" id="schemaDetails">
-                    <div class="d-flex flex-wrap gap-2 mt-2">
-                        {% for col in stats.dtypes_info %}
-                        <div class="border rounded p-2 bg-light" style="font-size: 11.5px; min-width: 130px;">
-                            <div class="fw-bold text-dark">{{ col.column }} {% if col.is_target %}<span class="badge bg-danger" style="font-size: 9px;">Target</span>{% endif %}</div>
-                            <div class="text-muted">Kiểu: <span class="fw-semibold text-primary">{{ col.dtype }}</span></div>
-                            <div class="{% if col.missing > 0 %}text-danger fw-bold{% else %}text-muted{% endif %}">
-                                Thiếu: {{ col.missing }} ({{ col.missing_pct }}%)
+                <div class="welcome-date">
+                    <i class="fa-regular fa-calendar"></i>
+                    <span>{{ last_updated_time }}</span>
+                </div>
+            </section>
+
+            <!-- 4 Thẻ Thống Kê Đầu Trang Động -->
+            <section class="stats-4-grid">
+                <div class="stat-card">
+                    <div class="stat-icon-circle icon-blue">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span>Tổng số bản ghi</span>
+                        <h3>{{ total_records }}</h3>
+                        <div class="stat-trend trend-up">
+                            <i class="fa-solid fa-arrow-up"></i>
+                            <span>Thời gian thực hệ thống</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-circle icon-green">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span>Đã duyệt (AI)</span>
+                        <h3>{{ approved_count }}</h3>
+                        <div class="stat-trend trend-up">
+                            <i class="fa-solid fa-arrow-up"></i>
+                            <span>{{ approved_pct }}% tổng dữ liệu</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-circle icon-yellow">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span>Tỷ lệ chấp thuận</span>
+                        <h3>{{ approved_pct }}%</h3>
+                        <div class="stat-trend trend-up">
+                            <i class="fa-solid fa-arrow-up"></i>
+                            <span>Tỷ lệ đạt chuẩn vay</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon-circle icon-red">
+                        <i class="fa-solid fa-xmark"></i>
+                    </div>
+                    <div class="stat-meta">
+                        <span>Bị từ chối (AI)</span>
+                        <h3>{{ rejected_count }}</h3>
+                        <div class="stat-trend trend-down">
+                            <i class="fa-solid fa-ban"></i>
+                            <span>{{ rejected_pct }}% không đạt chuẩn</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Toolbar Tìm Kiếm & Lọc Dữ Liệu -->
+            <form method="GET" action="/admin/dataset" class="dataset-toolbar">
+                <div class="toolbar-left">
+                    <div class="search-box-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" name="q" value="{{ search_query }}" class="search-input" placeholder="Tìm kiếm theo mã hồ sơ, người nộp...">
+                    </div>
+
+                    <div class="filter-select-group">
+                        <label>Trạng thái</label>
+                        <select name="status" class="select-filter" onchange="this.form.submit()">
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>Tất cả</option>
+                            <option value="Đã duyệt" {% if status_filter == 'Đã duyệt' %}selected{% endif %}>Đã duyệt</option>
+                            <option value="Bị từ chối" {% if status_filter == 'Bị từ chối' %}selected{% endif %}>Bị từ chối</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-select-group">
+                        <label>Nguồn dữ liệu</label>
+                        <select name="source" class="select-filter" onchange="this.form.submit()">
+                            <option value="all" {% if source_filter == 'all' %}selected{% endif %}>Tất cả</option>
+                            <option value="Kaggle" {% if source_filter == 'Kaggle' %}selected{% endif %}>Kaggle</option>
+                            <option value="User" {% if source_filter == 'User' %}selected{% endif %}>Người dùng nộp</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="toolbar-right">
+                    <a href="/admin/dataset/preprocess" class="btn-tool btn-primary-tool">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <span>Nhập dữ liệu</span>
+                    </a>
+
+                    <a href="/admin/dataset/export" class="btn-tool btn-outline-tool">
+                        <i class="fa-solid fa-download"></i>
+                        <span>Xuất dữ liệu</span>
+                    </a>
+
+                    <span class="status-active-badge">Đang sử dụng</span>
+                </div>
+            </form>
+
+            <!-- Bảng Dữ Liệu Thực Tế & Panel Thông Tin -->
+            <div class="dataset-main-grid">
+
+                <section class="table-panel-card">
+                    <div class="panel-heading">
+                        <i class="fa-regular fa-folder-open"></i>
+                        <span>Danh sách dữ liệu</span>
+                    </div>
+
+                    <div style="overflow-x: auto;">
+                        <table class="dataset-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" class="checkbox-custom"></th>
+                                    <th>STT</th>
+                                    <th>MÃ HỒ SƠ</th>
+                                    <th>GIỚI TÍNH</th>
+                                    <th>TUỔI</th>
+                                    <th>THU NHẬP VAY</th>
+                                    <th>SỐ TIỀN VAY</th>
+                                    <th>KHU VỰC</th>
+                                    <th>TRẠNG THÁI</th>
+                                    <th>NGÀY THÊM</th>
+                                    <th>THAO TÁC</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in applications %}
+                                <tr>
+                                    <td><input type="checkbox" class="checkbox-custom" value="{{ item.id }}"></td>
+                                    <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
+                                    <td><strong>#{{ item.app_id }}</strong></td>
+                                    <td>{{ 'Nam' if item.gender == 'Male' else 'Nữ' }}</td>
+                                    <td>{{ item.age or 30 }}</td>
+                                    <td>{{ "{:,.0f}".format(item.income * 1000000 if item.income < 10000 else item.income) }}</td>
+                                    <td>{{ "{:,.0f}".format(item.amount * 1000000 if item.amount < 10000 else item.amount) }}</td>
+                                    <td>
+                                        {% if item.property_area == 'Urban' %}Thành phố
+                                        {% elif item.property_area == 'Rural' %}Nông thôn
+                                        {% else %}Đồng bằng{% endif %}
+                                    </td>
+                                    <td>
+                                        {% if item.status in ['Phê Duyệt', 'Đã Phê Duyệt', 'Approved', 'Y'] %}
+                                            <span class="pill-status pill-approved">Đã duyệt</span>
+                                        {% else %}
+                                            <span class="pill-status pill-rejected">Từ chối</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') if item.created_at else '--' }}</td>
+                                    <td>
+                                        <a href="/predict/result/{{ item.app_id }}" class="btn-view-link">
+                                            <i class="fa-regular fa-eye"></i> Xem
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="11" style="text-align: center; color: var(--text-muted); padding: 32px;">
+                                        Không tìm thấy bản ghi nào phù hợp.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Phân Trang Động -->
+                    <div class="table-footer-pagination">
+                        <span>Hiển thị {{ applications|length }} trong tổng số {{ total_records }} bản ghi</span>
+                        <div class="pagination-controls">
+                            {% if pagination.has_prev %}
+                                <a href="?page={{ pagination.prev_num }}&q={{ search_query }}&status={{ status_filter }}&source={{ source_filter }}" class="page-num">&lt;</a>
+                            {% endif %}
+
+                            {% for p in pagination.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+                                {% if p %}
+                                    {% if p == pagination.page %}
+                                        <a href="#" class="page-num active">{{ p }}</a>
+                                    {% else %}
+                                        <a href="?page={{ p }}&q={{ search_query }}&status={{ status_filter }}&source={{ source_filter }}" class="page-num">{{ p }}</a>
+                                    {% endif %}
+                                {% else %}
+                                    <span style="padding: 0 4px;">...</span>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if pagination.has_next %}
+                                <a href="?page={{ pagination.next_num }}&q={{ search_query }}&status={{ status_filter }}&source={{ source_filter }}" class="page-num">&gt;</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CỘT PHẢI: THÔNG TIN TẬP DỮ LIỆU & BIỂU ĐỒ DONUT -->
+                <aside class="right-info-column">
+
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fa-regular fa-file-lines"></i>
+                            <span>Thông tin bộ dữ liệu hiện tại</span>
+                        </div>
+                        <ul class="meta-kv-list">
+                            <li class="meta-kv-item"><span>Tên bộ dữ liệu</span><strong>Loan Prediction Dataset</strong></li>
+                            <li class="meta-kv-item"><span>Phiên bản</span><strong>v1.0.0</strong></li>
+                            <li class="meta-kv-item"><span>Tổng số bản ghi</span><strong>{{ total_records }}</strong></li>
+                            <li class="meta-kv-item"><span>Dung lượng</span><strong>{{ file_size_mb }}</strong></li>
+                            <li class="meta-kv-item"><span>Ngày cập nhật</span><strong>{{ last_updated_time }}</strong></li>
+                            <li class="meta-kv-item"><span>Nguồn dữ liệu</span><strong>Kaggle / User</strong></li>
+                        </ul>
+                    </div>
+
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fa-solid fa-chart-pie"></i>
+                            <span>Thống kê theo trạng thái</span>
+                        </div>
+                        <div class="chart-donut-wrap">
+                            <canvas id="datasetMiniChart"></canvas>
+                            <div class="donut-center-stat">
+                                <strong>{{ total_records }}</strong>
+                                <span>bản ghi</span>
                             </div>
                         </div>
-                        {% endfor %}
+                        <ul class="legend-kv-list">
+                            <li class="legend-kv-item">
+                                <span><span class="legend-dot" style="background: #10b981;"></span>Đã duyệt</span>
+                                <strong>{{ approved_count }} <small style="color: #94a3b8; font-weight: 600;">({{ approved_pct }}%)</small></strong>
+                            </li>
+                            <li class="legend-kv-item">
+                                <span><span class="legend-dot" style="background: #ef4444;"></span>Bị từ chối</span>
+                                <strong>{{ rejected_count }} <small style="color: #94a3b8; font-weight: 600;">({{ rejected_pct }}%)</small></strong>
+                            </li>
+                        </ul>
                     </div>
-                </div>
+
+                    <div class="info-card">
+                        <div class="info-card-header">
+                            <i class="fa-solid fa-bolt"></i>
+                            <span>Tùy chọn nhanh</span>
+                        </div>
+                        <ul class="quick-nav-list">
+                            <li class="quick-nav-item">
+                                <a href="/admin/dataset/check">
+                                    <div><i class="fa-solid fa-magnifying-glass icon-prefix"></i><span>Kiểm tra dữ liệu thiếu</span></div>
+                                    <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #94a3b8;"></i>
+                                </a>
+                            </li>
+                            
+                            <li class="quick-nav-item">
+                                <a href="/admin/dataset/preprocess">
+                                    <div><i class="fa-solid fa-broom icon-prefix"></i><span>Làm sạch dữ liệu</span></div>
+                                    <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #94a3b8;"></i>
+                                </a>
+                            </li>
+                            <li class="quick-nav-item">
+                                <a href="/admin/dataset">
+                                    <div><i class="fa-solid fa-clock-rotate-left icon-prefix"></i><span>Lịch sử nhập dữ liệu</span></div>
+                                    <i class="fa-solid fa-chevron-right" style="font-size: 10px; color: #94a3b8;"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+                </aside>
+
             </div>
 
-            <!-- 3. BẢNG DỮ LIỆU CHI TIẾT (FULL DATASET TABLE) -->
-            <div class="table-panel">
-                <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-                    <div class="d-flex align-items-center gap-2">
-                        <input type="text" id="tableSearchInput" class="filter-control" style="width: 240px;" placeholder="Tìm kiếm nhanh giá trị..." onkeyup="filterTable()">
-                        
-                        <!-- Lọc theo biến mục tiêu Loan_Status -->
-                        <select id="filterTarget" class="filter-control" onchange="filterTable()">
-                            <option value="all">Loan_Status: Tất cả</option>
-                            <option value="Y">Chỉ xem: Đậu (Y)</option>
-                            <option value="N">Chỉ xem: Trượt (N)</option>
-                        </select>
-
-                        <!-- Lọc dữ liệu có khuyết thiếu hay không -->
-                        <select id="filterMissing" class="filter-control" onchange="filterTable()">
-                            <option value="all">Toàn bộ dữ liệu</option>
-                            <option value="has_nan">Chỉ dòng có ô NaN (Thiếu dữ liệu)</option>
-                        </select>
-                    </div>
-
-                    <div class="text-muted" style="font-size: 12px;" id="dataCounter">
-                        Đang xem trang <span id="currentPageNum">1</span> / <span id="totalPagesNum">1</span> (<span id="visibleRowCount">{{ stats.rows }}</span> bản ghi)
-                    </div>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="custom-data-table" id="datasetTable">
-                        <thead>
-                            <tr>
-                                {% for col in stats.columns %}
-                                <th>{{ col }}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody">
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- THANH PHÂN TRANG -->
-                <div class="d-flex justify-content-between align-items-center mt-3 pt-2">
-                    <div class="d-flex align-items-center gap-2" style="font-size: 12px;">
-                        <span>Số dòng mỗi trang:</span>
-                        <select id="pageSizeSelect" class="filter-control py-0" onchange="changePageSize()">
-                            <option value="15" selected>15</option>
-                            <option value="30">30</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
-                        </select>
-                    </div>
-
-                    <div class="d-flex gap-1" id="paginationControls">
-                        <button class="btn btn-sm btn-light border py-0 px-2" onclick="prevPage()">&lt; Trước</button>
-                        <button class="btn btn-sm btn-light border py-0 px-2" onclick="nextPage()">Sau &gt;</button>
-                    </div>
-                </div>
-            </div>
-
-        </div>
+        </main>
     </div>
 
-    <!-- Bootstrap Bundle JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- XỬ LÝ DỮ LIỆU, TÌM KIẾM, LỌC VÀ PHÂN TRANG PHÍA CLIENT -->
-    <script>
-        const rawData = {{ stats.data_list | tojson | safe }};
-        const columns = {{ stats.columns | tojson | safe }};
-        
-        let filteredData = [...rawData];
-        let currentPage = 1;
-        let pageSize = 15;
-
-        function renderTable() {
-            const tbody = document.getElementById("tableBody");
-            tbody.innerHTML = "";
-
-            const total = filteredData.length;
-            const totalPages = Math.ceil(total / pageSize) || 1;
-            if (currentPage > totalPages) currentPage = totalPages;
-
-            const startIndex = (currentPage - 1) * pageSize;
-            const endIndex = Math.min(startIndex + pageSize, total);
-            const pageData = filteredData.slice(startIndex, endIndex);
-
-            if (pageData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="${columns.length}" class="text-center text-muted py-4">Không tìm thấy bản ghi nào phù hợp với bộ lọc.</td></tr>`;
-            } else {
-                pageData.forEach(row => {
-                    const tr = document.createElement("tr");
-                    columns.forEach(col => {
-                        const td = document.createElement("td");
-                        const val = row[col];
-                        
-                        if (val === "NaN" || val === null || val === undefined) {
-                            td.innerHTML = `<span class="val-nan">NaN</span>`;
-                        } else if (col === "Loan_Status") {
-                            if (val === "Y") td.innerHTML = `<span class="val-target-y">Y (Approved)</span>`;
-                            else if (val === "N") td.innerHTML = `<span class="val-target-n">N (Rejected)</span>`;
-                            else td.innerText = val;
-                        } else {
-                            td.innerText = val;
-                        }
-                        tr.appendChild(td);
-                    });
-                    tbody.appendChild(tr);
-                });
-            }
-
-            document.getElementById("currentPageNum").innerText = currentPage;
-            document.getElementById("totalPagesNum").innerText = totalPages;
-            document.getElementById("visibleRowCount").innerText = total;
-        }
-
-        function filterTable() {
-            const query = document.getElementById("tableSearchInput").value.toLowerCase();
-            const targetFilter = document.getElementById("filterTarget").value;
-            const missingFilter = document.getElementById("filterMissing").value;
-
-            filteredData = rawData.filter(row => {
-                if (targetFilter !== "all" && row["Loan_Status"] !== targetFilter) {
-                    return false;
-                }
-
-                if (missingFilter === "has_nan") {
-                    const hasNan = Object.values(row).some(v => v === "NaN" || v === null || v === "");
-                    if (!hasNan) return false;
-                }
-
-                if (query) {
-                    const textContent = Object.values(row).join(" ").toLowerCase();
-                    if (!textContent.includes(query)) return false;
-                }
-
-                return true;
-            });
-
-            currentPage = 1;
-            renderTable();
-        }
-
-        function changePageSize() {
-            pageSize = parseInt(document.getElementById("pageSizeSelect").value);
-            currentPage = 1;
-            renderTable();
-        }
-
-        function prevPage() {
-            if (currentPage > 1) {
-                currentPage--;
-                renderTable();
-            }
-        }
-
-        function nextPage() {
-            const totalPages = Math.ceil(filteredData.length / pageSize) || 1;
-            if (currentPage < totalPages) {
-                currentPage++;
-                renderTable();
-            }
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            renderTable();
-        });
-    </script>
-    <!-- Script đồng bộ thao tác click trên Admin Menu: Mỗi khi click chỉ hiển thị 1 con trỏ/active duy nhất -->
+    <!-- 3. JAVASCRIPT KHỞI TẠO BIỂU ĐỒ DONUT CHỈ GỒM 2 TRẠNG THÁI (ĐÃ DUYỆT & TỪ CHỐI) -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const sidebar = document.querySelector('.sidebar');
-            if (!sidebar) return;
-
-            const allNavLinks = sidebar.querySelectorAll('.tree-sub-link, .tree-parent-link');
-
-            // 1. Tự động kiểm tra URL hiện tại và đồng bộ duy nhất 1 mục active
-            const currentPath = window.location.pathname;
-            let exactMatch = null;
-            allNavLinks.forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && href === currentPath) {
-                    exactMatch = link;
+            const ctx = document.getElementById('datasetMiniChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Đã duyệt', 'Bị từ chối'],
+                    datasets: [{
+                        data: {{ donut_chart_data | tojson }},
+                        backgroundColor: ['#10b981', '#ef4444'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '76%',
+                    plugins: {
+                        legend: { display: false }
+                    }
                 }
-            });
-
-            if (exactMatch) {
-                allNavLinks.forEach(l => l.classList.remove('active-sub'));
-                exactMatch.classList.add('active-sub');
-            }
-
-            // 2. Thao tác click: Mỗi khi click chỉ hiển thị 1 con trỏ / active tới chức năng đó
-            allNavLinks.forEach(link => {
-                link.addEventListener('click', function () {
-                    allNavLinks.forEach(l => l.classList.remove('active-sub'));
-                    this.classList.add('active-sub');
-                });
             });
         });
     </script>

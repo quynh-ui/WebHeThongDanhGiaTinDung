@@ -13,25 +13,51 @@
         body { background-color: #f8fafc; color: #1e293b; }
 
         .top-navbar {
-            background-color: #ffffff; height: 60px; padding: 0 24px;
-            display: flex; align-items: center; justify-content: space-between;
-            border-bottom: 1px solid #e2e8f0; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background-color: #ffffff !important;
+            height: 60px !important;
+            min-height: 60px !important;
+            max-height: 60px !important;
+            padding: 0 24px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: space-between !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            z-index: 1000 !important;
+            white-space: nowrap !important;
+            flex-wrap: nowrap !important;
+            box-sizing: border-box !important;
         }
         .system-title { font-size: 16px; font-weight: 800; color: #034694; text-transform: uppercase; }
 
-        .wrapper { display: flex; margin-top: 60px; }
-        /* ================= SIDEBAR CHUẨN ĐỒNG BỘ GIAO DIỆN ================= */
+        .wrapper {
+            display: flex !important;
+            margin-top: 60px !important;
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+        /* ================= SIDEBAR CHUẨN ĐỒNG BỘ GIAO DIỆN (CHỐNG BIẾN DẠNG KHI ZOOM) ================= */
         .sidebar {
-            width: 250px;
-            min-height: calc(100vh - 60px);
-            background-color: #081729;
-            padding: 18px 12px 60px 12px;
-            position: fixed;
-            top: 60px;
-            bottom: 0;
-            left: 0;
-            overflow-y: auto;
-            z-index: 999;
+            width: 250px !important;
+            min-width: 250px !important;
+            max-width: 250px !important;
+            flex: 0 0 250px !important;
+            flex-shrink: 0 !important;
+            min-height: calc(100vh - 60px) !important;
+            height: calc(100vh - 60px) !important;
+            background-color: #081729 !important;
+            padding: 18px 12px 60px 12px !important;
+            position: fixed !important;
+            top: 60px !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            z-index: 999 !important;
+            box-sizing: border-box !important;
         }
 
         /* Tinh chỉnh thanh cuộn Sidebar mượt mà, đồng bộ kích thước */
@@ -50,102 +76,119 @@
         }
 
         .admin-menu-label {
-            font-size: 11px;
-            font-weight: 800;
-            color: #475569;
-            letter-spacing: 1.2px;
-            margin: 0 0 14px 10px;
-            text-transform: uppercase;
+            font-size: 11px !important;
+            font-weight: 800 !important;
+            color: #475569 !important;
+            letter-spacing: 1.2px !important;
+            margin: 0 0 14px 10px !important;
+            text-transform: uppercase !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
         }
 
         .tree-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            list-style: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 4px !important;
+            width: 100% !important;
         }
         
         .tree-parent-item a, .tree-parent-link, .tree-parent-label {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            height: 38px;
-            padding: 0 12px;
-            font-size: 13.5px;
-            font-weight: 700;
-            text-decoration: none;
-            border-radius: 8px;
-            color: #ffffff;
-            user-select: none;
-            transition: all 0.2s ease;
-            box-sizing: border-box;
-            cursor: pointer;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            padding: 0 12px !important;
+            font-size: 13.5px !important;
+            font-weight: 700 !important;
+            text-decoration: none !important;
+            border-radius: 8px !important;
+            color: #ffffff !important;
+            user-select: none !important;
+            transition: all 0.2s ease !important;
+            box-sizing: border-box !important;
+            cursor: pointer !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            width: 100% !important;
         }
         .tree-parent-item a:hover, .tree-parent-link:hover {
-            background-color: rgba(255, 255, 255, 0.06);
-            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.06) !important;
+            color: #ffffff !important;
         }
 
-        .color-dashboard { color: #f59e0b; }
-        .color-dataset   { color: #00a8ff; }
-        .color-history   { color: #10b981; }
-        .color-ml        { color: #ff4757; }
-        .color-users     { color: #c084fc; }
-        .color-settings  { color: #94a3b8; }
+        .tree-parent-item a span, .tree-parent-link span, .tree-parent-label span, .tree-sub-link span:not(.menu-icon) {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            flex: 1 !important;
+            min-width: 0 !important;
+        }
+
+        .color-dashboard { color: #f59e0b !important; }
+        .color-dataset   { color: #00a8ff !important; }
+        .color-history   { color: #10b981 !important; }
+        .color-ml        { color: #ff4757 !important; }
+        .color-users     { color: #c084fc !important; }
+        .color-settings  { color: #94a3b8 !important; }
 
         .tree-branch {
-            list-style: none;
-            padding-left: 14px;
-            margin: 4px 0 6px 20px;
-            border-left: 1.5px solid rgba(255, 255, 255, 0.12);
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
+            list-style: none !important;
+            padding-left: 14px !important;
+            margin: 4px 0 6px 20px !important;
+            border-left: 1.5px solid rgba(255, 255, 255, 0.12) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 3px !important;
         }
         
         .tree-sub-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            height: 38px;
-            padding: 0 12px;
-            color: #94a3b8;
-            font-size: 13px;
-            font-weight: 500;
-            text-decoration: none;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            box-sizing: border-box;
-            cursor: pointer;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            max-height: 38px !important;
+            padding: 0 12px !important;
+            color: #94a3b8 !important;
+            font-size: 13px !important;
+            font-weight: 500 !important;
+            text-decoration: none !important;
+            border-radius: 8px !important;
+            transition: all 0.2s ease !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            box-sizing: border-box !important;
+            cursor: pointer !important;
+            width: 100% !important;
         }
         .tree-sub-link:hover {
-            color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.06);
+            color: #ffffff !important;
+            background-color: rgba(255, 255, 255, 0.06) !important;
         }
 
-        .menu-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            font-size: 14px;
-            flex-shrink: 0;
-            text-align: center;
-        }
-
-        .tree-parent-item a i, .tree-parent-link i, .tree-parent-label i {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px;
-            font-size: 15px;
-            flex-shrink: 0;
-            text-align: center;
+        .menu-icon,
+        .tree-parent-item a i,
+        .tree-parent-link i,
+        .tree-parent-label i {
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 20px !important;
+            min-width: 20px !important;
+            max-width: 20px !important;
+            height: 20px !important;
+            font-size: 14px !important;
+            flex-shrink: 0 !important;
+            text-align: center !important;
         }
 
         /* Nút Active chuẩn màu xanh - đồng bộ kích thước & hiệu ứng con trỏ */
@@ -157,7 +200,7 @@
             background-color: #0284c7 !important;
             color: #ffffff !important;
             font-weight: 700 !important;
-            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4) !important;
         }
         .tree-sub-link.active-sub .menu-icon,
         .tree-parent-link.active-sub i,
@@ -170,8 +213,13 @@
 
         /* Main Content */
         .main-content {
-            margin-left: 250px; padding: 24px 32px 60px 32px;
-            flex: 1; width: calc(100% - 250px);
+            margin-left: 250px !important;
+            padding: 24px 32px 60px 32px !important;
+            flex: 1 !important;
+            width: calc(100% - 250px) !important;
+            max-width: calc(100% - 250px) !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
         }
         .page-heading { font-size: 20px; font-weight: 800; color: #0f172a; margin-bottom: 4px; text-transform: uppercase; }
         .page-subheading { font-size: 13px; color: #64748b; margin-bottom: 22px; }
@@ -259,21 +307,6 @@
                         <li><a href="/admin/ml/evaluate" class="tree-sub-link"><span class="menu-icon">📊</span><span>Đánh giá mô hình</span></a></li>
                         <li><a href="/admin/ml/compare" class="tree-sub-link"><span class="menu-icon">⚖️</span><span>So sánh mô hình</span></a></li>
                         <li><a href="/admin/ml/active" class="tree-sub-link"><span class="menu-icon">⭐</span><span>Mô hình đang sử dụng</span></a></li>
-                    </ul>
-                </li>
-
-                <!-- 5. Người dùng -->
-                <li>
-                    <div class="tree-parent-label">
-                        <i class="fa-solid fa-users color-users"></i>
-                        <span style="color: #c084fc;">Người dùng</span>
-                    </div>
-                    <ul class="tree-branch">
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-regular fa-clipboard"></i></span><span>Danh sách</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-plus"></i></span><span>Thêm</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-pen"></i></span><span>Sửa</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-lock"></i></span><span>Khóa/Mở khóa</span></a></li>
-                        <li><a href="/admin#usersSection" class="tree-sub-link"><span class="menu-icon"><i class="fa-solid fa-key"></i></span><span>Phân quyền</span></a></li>
                     </ul>
                 </li>
 
@@ -454,7 +487,7 @@
                     <div class="row g-3">
                         <!-- Nhóm A: Thông tin chung -->
                         <div class="col-md-6">
-                            <h6 class="fw-bold text-primary mb-2">A. Thông tin chung</h6>
+                            <h6 class="fw-bold text-primary mb-2">Mục I. Thông tin chung</h6>
                             <table class="table table-sm table-bordered">
                                 <tr><th class="bg-light w-40">Thuật toán</th><td id="mAlgo">--</td></tr>
                                 <tr><th class="bg-light">Phiên bản</th><td id="mVer" class="fw-bold">--</td></tr>
@@ -464,19 +497,19 @@
                         </div>
 
                         <!-- Nhóm B: Tiền xử lý & Dataset -->
-                        <div class="col-md-6">
-                            <h6 class="fw-bold text-primary mb-2">B. Dataset & Tiền xử lý</h6>
-                            <table class="table table-sm table-bordered">
-                                <tr><th class="bg-light w-40">Dataset</th><td>Loan Prediction Problem Dataset</td></tr>
-                                <tr><th class="bg-light">Biến mục tiêu</th><td><span class="badge bg-danger">Loan_Status</span> (Y/N)</td></tr>
-                                <tr><th class="bg-light">Điền khuyết</th><td>Median (số) / Mode (phân loại)</td></tr>
-                                <tr><th class="bg-light">Mã hóa</th><td>Label Encoding (11 thuộc tính)</td></tr>
-                            </table>
-                        </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold text-primary mb-2">Mục II. Dataset & Tiền xử lý</h6>
+                                <table class="table table-sm table-bordered">
+                                    <tr><th class="bg-light w-40">Dataset</th><td>Loan Prediction Problem Dataset</td></tr>
+                                    <tr><th class="bg-light">Biến mục tiêu</th><td><span class="badge bg-danger">Loan_Status</span> (Y/N)</td></tr>
+                                    <tr><th class="bg-light">Train / Test</th><td>496 mẫu (80%) / 124 mẫu (20%)</td></tr>
+                                    <tr><th class="bg-light">Tiền xử lý</th><td>Median / Mode & Label Encoding</td></tr>
+                                </table>
+                            </div>
 
                         <!-- Nhóm C: Kết quả đánh giá -->
                         <div class="col-12 mt-2">
-                            <h6 class="fw-bold text-primary mb-2">C. Hiệu năng & Kết quả thực nghiệm</h6>
+                            <h6 class="fw-bold text-primary mb-2">Mục III. Hiệu năng & Kết quả thực nghiệm</h6>
                             <div class="row text-center g-2">
                                 <div class="col-3"><div class="border p-2 rounded bg-light"><div class="text-muted" style="font-size: 11px;">Accuracy</div><div id="mAcc" class="fs-5 fw-bold text-success">--</div></div></div>
                                 <div class="col-3"><div class="border p-2 rounded bg-light"><div class="text-muted" style="font-size: 11px;">Precision</div><div id="mPrec" class="fs-5 fw-bold text-primary">--</div></div></div>
@@ -487,8 +520,10 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light py-2">
-                    <button type="button" class="btn btn-sm btn-secondary fw-semibold" data-bs-dismiss="modal">Đóng</button>
-                    <a href="/admin/ml/history" class="btn btn-sm btn-outline-primary fw-semibold">Xem Lịch Sử Huấn Luyện</a>
+                    <button type="button" class="btn btn-sm btn-outline-secondary fw-semibold" data-bs-dismiss="modal">Đóng</button>
+                    <a href="/admin/ml/history" class="btn btn-sm btn-primary fw-semibold">
+                        <i class="fa-solid fa-clock-rotate-left me-1"></i> Xem Lịch Sử Huấn Luyện
+                    </a>
                 </div>
             </div>
         </div>
@@ -503,23 +538,34 @@
         const modelItems = document.querySelectorAll('.model-item');
 
         function filterModels() {
-            const query = searchInput.value.toLowerCase().trim();
-            const filter = statusFilter.value;
+    const query = searchInput.value.toLowerCase().trim();
+    const filter = statusFilter.value;
 
-            modelItems.forEach(item => {
-                const name = item.getAttribute('data-name');
-                const status = item.getAttribute('data-status');
+    modelItems.forEach(item => {
+        const name = item.getAttribute('data-name') || '';
+        const status = item.getAttribute('data-status') || '';
 
-                const matchesQuery = name.includes(query);
-                const matchesFilter = (filter === 'all') || (status === filter);
-
-                if (matchesQuery && matchesFilter) {
-                    item.style.display = 'block';
-                } else {
-                    item.style.display = 'none';
-                }
-            });
+        const matchesQuery = !query || name.includes(query);
+        
+        let matchesFilter = false;
+        if (filter === 'all') {
+            matchesFilter = true;
+        } else if (filter === 'Đang sử dụng') {
+            matchesFilter = (status === 'Đang sử dụng');
+        } else if (filter === 'Đã huấn luyện') {
+            // 👉 CẢ MÔ HÌNH ĐANG SỬ DỤNG VÀ ĐÃ HUẤN LUYỆN ĐỀU ĐƯỢC COI LÀ ĐÃ HUẤN LUYỆN
+            matchesFilter = (status === 'Đang sử dụng' || status === 'Đã huấn luyện');
+        } else if (filter === 'Chưa huấn luyện') {
+            matchesFilter = (status === 'Chưa huấn luyện');
         }
+
+        if (matchesQuery && matchesFilter) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
 
         searchInput.addEventListener('input', filterModels);
         statusFilter.addEventListener('change', filterModels);
