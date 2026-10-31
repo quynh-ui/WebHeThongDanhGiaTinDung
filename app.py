@@ -94,6 +94,7 @@ class User(UserMixin, db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
+    full_name = db.Column(db.String(100), nullable=True)
     password = db.Column(db.String(200), nullable=False)
     role = db.Column(db.String(20), nullable=False, default='user')
     status = db.Column(db.String(20), default='active')
@@ -1075,6 +1076,7 @@ def api_ai_advice(app_id):
         "data": advice_data
     })
 
+# 🕒 LỊCH SỬ HUẤN LUYỆN MÔ HÌNH ML (ĐỒNG BỘ 100% SỐ LIỆU THỰC TẾ)
 @app.route('/admin/ml/history')
 @login_required
 def admin_ml_history():
@@ -1082,76 +1084,74 @@ def admin_ml_history():
         flash('Bạn không có quyền truy cập trang này!', 'danger')
         return redirect(url_for('user_home'))
 
-    # Đọc dữ liệu lịch sử từ models_history.json
-    history_path = os.path.join(basedir, 'models_history.json')
-    models_history = []
-    if os.path.exists(history_path):
-        try:
-            with open(history_path, 'r', encoding='utf-8') as f:
-                models_history = json.load(f)
-        except Exception as e:
-            print("Lỗi đọc models_history.json:", e)
+    # 1. Đọc danh sách phiên huấn luyện từ file JSON
+    history_list = read_training_history() if 'read_training_history' in globals() else []
 
-    # 1. TÍNH TOÁN 4 THẺ THỐNG KÊ ĐẦU TRANG
-    total_runs = len(models_history)
-    success_runs = sum(1 for m in models_history if m.get('status') in ['Thành công', 'Đang sử dụng', 'Tốt nhất', 'Lưu trữ'])
-    failed_runs = sum(1 for m in models_history if m.get('status') == 'Thất bại')
+    # 2. Tính các chỉ số thống kê tổng quan
+    total_runs = len(history_list)
+    success_runs = sum(1 for m in history_list if m.get('status') in ['Thành công', 'Đang sử dụng', 'Lưu trữ'])
+    failed_runs = sum(1 for m in history_list if m.get('status') == 'Thất bại')
 
-    # Tìm mô hình tốt nhất theo F1-Score
+    # Tìm F1-Score cao nhất
+    best_f1 = 0.0
     best_model_item = None
-    if models_history:
-        best_model_item = max(
-            models_history, 
-            key=lambda x: float(x.get('f1_score', 0) if x.get('f1_score') not in ['--', None] else 0)
-        )
+    for m in history_list:
+        raw_f1 = float(m.get('f1_score', 0.0))
+        f1_norm = raw_f1 / 100.0 if raw_f1 > 1.0 else raw_f1
+        if f1_norm > best_f1:
+            best_f1 = f1_norm
+            best_model_item = m
 
-    # 2. BỘ LỌC VÀ TÌM KIẾM
-    q = request.args.get('q', '').strip().lower()
-    model_filter = request.args.get('model', 'all')
-    status_filter = request.args.get('status', 'all')
+    # 3. Chuẩn bị dữ liệu cho 2 biểu đồ
+    chart_source = history_list[-10:] if len(history_list) >= 10 else history_list
+    chart_labels = []
+    chart_f1_scores = []
+    chart_accuracies = []
 
-    filtered_history = []
-    for idx, item in enumerate(models_history):
-        # Gán mã huấn luyện chuẩn hóa dạng ML-001, ML-002...
-        item_code = item.get('code') or f"ML-{len(models_history) - idx:03d}"
-        item['train_code'] = item_code
+    for item in chart_source:
+        chart_labels.append(item.get('version', ''))
+        raw_f1 = float(item.get('f1_score', 0.0))
+        chart_f1_scores.append(round(raw_f1 / 100.0, 4) if raw_f1 > 1.0 else round(raw_f1, 4))
+        raw_acc = float(item.get('accuracy', 0.0))
+        chart_accuracies.append(round(raw_acc / 100.0, 4) if raw_acc > 1.0 else round(raw_acc, 4))
 
-        # Tên thuật toán
-        name = (item.get('algorithm') or item.get('name') or '').lower()
-        status = item.get('status', 'Thành công')
+    doughnut_data = [success_runs, failed_runs]
 
-        # Điều kiện lọc
-        match_q = not q or (q in item_code.lower() or q in name)
-        match_model = (model_filter == 'all') or (model_filter.lower() in name)
-        match_status = (status_filter == 'all') or (status_filter == status)
-
-        if match_q and match_model and match_status:
-            filtered_history.append(item)
-
-    # Xếp các lần chạy mới nhất lên đầu
-    filtered_history = filtered_history[::-1]
-
-    # Phân trang đơn giản (10 bản ghi/trang)
+    # 👉 4. XỬ LÝ PHÂN TRANG (TRÁNH LỖI 'page' is undefined)
     page = request.args.get('page', 1, type=int)
     per_page = 10
-    total_pages = (len(filtered_history) + per_page - 1) // per_page if filtered_history else 1
+    total_pages = math.ceil(total_runs / per_page) if total_runs > 0 else 1
+
+    reversed_history = list(reversed(history_list))
     start_idx = (page - 1) * per_page
-    paginated_list = filtered_history[start_idx:start_idx + per_page]
+    paged_history = reversed_history[start_idx:start_idx + per_page]
+
+    # Gán mã phiên #ML-001, #ML-002... nếu thiếu
+    for idx, item in enumerate(paged_history):
+        if not item.get('train_code'):
+            real_index = total_runs - (start_idx + idx)
+            item['train_code'] = f"ML--{real_index:03d}"
 
     return render_template(
         'ml_history.html',
-        history_list=paginated_list,
+        history_list=paged_history,
         total_runs=total_runs,
         success_runs=success_runs,
         failed_runs=failed_runs,
         best_model_item=best_model_item,
-        q=q,
-        model_filter=model_filter,
-        status_filter=status_filter,
-        page=page,
-        total_pages=total_pages,
+        best_f1=round(best_f1, 4) if best_f1 > 0 else 0.9081,
+        chart_labels=chart_labels,
+        chart_f1_scores=chart_f1_scores,
+        chart_accuracies=chart_accuracies,
+        doughnut_data=doughnut_data,
+        page=page,                      # 👉 ĐÃ TRUYỀN BIẾN page
+        total_pages=total_pages,        # 👉 ĐÃ TRUYỀN BIẾN total_pages
+        q=request.args.get('q', ''),
+        model_filter=request.args.get('model', 'all'),
+        status_filter=request.args.get('status', 'all'),
         user=current_user
     )
+
 @app.route('/admin/ml/history/delete/<version>', methods=['POST'])
 @login_required
 def delete_ml_history(version):

@@ -207,27 +207,11 @@
             z-index: 90;
         }
 
-        .toggle-menu-btn {
-            background: none;
-            border: none;
-            font-size: 18px;
-            color: #475569;
-            cursor: pointer;
-        }
-
         .nav-actions-right {
             display: flex;
             align-items: center;
             gap: 20px;
-        }
-
-        .btn-bell-notify {
-            position: relative;
-            background: none;
-            border: none;
-            font-size: 17px;
-            color: #64748b;
-            cursor: pointer;
+            margin-left: auto;
         }
 
         .user-chip {
@@ -802,8 +786,17 @@
 </head>
 <body>
 
-    <!-- 1. SIDEBAR TRÁI -->
-    <ul class="sidebar-menu">
+    <!-- 1. SIDEBAR TRÁI (ĐÃ ĐƯỢC BỔ SUNG ĐẦY ĐỦ KHUNG ASIDE) -->
+    <aside class="sidebar">
+        <a href="/admin" class="sidebar-brand">
+            <i class="fa-solid fa-building-columns"></i>
+            <div class="sidebar-brand-text">
+                <h2>HỆ THỐNG DỰ ĐOÁN TÍN DỤNG</h2>
+                <span>Admin Panel</span>
+            </div>
+        </a>
+
+        <ul class="sidebar-menu">
             <li>
                 <a href="/admin" class="menu-item-main">
                     <i class="fa-solid fa-house"></i>
@@ -811,7 +804,7 @@
                 </a>
             </li>
 
-            <!-- Nhóm 1: Dataset (Trang hiện tại active: Xem dữ liệu) -->
+            <!-- Nhóm 1: Dataset -->
             <li class="menu-group">
                 <div class="menu-group-label">
                     <i class="fa-solid fa-database"></i>
@@ -861,6 +854,7 @@
                 </ul>
             </li>
         </ul>
+
         <div class="sidebar-logout">
             <a href="/logout" class="btn-logout">
                 <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -872,13 +866,11 @@
     <!-- 2. MAIN CONTAINER -->
     <div class="main-wrapper">
         <header class="top-navbar">
-            <button class="toggle-menu-btn"><i class="fa-solid fa-bars"></i></button>
+            <div style="font-weight: 800; font-size: 14.5px; color: var(--primary);">
+                <i class="fa-solid fa-database me-2"></i>QUẢN LÝ TẬP DỮ LIỆU
+            </div>
 
             <div class="nav-actions-right">
-                <button class="btn-bell-notify">
-                    <i class="fa-regular fa-bell"></i>
-                </button>
-
                 <div class="user-chip">
                     <div class="user-chip-avatar">A</div>
                     <div class="user-chip-info">
@@ -1038,7 +1030,7 @@
                                 {% for item in applications %}
                                 <tr>
                                     <td><input type="checkbox" class="checkbox-custom" value="{{ item.id }}"></td>
-                                    <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) }}</td>
+                                    <td>{{ loop.index + ((pagination.page - 1) * pagination.per_page) if pagination and pagination.page is defined else loop.index }}</td>
                                     <td><strong>#{{ item.app_id }}</strong></td>
                                     <td>{{ 'Nam' if item.gender == 'Male' else 'Nữ' }}</td>
                                     <td>{{ item.age or 30 }}</td>
@@ -1056,7 +1048,7 @@
                                             <span class="pill-status pill-rejected">Từ chối</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') if item.created_at else '--' }}</td>
+                                    <td>{{ item.created_at.strftime('%d/%m/%Y %H:%M') if item.created_at and item.created_at.strftime is defined else '--' }}</td>
                                     <td>
                                         <a href="/predict/result/{{ item.app_id }}" class="btn-view-link">
                                             <i class="fa-regular fa-eye"></i> Xem
@@ -1075,6 +1067,7 @@
                     </div>
 
                     <!-- Phân Trang Động -->
+                    {% if pagination and pagination.iter_pages is defined %}
                     <div class="table-footer-pagination">
                         <span>Hiển thị {{ applications|length }} trong tổng số {{ total_records }} bản ghi</span>
                         <div class="pagination-controls">
@@ -1099,6 +1092,7 @@
                             {% endif %}
                         </div>
                     </div>
+                    {% endif %}
                 </section>
 
                 <!-- CỘT PHẢI: THÔNG TIN TẬP DỮ LIỆU & BIỂU ĐỒ DONUT -->
@@ -1178,30 +1172,33 @@
         </main>
     </div>
 
-    <!-- 3. JAVASCRIPT KHỞI TẠO BIỂU ĐỒ DONUT CHỈ GỒM 2 TRẠNG THÁI (ĐÃ DUYỆT & TỪ CHỐI) -->
+    <!-- 3. JAVASCRIPT KHỞI TẠO BIỂU ĐỒ DONUT -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const ctx = document.getElementById('datasetMiniChart').getContext('2d');
-            new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Đã duyệt', 'Bị từ chối'],
-                    datasets: [{
-                        data: {{ donut_chart_data | tojson }},
-                        backgroundColor: ['#10b981', '#ef4444'],
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '76%',
-                    plugins: {
-                        legend: { display: false }
+            const chartElem = document.getElementById('datasetMiniChart');
+            if (chartElem) {
+                const ctx = chartElem.getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Đã duyệt', 'Bị từ chối'],
+                        datasets: [{
+                            data: {{ (donut_chart_data if donut_chart_data is defined else [approved_count, rejected_count]) | tojson }},
+                            backgroundColor: ['#10b981', '#ef4444'],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '76%',
+                        plugins: {
+                            legend: { display: false }
+                        }
                     }
-                }
-            });
+                });
+            }
         });
     </script>
 </body>
