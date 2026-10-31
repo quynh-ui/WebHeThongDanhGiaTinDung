@@ -1222,6 +1222,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
+        full_name = request.form.get('full_name', '').strip()  # 👉 Nhận Họ và tên thật từ form
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
 
@@ -1233,15 +1234,17 @@ def register():
             flash('Tên đăng nhập này đã tồn tại!', 'danger')
             return redirect(url_for('register'))
 
+        # 👉 Tạo user với họ và tên thật (nếu bỏ trống thì lấy username làm dự phòng)
         new_user = User(
             username=username,
+            full_name=full_name if full_name else username,
             password=generate_password_hash(password, method='scrypt'),
             role='user'
         )
         try:
             db.session.add(new_user)
             db.session.commit()
-            flash('Đăng ký thành công! Hãy đăng nhập.', 'success')
+            flash('Đăng ký tài khoản thành công! Hãy đăng nhập.', 'success')
             return redirect(url_for('login'))
         except Exception as e:
             db.session.rollback()
