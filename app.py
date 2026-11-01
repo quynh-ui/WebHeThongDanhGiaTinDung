@@ -611,48 +611,77 @@ def prediction_detail(app_id):
 
     # 4. Phân tích yếu tố tác động chính từ dữ liệu đã nộp
     factors = []
+    
+    # Tính toán chỉ số đòn bẩy DTI thực tế của hồ sơ
+    applicant_inc = (app_record.income or 0) * 1000000 if (app_record.income or 0) < 10000 else (app_record.income or 0)
+    coapp_inc = (app_record.coapplicant_income or 0) * 1000000 if (app_record.coapplicant_income or 0) < 10000 else (app_record.coapplicant_income or 0)
+    total_monthly_income = applicant_inc + coapp_inc
+    
+    loan_amount_val = (app_record.amount or 0) * 1000000 if (app_record.amount or 0) < 10000 else (app_record.amount or 0)
+    loan_term_val = max(1.0, float(app_record.loan_term or 12))
+    monthly_payment = loan_amount_val / loan_term_val
+
+    dti_ratio = (monthly_payment / total_monthly_income) if total_monthly_income > 0 else 1.0
+
     # Yếu tố 1: Lịch sử tín dụng (Credit History)
     if app_record.credit_history == 1:
         factors.append({
             'name': 'Lịch sử tín dụng',
-            'impact': 'Tác động tích cực',
+            'impact': 'Tác động tích cực (Không có nợ xấu)',
             'type': 'positive'
         })
     else:
         factors.append({
             'name': 'Lịch sử tín dụng',
-            'impact': 'Tác động tiêu cực (chưa đạt tiêu chuẩn)',
+            'impact': 'Tác động tiêu cực (Chưa đạt tiêu chuẩn CIC)',
             'type': 'negative'
         })
 
-    # Yếu tố 2: Thu nhập người vay (Applicant Income)
-    inc_val = app_record.income * 1000000 if app_record.income < 10000 else app_record.income
-    if inc_val >= 15000000:
+    # Yếu tố 2: Gánh nặng nợ / Thu nhập
+    if dti_ratio > 0.6:
         factors.append({
-            'name': 'Thu nhập người vay',
-            'impact': 'Tác động tích cực',
-            'type': 'positive'
+            'name': 'Thu nhập so với nghĩa vụ trả',
+            'impact': f'Áp lực trả nợ quá cao ({round(dti_ratio * 100)}% thu nhập/tháng)',
+            'type': 'negative'
+        })
+        factors.append({
+            'name': 'Số tiền vay',
+            'impact': 'Khoản vay quá lớn so với thời hạn chi trả',
+            'type': 'negative'
         })
     else:
-        factors.append({
-            'name': 'Thu nhập người vay',
-            'impact': 'Tác động mức độ trung bình',
-            'type': 'neutral'
-        })
+        if applicant_inc >= 15000000:
+            factors.append({
+                'name': 'Thu nhập người vay',
+                'impact': 'Tác động tích cực',
+                'type': 'positive'
+            })
+        else:
+            factors.append({
+                'name': 'Thu nhập người vay',
+                'impact': 'Tác động mức độ trung bình',
+                'type': 'warning'
+            })
 
-    # Yếu tố 3: Số tiền muốn vay so với thu nhập
-    loan_val = app_record.amount * 1000000 if app_record.amount < 10000 else app_record.amount
-    if loan_val > 500000000:
+        if loan_amount_val > 500000000:
+            factors.append({
+                'name': 'Số tiền vay',
+                'impact': 'Tác động cần lưu ý (Khoản vay lớn)',
+                'type': 'warning'
+            })
+        else:
+            factors.append({
+                'name': 'Số tiền vay',
+                'impact': 'Tác động nhất định',
+                'type': 'positive'
+            })
+
+    # Dự phòng an toàn: Nếu kết quả tổng là N mà tất cả yếu tố vô tình vẫn là positive
+    if not is_approved and all(f['type'] == 'positive' for f in factors):
         factors.append({
-            'name': 'Số tiền vay',
-            'impact': 'Tác động cần lưu ý (khoản vay lớn)',
-            'type': 'warning'
-        })
-    else:
-        factors.append({
-            'name': 'Số tiền vay',
-            'impact': 'Tác động nhất định',
-            'type': 'positive'
+            'name': 'Đánh giá rủi ro tổng hợp',
+            'impact': 'Chưa đạt ngưỡng an toàn phân loại của mô hình',
+            'type': 'negative'
         })
 
     # 5. Thông tin phiên bản mô hình tại thời điểm chạy

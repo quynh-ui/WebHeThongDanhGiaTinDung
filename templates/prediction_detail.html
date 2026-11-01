@@ -470,8 +470,14 @@
                         <ul class="key-factors-list">
                             {% for factor in factors %}
                             <li class="factor-item">
-                                <i class="fa-solid fa-circle-check {{ factor.type }}"></i>
-                                <span>{{ factor.name }}: {{ factor.impact }}</span>
+                                {% if factor.type == 'negative' %}
+                                    <i class="fa-solid fa-circle-xmark negative" style="color: #ef4444;"></i>
+                                {% elif factor.type == 'warning' %}
+                                    <i class="fa-solid fa-triangle-exclamation warning" style="color: #f59e0b;"></i>
+                                {% else %}
+                                    <i class="fa-solid fa-circle-check positive" style="color: #10b981;"></i>
+                                {% endif %}
+                                <span><strong>{{ factor.name }}:</strong> {{ factor.impact }}</span>
                             </li>
                             {% endfor %}
                         </ul>
