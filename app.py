@@ -684,9 +684,26 @@ def prediction_detail(app_id):
             'type': 'negative'
         })
 
-    # 5. Thông tin phiên bản mô hình tại thời điểm chạy
-    model_version = app_record.model_version or 'ML_V1.0'
-    trained_date = app_record.created_at.strftime('%d/%m/%Y') if app_record.created_at else '30/10/2026'
+   # 5. Thông tin phiên bản và tên mô hình từ hệ thống (Admin kích hoạt)
+    history = read_training_history() if 'read_training_history' in globals() else []
+    # Tìm mô hình đang được Admin kích hoạt ('Đang sử dụng' hoặc 'Đang hoạt động')
+    active_m = next((h for h in history if h.get('status') in ['Đang sử dụng', 'Đang hoạt động']), None)
+    if not active_m and history:
+        active_m = history[-1]
+
+    # Lấy tên mô hình và làm sạch (bỏ ngoặc nếu có)
+    if active_m:
+        raw_name = active_m.get('algorithm') or active_m.get('name') or 'Logistic Regression'
+        if '(' in raw_name and ')' in raw_name:
+            model_name = raw_name.split('(')[1].split(')')[0].strip()
+        else:
+            model_name = raw_name.strip()
+        model_version = active_m.get('version', app_record.model_version or 'ML v1.0')
+        trained_date = active_m.get('trained_at', '').split(' ')[0] or (app_record.created_at.strftime('%d/%m/%Y') if app_record.created_at else '30/10/2026')
+    else:
+        model_name = "Logistic Regression"
+        model_version = app_record.model_version or 'ML v1.0'
+        trained_date = app_record.created_at.strftime('%d/%m/%Y') if app_record.created_at else '30/10/2026'
 
     return render_template(
         'prediction_detail.html',
@@ -694,6 +711,7 @@ def prediction_detail(app_id):
         is_approved=is_approved,
         prob_val=prob_val,
         factors=factors,
+        model_name=model_name,          # 👉 Truyền tên mô hình Admin kích hoạt sang HTML
         model_version=model_version,
         trained_date=trained_date,
         user=current_user,
