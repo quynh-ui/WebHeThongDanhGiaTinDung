@@ -3300,7 +3300,209 @@ def admin_toggle_user_status(user_id):
 
     flash(f"Đã {action_text.lower()} người dùng #{user_id} thành công!", "success")
     return redirect(request.referrer or url_for('admin_user_list'))
+APP_VERSION = "v1.0.0"
+APP_RELEASE_DATE = "19/11/2026"
 
+
+def get_version_notifications():
+    """Tạo danh sách thông báo khi có phiên bản mô hình hoặc phiên bản hệ thống mới."""
+    version_notifs = []
+
+    # 1. Thông báo phiên bản ứng dụng/hệ thống
+    sys_cfg = load_system_settings() if "load_system_settings" in globals() else {}
+    sys_ver = sys_cfg.get("app_version") or APP_VERSION
+    sys_date = sys_cfg.get("updated_at") or APP_RELEASE_DATE
+    version_notifs.append({
+        "uid": f"sysver-{sys_ver}-{sys_date}",
+        "title": f"Cập nhật hệ thống ({sys_ver})",
+        "desc": f"Phiên bản ứng dụng {sys_ver} đã sẵn sàng trên hệ thống.",
+        "time": sys_date,
+        "is_update": True,
+        "is_y": True,
+        "link": "/guide"
+    })
+
+    # 2. Thông báo phiên bản mô hình ML mới nhất / đang sử dụng
+    history = read_training_history() if "read_training_history" in globals() else []
+    if history:
+        latest_m = next((h for h in history if h.get("status") in ["Đang sử dụng", "Đang hoạt động"]), None) or history[-1]
+        m_ver = latest_m.get("version") or latest_m.get("name") or "ML v1.0"
+        m_algo = latest_m.get("algorithm") or latest_m.get("name") or "Model"
+        m_acc = latest_m.get("accuracy")
+        m_time = latest_m.get("trained_at") or sys_date
+        acc_part = f" • Acc: {m_acc}%" if m_acc not in [None, ""] else ""
+
+        version_notifs.append({
+            "uid": f"mlver-{m_ver}-{m_time}",
+            "title": f"Phiên bản mô hình mới ({m_ver})",
+            "desc": f"Mô hình {m_algo} đang phục vụ dự đoán{acc_part}.",
+            "time": m_time,
+            "is_update": True,
+            "is_y": True,
+            "link": "/user"
+        })
+
+    return version_notifs
+
+
+@app.context_processor
+def inject_user_notifications():
+    if current_user.is_authenticated and getattr(current_user, "role", "").lower() != "admin":
+        username = current_user.username
+        recent_apps = (
+            Application.query.filter_by(username=username)
+            .order_by(Application.created_at.desc(), Application.id.desc())
+            .limit(5)
+            .all()
+        )
+
+        notifications = get_version_notifications()
+
+        for app_item in recent_apps:
+            is_y = app_item.status in ["Phê Duyệt", "Đã Phê Duyệt", "Approved", "Y"]
+            time_str = (
+                app_item.created_at.strftime("%H:%M %d/%m/%Y")
+                if getattr(app_item, "created_at", None)
+                else "Vừa xong"
+            )
+            prob = getattr(app_item, "probability", None)
+            prob_str = f" (Độ tin cậy: {prob}%)" if prob is not None else ""
+
+            notifications.append({
+                "uid": f"app-{app_item.id}-{app_item.status}",
+                "title": f"Hồ sơ #{app_item.app_id} đã có kết quả",
+                "desc": f"Kết quả: {'Có khả năng được chấp thuận (Y)' if is_y else 'Chưa đạt điều kiện (N)'}{prob_str}",
+                "time": time_str,
+                "is_update": False,
+                "is_y": is_y,
+                "link": f"/predict/result/{app_item.app_id}"
+            })
+
+        if not recent_apps:
+            notifications.append({
+                "uid": "welcome-first-predict",
+                "title": "Bắt đầu dự đoán khoản vay đầu tiên",
+                "desc": "Điền hồ sơ tại mục Dự đoán để nhận đánh giá từ mô hình.",
+                "time": "Hôm nay",
+                "is_update": False,
+                "is_y": True,
+                "link": "/predict"
+            })
+
+        items_html = "".join([
+            f"""<li data-notif-id="{n['uid']}" onclick="handleUserNotifClick(event, '{n['uid']}', '{n['link']}')"
+                    style="display:flex;gap:12px;padding:12px;border-bottom:1px solid #f1f5f9;cursor:pointer;background:#f8fafc;">
+                <div style="width:28px;height:28px;border-radius:50%;background:{'#e0f2fe' if n['is_update'] else ('#dcfce7' if n['is_y'] else '#fee2e2')};color:{'#0284c7' if n['is_update'] else ('#16a34a' if n['is_y'] else '#dc2626')};display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;">
+                    <i class="fa-solid {'fa-rocket' if n['is_update'] else ('fa-check' if n['is_y'] else 'fa-xmark')}"></i>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <strong style="font-size:12px;color:#0f172a;display:block;">{n['title']}</strong>
+                    <p style="font-size:11.5px;color:#64748b;margin:2px 0;line-height:1.35;">{n['desc']}</p>
+                    <small style="font-size:10.5px;color:#94a3b8;"><i class="fa-regular fa-clock"></i> {n['time']}</small>
+                </div>
+            </li>"""
+            for n in notifications
+        ])
+
+        bell_component = f"""
+        <div id="quickUserBellWrap" style="position:relative;display:inline-flex;align-items:center;margin-right:12px;">
+            <button type="button" onclick="toggleQuickUserBell(event)" title="Thông báo"
+                    style="background:none;border:none;font-size:18px;color:#64748b;cursor:pointer;position:relative;padding:6px;border-radius:8px;">
+                <i class="fa-regular fa-bell"></i>
+                <span id="quickBellBadge" style="display:none;position:absolute;top:-2px;right:-4px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;min-width:16px;height:16px;padding:0 4px;border-radius:999px;align-items:center;justify-content:center;border:2px solid #fff;">0</span>
+            </button>
+            <div id="quickBellDrop" style="display:none;position:absolute;top:42px;right:-10px;width:340px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;box-shadow:0 10px 25px rgba(0,0,0,0.12);z-index:9999;overflow:hidden;">
+                <div style="padding:10px 14px;background:#f8fafc;border-bottom:1px solid #f1f5f9;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:800;">
+                    <span><i class="fa-regular fa-bell text-primary"></i> Thông báo</span>
+                    <span onclick="markAllQuickUserRead(event)" style="color:#0284c7;cursor:pointer;font-size:11.5px;font-weight:600;">Đã đọc</span>
+                </div>
+                <ul id="quickBellList" style="list-style:none;margin:0;padding:0;max-height:300px;overflow-y:auto;">{items_html}</ul>
+                <div style="padding:8px;background:#f8fafc;border-top:1px solid #f1f5f9;text-align:center;">
+                    <a href="/history" style="font-size:11.5px;font-weight:700;color:#0284c7;text-decoration:none;">Xem toàn bộ lịch sử &rarr;</a>
+                </div>
+            </div>
+        </div>
+        <script>
+            const NOTIF_STORAGE_KEY = 'readUserNotifications_{{ current_user.username }}';
+
+            function getReadNotifIds() {{
+                try {{ return JSON.parse(localStorage.getItem(NOTIF_STORAGE_KEY) || '[]'); }}
+                catch (e) {{ return []; }}
+            }}
+
+            function saveReadNotifIds(ids) {{
+                try {{ localStorage.setItem(NOTIF_STORAGE_KEY, JSON.stringify(Array.from(new Set(ids)))); }}
+                catch (e) {{}}
+            }}
+
+            function syncQuickBellState() {{
+                const readIds = new Set(getReadNotifIds());
+                const items = document.querySelectorAll('#quickBellList [data-notif-id]');
+                let unread = 0;
+                items.forEach(el => {{
+                    const id = el.getAttribute('data-notif-id');
+                    if (readIds.has(id)) {{
+                        el.style.background = '#ffffff';
+                    }} else {{
+                        el.style.background = '#f0f9ff';
+                        unread += 1;
+                    }}
+                }});
+                const badge = document.getElementById('quickBellBadge');
+                if (badge) {{
+                    if (unread > 0) {{
+                        badge.textContent = unread;
+                        badge.style.display = 'flex';
+                    }} else {{
+                        badge.style.display = 'none';
+                    }}
+                }}
+            }}
+
+            function toggleQuickUserBell(e) {{
+                e.stopPropagation();
+                const d = document.getElementById('quickBellDrop');
+                if (d) d.style.display = (d.style.display === 'block') ? 'none' : 'block';
+            }}
+
+            function handleUserNotifClick(e, uid, link) {{
+                e.stopPropagation();
+                const ids = getReadNotifIds();
+                ids.push(uid);
+                saveReadNotifIds(ids);
+                syncQuickBellState();
+                if (link) window.location.href = link;
+            }}
+
+            function markAllQuickUserRead(e) {{
+                e.stopPropagation();
+                const allIds = Array.from(document.querySelectorAll('#quickBellList [data-notif-id]'))
+                    .map(el => el.getAttribute('data-notif-id'));
+                saveReadNotifIds(allIds);
+                syncQuickBellState();
+            }}
+
+            window.addEventListener('click', function(e) {{
+                const d = document.getElementById('quickBellDrop');
+                if (d && !e.target.closest('#quickUserBellWrap')) d.style.display = 'none';
+            }});
+
+            document.addEventListener('DOMContentLoaded', function() {{
+                const wrap = document.getElementById('quickUserBellWrap');
+                const target = document.querySelector('.nav-right-actions') || document.querySelector('.user-nav-right') || document.querySelector('.nav-right') || document.querySelector('.top-navbar');
+                const existingBell = document.querySelector('.btn-bell');
+                if (wrap && existingBell && existingBell.parentElement) {{
+                    existingBell.parentElement.replaceChild(wrap, existingBell);
+                }} else if (wrap && target && wrap.parentElement !== target) {{
+                    target.insertBefore(wrap, target.firstChild);
+                }}
+                syncQuickBellState();
+            }});
+        </script>
+        """
+        return {"user_bell_html": bell_component}
+
+    return {"user_bell_html": ""}
 # ============================================================
 # 14. CHẠY FLASK
 # ============================================================
